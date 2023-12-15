@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EGOIST", "EGOIST\EGOIST.csproj", "{C8B2FB02-0AA0-4654-BC92-5E0FFBBA5FAF}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "EGOIST-Backend", "EGOIST-Backend\EGOIST-Backend.pyproj", "{2C2378FC-FC57-4C0A-9997-4B5107B16AEF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C8B2FB02-0AA0-4654-BC92-5E0FFBBA5FAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8B2FB02-0AA0-4654-BC92-5E0FFBBA5FAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8B2FB02-0AA0-4654-BC92-5E0FFBBA5FAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8B2FB02-0AA0-4654-BC92-5E0FFBBA5FAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C2378FC-FC57-4C0A-9997-4B5107B16AEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C2378FC-FC57-4C0A-9997-4B5107B16AEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {45E6C3F8-A6F6-418A-BCDA-82AE17502EB2}
+	EndGlobalSection
+EndGlobal

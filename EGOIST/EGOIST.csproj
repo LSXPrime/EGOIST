@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Egoist.ico</ApplicationIcon>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+	<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+  </PropertyGroup>
+	
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\Backend.zip" />
+    <None Remove="Assets\egoist-icon.ico" />
+    <None Remove="Assets\github-icon.png" />
+    <None Remove="Assets\globe-icon.png" />
+    <None Remove="Assets\meta-icon.png" />
+    <None Remove="Views\Windows\Egoist.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Backend.zip" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Markdig" Version="0.34.0" />
+    <PackageReference Include="Markdown.ColorCode" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2210.55" />
+    <PackageReference Include="WPF-UI" Version="3.0.0-preview.4" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+	<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
+	<PackageReference Include="Notification.Wpf" Version="7.0.0.2" />
+	<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	<PackageReference Include="MessagePack" Version="2.5.140" />
+	<PackageReference Include="NAudio" Version="2.2.1" />
+	<PackageReference Include="Whisper.net" Version="1.5.0" />
+	<PackageReference Include="Whisper.net.Runtime.Cublas" Version="1.5.0" />
+	  
+  </ItemGroup>
+
+	<ItemGroup>
+		<Resource Include="Assets\BG.png" />
+		<EmbeddedResource Include="Assets\egoist-icon.ico" />
+		<Resource Include="Assets\github-icon.png" />
+		<Resource Include="Assets\globe-icon.png" />
+		<Resource Include="Assets\meta-icon.png" />
+		<Resource Include="Assets\microphone-recording-icon.png" />
+		<Resource Include="Egoist.ico" />
+	</ItemGroup>
+</Project>
