@@ -358,3 +358,4 @@ MigrationBackup/
 /build
 /runtimes
 /nupkgs
+/Models_Data.json
