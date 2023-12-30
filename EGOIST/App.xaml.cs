@@ -41,8 +41,12 @@ public partial class App
 
             services.AddSingleton<HomePage>();
             services.AddSingleton<HomeViewModel>();
+            services.AddSingleton<TextPage>();
+            services.AddSingleton<TextViewModel>();
             services.AddSingleton<VoicePage>();
             services.AddSingleton<VoiceViewModel>();
+            services.AddSingleton<ManagementPage>();
+            services.AddSingleton<ManagementViewModel>();
             services.AddSingleton<SettingsPage>();
             services.AddSingleton<SettingsViewModel>();
         }).Build();
@@ -64,6 +68,7 @@ public partial class App
     private void OnStartup(object sender, StartupEventArgs e)
     {
         _host.Start();
+        GetService<ManagementViewModel>().LoadData();
         _ = GetService<SettingsViewModel>().CheckForUpdate();
     }
 

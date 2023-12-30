@@ -23,7 +23,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware, INo
     private ThemeType _currentTheme = ThemeType.Dark;
 
     [ObservableProperty]
-    private string _appVersion = string.Empty;
+    private string _appVersion = "1.0.0";
 
     private NotificationManager notification = new();
     private AppConfig _config = AppConfig.Instance;
@@ -52,7 +52,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware, INo
     private void InitializeViewModel()
     {
         CurrentTheme = Theme.GetAppTheme();
-        AppVersion = $"EGOIST - {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty}";
+    //    AppVersion = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty}";
 
         _isInitialized = true;
     }

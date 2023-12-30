@@ -7,11 +7,10 @@
     xmlns:helpers="clr-namespace:EGOIST.Helpers"
     xmlns:local="clr-namespace:EGOIST.Views.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="clr-namespace:EGOIST.Models"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="VoicePage"
     d:DataContext="{d:DesignInstance local:VoicePage,
-                                     IsDesignTimeCreatable=False}"
+    IsDesignTimeCreatable=False}"
     d:DesignHeight="920"
     d:DesignWidth="1280"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
@@ -30,7 +29,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        
+
         <!-- Background & Overview -->
         <Border Grid.Row="0" Height="400" CornerRadius="8">
             <Border.Background>
@@ -75,7 +74,7 @@
                 </Grid>
             </Border>
         </Border>
-        
+
         <!-- Tabs & Content -->
         <TabControl Grid.Row="1" Margin="0,10,0,0">
             <!-- Tab 1: Voice Generation -->
