@@ -7,11 +7,13 @@ using Wpf.Ui.Controls;
 using System.Collections.ObjectModel;
 using EGOIST.Data;
 using EGOIST.Enums;
+using EGOIST.Helpers;
 using Newtonsoft.Json.Linq;
 using System.Windows.Forms;
 using Whisper.net;
 using NAudio.Wave.SampleProviders;
 using Notification.Wpf;
+using NetFabric.Hyperlinq;
 
 namespace EGOIST.ViewModels.Pages;
 public partial class VoiceViewModel : ObservableObject, INavigationAware
@@ -37,28 +39,20 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
     #region GenerationVariables
     [ObservableProperty]
     private GenerationState _cloneState = GenerationState.None;
-
     [ObservableProperty]
-    private ObservableCollection<string> _generationLanaguages = new();
-
-    [ObservableProperty]
-    private ObservableCollection<string> _generationModelPaths = new();
-
+    private ObservableCollection<string> _generationLanaguages = new() { "EN", "ES", "FR", "DE", "IT", "PT", "PL", "TR", "RU", "NL", "CS", "AR", "ZH-CN", "JA,HU", "KO" };
     [ObservableProperty]
     private ObservableCollection<string> _generationVoicePaths = new();
-
     [ObservableProperty]
-    private string _selectedCloneModel = string.Empty;
-
+    private Dictionary<string, List<ModelInfo>> _generationModels = new();
+    [ObservableProperty]
+    private ModelInfo _selectedCloneModel;
     [ObservableProperty]
     private string _selectedLanguage = string.Empty;
-
     [ObservableProperty]
     private string _selectedVoice = string.Empty;
-
     [ObservableProperty]
     private string _textToGenerate = string.Empty;
-
     [ObservableProperty]
     private float _speechRate = 1f;
 
@@ -68,13 +62,13 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
     [ObservableProperty]
     private GenerationState _transcribeState = GenerationState.None;
     [ObservableProperty]
-    private ObservableCollection<string> _transcribeModelPaths = new();
+    private ModelInfo _selectedTranscribeModel;
     [ObservableProperty]
-    private string _selectedTranscribeModel = string.Empty;
+    private ModelInfo.ModelInfoWeight _selectedTranscribeWeight;
     [ObservableProperty]
     private string _selectedTranscribeAudio = string.Empty;
     [ObservableProperty]
-    private string _selectedTranscribeType = string.Empty;
+    private string _selectedTranscribeType = "SRT";
     [ObservableProperty]
     private string _transcribeAudioResult = string.Empty;
     [ObservableProperty]
@@ -168,32 +162,16 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
 
     private void LoadData()
     {
-        GenerationModelPaths.Clear();
+        GenerationModels.Clear();
         GenerationVoicePaths.Clear();
-        TranscribeModelPaths.Clear();
 
-        var languages = "EN,ES,FR,DE,IT,PT,PL,TR,RU,NL,CS,AR,ZH-CN,JA,HU,KO".Split(',').ToList();
-        GenerationLanaguages = new ObservableCollection<string>(languages);
-
-        var transcribeModelsPath = AppConfig.Instance.ModelsPath + "\\VoiceGeneration\\transcribe";
-        if (Directory.Exists(transcribeModelsPath))
+        var models = ManagementViewModel._modelsInfo.AsValueEnumerable().Where(x => x.Type.Contains("Voice") && x.Downloaded.Count > 0).ToList();
+        GenerationModels = new()
         {
-            var models = Directory.EnumerateDirectories(transcribeModelsPath)
-            .Where(x => File.Exists(Path.Combine(x, "egoist_config.json")))
-            .Select(x => Path.GetFileName(x))
-            .ToList();
-            TranscribeModelPaths = new ObservableCollection<string>(models);
-        }
-
-        var cloneModelsPath = AppConfig.Instance.ModelsPath + "\\VoiceGeneration\\clone";
-        if (Directory.Exists(cloneModelsPath))
-        {
-            var models = Directory.EnumerateDirectories(cloneModelsPath)
-            .Where(x => File.Exists(Path.Combine(x, "egoist_config.json")))
-            .Select(x => Path.GetFileName(x))
-            .ToList();
-            GenerationModelPaths = new ObservableCollection<string>(models);
-        }
+            { "Clone", models.AsValueEnumerable().Where(x => x.Task.Contains("Clone")).ToList() },
+            { "Generate", models.AsValueEnumerable().Where(x => x.Task.Contains("Generate")).ToList() },
+            { "Transcribe", models.AsValueEnumerable().Where(x => x.Task.Contains("Transcribe")).ToList() }
+        };
 
         if (Directory.Exists(AppConfig.Instance.VoicesPath))
         {
@@ -211,62 +189,38 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
     {
         try
         {
-            notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Model Switching to {SelectedCloneModel} Started", Type = NotificationType.Information }, areaName: "NotificationArea");
-            /* EgoistConfig
-             * Class
-                public class EgoistConfig
-                {
-                    public string Name { get; set; }
-                    public string Backend { get; set; }
-                    public string Task { get; set; }
-                    public int Weight { get; set; }
-                    public string Checkpoint { get; set; }
-                }
+            notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Model Switching to {SelectedCloneModel.Name} Started", Type = NotificationType.Information }, areaName: "NotificationArea");
 
-                * JSON Format
-                 {
-                  "name": "EgoistConfig",
-                  "backend": "transformers",
-                  "type": "voice_generation",
-                  "task": "clone",
-                  "weight": "fp16",
-                  "checkpoint": "model_checkpoint.safetensors"
-                }
-             */
-            var modelConfigPath = AppConfig.Instance.ModelsPath + $"\\VoiceGeneration\\{task}\\{SelectedCloneModel}\\egoist_config.json";
-            var modelConfig = File.ReadAllText(modelConfigPath);
-            dynamic config = JObject.Parse(modelConfig);
-            string model_type = config.type ?? "voice_generation";
-            string backend_type = config.backend ?? "tts";
-
-            var data = new MultipartFormDataContent
-            {
-                { new StringContent(SelectedCloneModel), "selected_model" },
-                { new StringContent(model_type), "model_type" },
-                { new StringContent(task), "model_task" },
-                { new StringContent(backend_type), "backend_type" },
-            };
+        //    var modelPath = $"{AppConfig.Instance.ModelsPath}\\{SelectedCloneModel.Type.RemoveSpaces()}\\{SelectedCloneModel.Name.RemoveSpaces()}\\{SelectedCloneModel.Weights[0].Weight.RemoveSpaces()}.{SelectedCloneModel.Weights[0].Extension.ToLower().RemoveSpaces()}";
 
             using var client = new HttpClient();
             // Send the POST request to the backend
-            using var request = new HttpRequestMessage(new HttpMethod("POST"), $"{AppConfig.Instance.ApiUrl}/switch_model");
-            request.Content = data;
+            using var request = new HttpRequestMessage(new HttpMethod("POST"), $"{AppConfig.Instance.ApiUrl}/switch_model")
+            {
+                Content = new MultipartFormDataContent
+                {
+                    { new StringContent(SelectedCloneModel.Name), "selected_model" },
+                    { new StringContent(SelectedCloneModel.Type), "model_type" },
+                    { new StringContent(SelectedCloneModel.Task), "model_task" },
+                    { new StringContent(SelectedCloneModel.Backend), "backend_type" }
+                }
+            };
             var response = await client.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
-                notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Model Switched to {SelectedCloneModel} Successfully", Type = NotificationType.Success }, areaName: "NotificationArea");
+                notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Model Switched to {SelectedCloneModel.Name} Successfully", Type = NotificationType.Success }, areaName: "NotificationArea");
             else
             {
                 // Handle failure response
-                notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Model Switching to {SelectedCloneModel} Failed, Error: {response.StatusCode}", Type = NotificationType.Error }, areaName: "NotificationArea");
-                SelectedCloneModel = string.Empty;
+                notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Model Switching to {SelectedCloneModel.Name} Failed, Error: {response.StatusCode}", Type = NotificationType.Error }, areaName: "NotificationArea");
+                SelectedCloneModel = null;
             }
 
         }
         catch (Exception ex)
         {
             // Handle exceptions (if needed)
-            notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Model Switching to {SelectedCloneModel} Failed, Exception: {ex.Message}", Type = NotificationType.Error }, areaName: "NotificationArea");
+            notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Model Switching to {SelectedCloneModel.Name} Failed, Exception: {ex.Message}", Type = NotificationType.Error }, areaName: "NotificationArea");
         }
     }
 
@@ -293,7 +247,7 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
             // Prepare the data to send to the backend
             var data = new MultipartFormDataContent
             {
-                { new StringContent(SelectedCloneModel), "selected_model" },
+                { new StringContent(SelectedCloneModel.Name), "selected_model" },
                 { new StringContent(TextToGenerate), "text_to_generate" },
                 { new StringContent(SelectedLanguage.ToLower()), "language" },
                 { new ByteArrayContent(compressedvoiceData), "voice_to_clone", Path.GetFileName(voiceDataPath) }
@@ -374,12 +328,12 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
                 TranscribeModel?.Dispose();
                 TranscribeProcessor?.Dispose();
                 ResetTranscribe();
-                SelectedTranscribeModel = string.Empty;
+                SelectedTranscribeModel = null;
                 notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Model Unloaded", Type = NotificationType.Information }, areaName: "NotificationArea");
                 return;
             }
             notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Model {SelectedTranscribeModel} Started loading", Type = NotificationType.Information }, areaName: "NotificationArea");
-            Thread thread = new Thread(SwitchMethodBG);
+            Thread thread = new(SwitchMethodBG);
             thread.Start();
         }
         catch (Exception ex)
@@ -389,13 +343,10 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
 
         void SwitchMethodBG()
         {
-            var modelPath = AppConfig.Instance.ModelsPath + $"\\VoiceGeneration\\transcribe\\{SelectedTranscribeModel}";
-            var modelConfig = File.ReadAllText($"{modelPath}\\egoist_config.json");
-            dynamic config = JObject.Parse(modelConfig);
-            string model_file = config.checkpoint ?? "ggml-model.bin";
+            var modelPath = $"{AppConfig.Instance.ModelsPath}\\{SelectedTranscribeModel.Type.RemoveSpaces()}\\{SelectedTranscribeModel.Name.RemoveSpaces()}\\{SelectedTranscribeWeight.Weight.RemoveSpaces()}.{SelectedTranscribeWeight.Extension.ToLower().RemoveSpaces()}";
 
             var isGpu = AppConfig.Instance.Device == Device.GPU;
-            TranscribeModel = WhisperFactory.FromPath($"{modelPath}\\{model_file}", false, null, false, isGpu);
+            TranscribeModel = WhisperFactory.FromPath(modelPath, false, null, false, isGpu);
             TranscribeProcessor = TranscribeModel.CreateBuilder().WithLanguage("auto").Build();
             notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Model loaded Successfully", Type = NotificationType.Information }, areaName: "NotificationArea");
         }
@@ -562,7 +513,7 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
 
     #region RecordingMethods
 
-    public List<string> RecordingAvailableMicrophones()
+    public static List<string> RecordingAvailableMicrophones()
     {
         List<string> microphones = new List<string>();
         for (var i = 0; i < WaveIn.DeviceCount; i++)

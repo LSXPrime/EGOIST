@@ -9,19 +9,22 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
 	<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+	<Version>$(VersionPrefix)</Version>
+	<AssemblyVersion>1.0.0</AssemblyVersion>
   </PropertyGroup>
 	
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DebugType>none</DebugType>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DebugType>none</DebugType>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Assets\Backend.zip" />
+    <None Remove="Assets\dictionary.txt" />
     <None Remove="Assets\egoist-icon.ico" />
     <None Remove="Assets\github-icon.png" />
     <None Remove="Assets\globe-icon.png" />
@@ -31,24 +34,35 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Assets\Backend.zip" />
+    <EmbeddedResource Include="Assets\dictionary.txt" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Markdig" Version="0.34.0" />
-    <PackageReference Include="Markdown.ColorCode" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2210.55" />
-    <PackageReference Include="WPF-UI" Version="3.0.0-preview.4" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-	<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
-	<PackageReference Include="Notification.Wpf" Version="7.0.0.2" />
-	<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-	<PackageReference Include="MessagePack" Version="2.5.140" />
-	<PackageReference Include="NAudio" Version="2.2.1" />
-	<PackageReference Include="Whisper.net" Version="1.5.0" />
-	<PackageReference Include="Whisper.net.Runtime.Cublas" Version="1.5.0" />
-	  
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="AvalonEdit" Version="6.3.0.90" />
+		<PackageReference Include="LangChain" Version="0.12.3-dev.64" />
+		<PackageReference Include="LangChain.Providers.LLamaSharp" Version="0.12.3-dev.64" />
+		<PackageReference Include="LibreHardwareMonitorLib" Version="0.9.3" />
+		<PackageReference Include="LLamaSharp" Version="0.8.1" />
+		<PackageReference Include="LLamaSharp.Backend.Cpu" Version="0.8.1" />
+		<PackageReference Include="LLamaSharp.Backend.Cuda11" Version="0.8.1" />
+		<PackageReference Include="LLamaSharp.semantic-kernel" Version="0.8.1" />
+		<PackageReference Include="Markdig" Version="0.34.0" />
+		<PackageReference Include="Markdown.ColorCode" Version="2.1.0" />
+		<PackageReference Include="Microsoft.KernelMemory.AI.LlamaSharp" Version="0.24.231228.5" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2210.55" />
+		<PackageReference Include="NetFabric.Hyperlinq" Version="3.0.0-beta48" />
+		<PackageReference Include="Serilog" Version="3.1.1" />
+		<PackageReference Include="WPF-UI" Version="3.0.0-preview.4" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
+		<PackageReference Include="Notification.Wpf" Version="8.0.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="MessagePack" Version="2.5.140" />
+		<PackageReference Include="NAudio" Version="2.2.1" />
+		<PackageReference Include="Whisper.net" Version="1.5.0" />
+		<PackageReference Include="Whisper.net.Runtime.Cublas" Version="1.5.0" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Resource Include="Assets\BG.png" />

@@ -2,11 +2,12 @@
 using Wpf.Ui.Controls;
 
 namespace EGOIST.Views.Pages;
-public partial class VoicePage : INavigableView<VoiceViewModel>
-{
-    public VoiceViewModel ViewModel { get; }
 
-    public VoicePage(VoiceViewModel viewModel)
+public partial class ManagementPage : INavigableView<ManagementViewModel>
+{
+    public ManagementViewModel ViewModel { get; }
+
+    public ManagementPage(ManagementViewModel viewModel)
     {
         ViewModel = viewModel;
         DataContext = this;

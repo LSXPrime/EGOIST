@@ -19,9 +19,21 @@ public partial class MainWindowViewModel : ObservableObject
         },
         new NavigationViewItem()
         {
+            Content = "Text",
+            Icon = new SymbolIcon { Symbol = SymbolRegular.DocumentEdit24 },
+            TargetPageType = typeof(Views.Pages.TextPage)
+        },
+        new NavigationViewItem()
+        {
             Content = "Voice",
             Icon = new SymbolIcon { Symbol = SymbolRegular.HeadphonesSoundWave24 },
             TargetPageType = typeof(Views.Pages.VoicePage)
+        },
+        new NavigationViewItem()
+        {
+            Content = "Managament",
+            Icon = new SymbolIcon { Symbol = SymbolRegular.KeyCommand24 },
+            TargetPageType = typeof(Views.Pages.ManagementPage)
         }
     };
 

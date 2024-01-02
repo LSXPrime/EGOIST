@@ -1,0 +1,288 @@
+﻿<Page
+    x:Class="EGOIST.Views.Pages.ManagementPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:helpers="clr-namespace:EGOIST.Helpers"
+    xmlns:local="clr-namespace:EGOIST.Views.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="ManagementPage"
+    d:DataContext="{d:DesignInstance local:ManagementPage,
+    IsDesignTimeCreatable=False}"
+    d:DesignHeight="920"
+    d:DesignWidth="1920"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    ScrollViewer.CanContentScroll="True"
+    mc:Ignorable="d">
+
+    <Grid Margin="20">
+        <TabControl>
+            <TabItem Header="Overview" >
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Background & Overview -->
+                    <Border Grid.Row="0" Height="400" CornerRadius="8">
+                        <Border.Background>
+                            <ImageBrush
+                                ImageSource="/Assets/BG.png"
+                                RenderOptions.BitmapScalingMode="HighQuality"
+                                Stretch="Fill" />
+                        </Border.Background>
+                        <Border CornerRadius="8">
+                            <Border.Background>
+                                <RadialGradientBrush>
+                                    <GradientStop Offset="0" Color="#1F000000" />
+                                    <GradientStop Offset="1" Color="#4F000000" />
+                                </RadialGradientBrush>
+                            </Border.Background>
+                            <Grid>
+                                <StackPanel
+                                    Margin="48,0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Background="Transparent">
+                                    <ui:TextBlock
+                                        FontTypography="Title"
+                                        Foreground="#FFFFFF"
+                                        Text="EGOIST" />
+                                    <ui:TextBlock
+                                        FontTypography="Subtitle"
+                                        Foreground="#B7FFFFFF"
+                                        Text="Managament" />
+                                    <ui:TextBlock
+                                        FontTypography="BodyStrong"
+                                        Foreground="#B7FFFFFF"
+                                        Text="Download, load and manage models.&#x0a;" />
+                                    <!-- Filtering Options -->
+                                    <ui:TextBox x:Name="searchTextBox" Grid.Row="0" Icon="Search24" IconPlacement="Right" Text="{Binding ViewModel.SearchText, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Search for models by name" />
+                                    <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,10,0,0">
+                                        <!-- Type Filter -->
+                                        <ComboBox x:Name="typeFilterComboBox" Width="150" Margin="0,0,5,0"
+                                                  DisplayMemberPath="Key" SelectedValuePath="Key"
+                                                  SelectedValue="{Binding ViewModel.SelectedType, Mode=TwoWay}"
+                                                  ItemsSource="{Binding ViewModel.Filters}" />
+                                        <!-- Task Filter -->
+                                        <ComboBox x:Name="taskFilterComboBox" Width="150" Margin="5,0,0,0" SelectedValue="{Binding ViewModel.SelectedTask, Mode=TwoWay}">
+                                            <ComboBox.ItemsSource>
+                                                <Binding Path="SelectedItem.Value" ElementName="typeFilterComboBox"/>
+                                            </ComboBox.ItemsSource>
+                                        </ComboBox>
+                                        <Button VerticalAlignment="Stretch" HorizontalAlignment="Right" Margin="5,0,0,0" Command="{Binding ViewModel.FiltersApplyCommand}" CommandParameter="{x:Null}" >
+                                            <ui:SymbolIcon Symbol="ArrowReset24" Margin="0,0,5,0" />
+                                        </Button>
+                                    </StackPanel>
+                                </StackPanel>
+                                <ui:TextBlock
+                                    Margin="12"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Bottom"
+                                    FontTypography="Caption"
+                                    Foreground="#57FFFFFF"
+                                    Text="Created by LSXPrime &#x0a;Artwork by matsumayu" />
+                            </Grid>
+                        </Border>
+                    </Border>
+
+                    <ListView Grid.Row="1" Margin="15" ItemsSource="{Binding ViewModel.DownloadModelsInfo}" SelectionMode="Single" >
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="15" Background="#FF313131" Height="200" >
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <!-- Model Details -->
+                                        <ui:Card x:Name="ModelDetailsCard" Grid.Column="0" Margin="10">
+                                            <Grid Margin="10" Grid.Column="0" >
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="40" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Grid.Row="0" Text="{Binding Name}" FontSize="36" FontFamily="Calisto MT" />
+                                                <StackPanel Grid.Row="1" Orientation="Horizontal" Height="30" >
+                                                    <Border CornerRadius="5" Background="DarkRed" Margin="5">
+                                                        <StackPanel Margin="5,0,5,0" Orientation="Horizontal">
+                                                            <Label Content="Type    " FontFamily="Cambria" VerticalAlignment="Center" Foreground="DarkGray" />
+                                                            <Label Content="{Binding Type}" FontWeight="Bold" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                    <Border CornerRadius="5" Background="DarkRed" Margin="5">
+                                                        <StackPanel Margin="5,0,5,0" Orientation="Horizontal">
+                                                            <Label Content="Task    " FontFamily="Cambria" VerticalAlignment="Center" Foreground="DarkGray" />
+                                                            <Label Content="{Binding Task}" FontWeight="Bold" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                    <Border CornerRadius="5" Background="DarkRed" Margin="5">
+                                                        <StackPanel Margin="5,0,5,0" Orientation="Horizontal">
+                                                            <Label Content="Architecture    " FontFamily="Cambria" VerticalAlignment="Center" Foreground="DarkGray" />
+                                                            <Label Content="{Binding Architecture}" FontWeight="Bold" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                    <Border CornerRadius="5" Background="DarkRed" Margin="5">
+                                                        <StackPanel Margin="5,0,5,0" Orientation="Horizontal">
+                                                            <Label Content="Updated    " FontFamily="Cambria" VerticalAlignment="Center" Foreground="DarkGray" />
+                                                            <Label Content="{Binding UpdateDate}" FontWeight="Bold" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                </StackPanel>
+                                                <TextBlock Grid.Row="2" HorizontalAlignment="Left" MaxWidth="1200" TextWrapping="Wrap" Background="Transparent" Text="{Binding Description}" />
+                                            </Grid>
+                                        </ui:Card>
+
+                                        <!-- Model Weights -->
+                                        <ui:Card Grid.Column="1" Margin="10" VerticalAlignment="Stretch" >
+                                            <ListView SelectionMode="Single" ItemsSource="{Binding Weights}"  >
+                                                <ListView.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BorderThickness="1" BorderBrush="DarkRed" CornerRadius="5">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <Border CornerRadius="5" Background="DarkRed" Margin="3" Height="20" >
+                                                                    <TextBlock Text="{Binding Weight}" FontFamily="Cambria" VerticalAlignment="Center" FontWeight="Bold" Margin="5,0,5,0" />
+                                                                </Border>
+                                                                <Border CornerRadius="5" Background="DarkRed" Margin="3" Height="20" >
+                                                                    <TextBlock Text="{Binding Size}" FontFamily="Cambria" VerticalAlignment="Center" FontWeight="Bold" Margin="5,0,5,0" />
+                                                                </Border>
+                                                                <Button Height="20" Margin="3" HorizontalAlignment="Stretch" Command="{Binding DataContext.ViewModel.DownloadModelCommand, RelativeSource={RelativeSource AncestorType={x:Type Page}}}" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}" >
+                                                                    <ui:SymbolIcon Symbol="ArrowDownload24" />
+                                                                </Button>
+                                                                <Button Height="20" Margin="3" HorizontalAlignment="Stretch" Command="{Binding DataContext.ViewModel.LoadModelCommand, RelativeSource={RelativeSource AncestorType={x:Type Page}}}" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}" >
+                                                                    <ui:SymbolIcon Symbol="Play24" />
+                                                                </Button>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ListView.ItemTemplate>
+                                            </ListView>
+                                        </ui:Card>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                </Grid>
+            </TabItem>
+            <TabItem Header="Downloads">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Background & Overview -->
+                    <Border Grid.Row="0" Height="400" CornerRadius="8">
+                        <Border.Background>
+                            <ImageBrush
+                                ImageSource="/Assets/BG.png"
+                                RenderOptions.BitmapScalingMode="HighQuality"
+                                Stretch="Fill" />
+                        </Border.Background>
+                        <Border CornerRadius="8">
+                            <Border.Background>
+                                <RadialGradientBrush>
+                                    <GradientStop Offset="0" Color="#1F000000" />
+                                    <GradientStop Offset="1" Color="#4F000000" />
+                                </RadialGradientBrush>
+                            </Border.Background>
+                            <Grid>
+                                <StackPanel
+                                    Margin="48,0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Background="Transparent">
+                                    <ui:TextBlock
+                                        FontTypography="Title"
+                                        Foreground="#FFFFFF"
+                                        Text="EGOIST" />
+                                    <ui:TextBlock
+                                        FontTypography="Subtitle"
+                                        Foreground="#B7FFFFFF"
+                                        Text="Managament" />
+                                    <ui:TextBlock
+                                        FontTypography="BodyStrong"
+                                        Foreground="#B7FFFFFF"
+                                        Text="Models Downloads List." />
+                                </StackPanel>
+                                <ui:TextBlock
+                                    Margin="12"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Bottom"
+                                    FontTypography="Caption"
+                                    Foreground="#57FFFFFF"
+                                    Text="Created by LSXPrime &#x0a;Artwork by matsumayu" />
+                            </Grid>
+                        </Border>
+                    </Border>
+
+                    <ListView Grid.Row="1" Margin="25" ItemsSource="{Binding ViewModel.DownloadsInfo}" SelectionMode="Single" >
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Grid.Row="2" CornerRadius="15" Background="#FF313131" Margin="25" Height="200">
+                                    <ui:Card Grid.Column="0" Margin="15" >
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Name}" FontSize="36" FontFamily="Calisto MT" />
+                                                <StackPanel Orientation="Horizontal" Margin="25,0,0,0">
+                                                    <Button Margin="5" Command="{Binding DataContext.ViewModel.ResumePauseDownloadCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="{Binding}" >
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <ui:SymbolIcon Symbol="Play32" FontSize="24" />
+                                                            <TextBlock Text=" | " FontSize="24" FontFamily="Calisto MT" TextAlignment="Center" Margin="0,-2,0,0" />
+                                                            <ui:SymbolIcon Symbol="Pause32" FontSize="24" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                    <Button Margin="5" Command="{Binding DataContext.ViewModel.CancelDownloadCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="{Binding}" >
+                                                        <ui:SymbolIcon Symbol="Stop24" FontSize="24" />
+                                                    </Button>
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Height="50" >
+                                                <Border CornerRadius="5" Height="25" Background="DarkRed" Margin="5">
+                                                    <StackPanel Margin="5,0,5,0" Orientation="Horizontal">
+                                                        <Label Content="Type    " FontFamily="Cambria" VerticalAlignment="Center" Foreground="DarkGray" />
+                                                        <Label Content="{Binding Model.Type}" FontWeight="Bold" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Border>
+                                                <Border CornerRadius="5" Height="25" Background="DarkRed" Margin="5">
+                                                    <StackPanel Margin="5,0,5,0" Orientation="Horizontal">
+                                                        <Label Content="Task    " FontFamily="Cambria" VerticalAlignment="Center" Foreground="DarkGray" />
+                                                        <Label Content="{Binding Model.Task}" FontWeight="Bold" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Border>
+                                                <Border CornerRadius="5" Height="25" Background="DarkRed" Margin="5">
+                                                    <StackPanel Margin="5,0,5,0" Orientation="Horizontal">
+                                                        <Label Content="Architecture    " FontFamily="Cambria" VerticalAlignment="Center" Foreground="DarkGray" />
+                                                        <Label Content="{Binding Model.Architecture}" FontWeight="Bold" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Border>
+                                                <Border CornerRadius="5" Height="25" Background="DarkRed" Margin="5">
+                                                    <StackPanel Margin="5,0,5,0" Orientation="Horizontal">
+                                                        <Label Content="Updated    " FontFamily="Cambria" VerticalAlignment="Center" Foreground="DarkGray" />
+                                                        <Label Content="{Binding Model.UpdateDate}" FontWeight="Bold" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding Progress}" FontSize="22" FontFamily="Calisto MT" HorizontalAlignment="Center" />
+                                            <ProgressBar Margin="5" Foreground="Red" Value="{Binding DownloadedBytes}" Maximum="{Binding TotalBytes}" />
+                                        </StackPanel>
+                                    </ui:Card>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Page>

@@ -7,11 +7,10 @@
     xmlns:helpers="clr-namespace:EGOIST.Helpers"
     xmlns:local="clr-namespace:EGOIST.Views.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="clr-namespace:EGOIST.Models"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="VoicePage"
     d:DataContext="{d:DesignInstance local:VoicePage,
-                                     IsDesignTimeCreatable=False}"
+    IsDesignTimeCreatable=False}"
     d:DesignHeight="920"
     d:DesignWidth="1280"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
@@ -30,7 +29,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        
+
         <!-- Background & Overview -->
         <Border Grid.Row="0" Height="400" CornerRadius="8">
             <Border.Background>
@@ -75,7 +74,7 @@
                 </Grid>
             </Border>
         </Border>
-        
+
         <!-- Tabs & Content -->
         <TabControl Grid.Row="1" Margin="0,10,0,0">
             <!-- Tab 1: Voice Generation -->
@@ -100,7 +99,7 @@
 
                         <StackPanel Grid.Column="0" Margin="0" HorizontalAlignment="Stretch">
                             <Label Content="Model" FontFamily="Cambria" FontWeight="Bold" />
-                            <ComboBox x:Name="VoiceModelComboBox" Width="Auto" ItemsSource="{Binding ViewModel.GenerationModelPaths}" SelectedItem="{Binding ViewModel.SelectedCloneModel}">
+                            <ComboBox x:Name="VoiceModelComboBox" Width="Auto" ItemsSource="{Binding ViewModel.GenerationModels[Generate]}" DisplayMemberPath="Name" SelectedItem="{Binding ViewModel.SelectedCloneModel}">
                                 <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="SelectionChanged">
                                         <i:InvokeCommandAction Command="{Binding ViewModel.GenerationSwitchModelsCommand}" CommandParameter="clone" />
@@ -201,22 +200,32 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.Column="0" Margin="0" HorizontalAlignment="Stretch">
-                            <Label Content="Model" FontFamily="Cambria" FontWeight="Bold" />
-                            <ComboBox x:Name="VoiceTranscribeModelComboBox" Width="Auto" ItemsSource="{Binding ViewModel.TranscribeModelPaths}" SelectedItem="{Binding ViewModel.SelectedTranscribeModel}">
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="SelectionChanged">
-                                        <i:InvokeCommandAction Command="{Binding ViewModel.TranscribeSwitchModelsCommand}" CommandParameter="transcribe" />
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
-                            </ComboBox>
-                        </StackPanel>
+                        <!-- Model Selection & Unloading -->
+                        <Grid Grid.Column="0" HorizontalAlignment="Stretch" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="150"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,5,0" >
+                                <Label Content="Model" FontFamily="Cambria" FontWeight="Bold" />
+                                <ComboBox ItemsSource="{Binding ViewModel.GenerationModels[Transcribe]}" SelectedItem="{Binding ViewModel.SelectedTranscribeModel}" DisplayMemberPath="Name" FontSize="16" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="5,0,5,0" >
+                                <Label Content="Weight" FontFamily="Cambria" FontWeight="Bold" />
+                                <ComboBox ItemsSource="{Binding ViewModel.SelectedTranscribeModel.Downloaded}" SelectedItem="{Binding ViewModel.SelectedTranscribeWeight}" DisplayMemberPath="Weight" FontSize="16" >
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="SelectionChanged">
+                                            <i:InvokeCommandAction Command="{Binding ViewModel.TranscribeSwitchModelsCommand}" CommandParameter="transcribe" />
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                </ComboBox>
+                            </StackPanel>
+                        </Grid>
                         <Button Grid.Column="1" x:Name="TranscribeModelReset" Margin="5,10,0,0" Width="55" Height="40" HorizontalAlignment="Left" VerticalAlignment="Stretch" Command="{Binding ViewModel.TranscribeSwitchModelsCommand}" CommandParameter="unload" >
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="ArrowReset20" Width="16" Height="16" Margin="0,0,5,0" />
                             </StackPanel>
                         </Button>
-
 
                         <StackPanel Grid.Column="2" Margin="15,0,0,0" HorizontalAlignment="Stretch">
                             <Label Content="Audio File" FontFamily="Cambria" FontWeight="Bold" />

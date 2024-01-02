@@ -1,0 +1,576 @@
+﻿<Page
+    x:Class="EGOIST.Views.Pages.TextPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:local="clr-namespace:EGOIST.Views.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="TextPage"
+    d:DataContext="{d:DesignInstance local:TextPage,
+    IsDesignTimeCreatable=False}"
+    d:DesignHeight="920"
+    d:DesignWidth="1280"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    ScrollViewer.CanContentScroll="True"
+    mc:Ignorable="d">
+
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="100" />
+        </Grid.RowDefinitions>
+
+        <TabControl x:Name="Tabs" Grid.Row="0" >
+            <TabItem Header="Overview">
+                <Grid Margin="20" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Background & Overview -->
+                    <Border Grid.Row="0" Height="400" CornerRadius="8">
+                        <Border.Background>
+                            <ImageBrush
+                                ImageSource="/Assets/BG.png"
+                                RenderOptions.BitmapScalingMode="HighQuality"
+                                Stretch="Fill" />
+                        </Border.Background>
+                        <Border CornerRadius="8">
+                            <Border.Background>
+                                <RadialGradientBrush>
+                                    <GradientStop Offset="0" Color="#1F000000" />
+                                    <GradientStop Offset="1" Color="#4F000000" />
+                                </RadialGradientBrush>
+                            </Border.Background>
+                            <Grid>
+                                <StackPanel
+                                    Margin="48,0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Background="Transparent">
+                                    <ui:TextBlock
+                                        FontTypography="Title"
+                                        Foreground="#FFFFFF"
+                                        Text="EGOIST" />
+                                    <ui:TextBlock
+                                        FontTypography="Subtitle"
+                                        Foreground="#B7FFFFFF"
+                                        Text="Text Generation" />
+                                    <ui:TextBlock
+                                        FontTypography="BodyStrong"
+                                        Foreground="#B7FFFFFF"
+                                        Text="Create, clone, transcribe, and record voices.&#x0a;Generate realistic speech with various languages, accents, and emotions." />
+                                </StackPanel>
+                                <ui:TextBlock
+                                    Margin="12"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Bottom"
+                                    FontTypography="Caption"
+                                    Foreground="#57FFFFFF"
+                                    Text="Created by LSXPrime &#x0a;Artwork by matsumayu" />
+                            </Grid>
+                        </Border>
+                    </Border>
+
+                    <!-- Navigation Buttons -->
+                    <Grid Grid.Row="2" Height="120" VerticalAlignment="Bottom" Margin="10,10,10,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <ui:CardAction Grid.Column="0" Margin="0,0,4,0" Padding="0" VerticalAlignment="Stretch" Command="{Binding ChangeTabCommand}" CommandParameter="1" IsChevronVisible="False">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <ui:SymbolIcon Symbol="Chat24" FontSize="80" Margin="20,0,0,0" Grid.Column="0" />
+                                <StackPanel Grid.Column="1" Margin="20" VerticalAlignment="Center">
+                                    <ui:TextBlock Margin="0" FontTypography="BodyStrong" Text="Chat" TextWrapping="WrapWithOverflow" />
+                                    <ui:TextBlock Appearance="Secondary" Text="Converse, collaborate, From casual banter to expert advice, every question answered near." TextWrapping="WrapWithOverflow" />
+                                </StackPanel>
+                            </Grid>
+                        </ui:CardAction>
+                        <ui:CardAction Grid.Column="1" Margin="0,0,4,0" Padding="0" VerticalAlignment="Stretch" Command="{Binding ChangeTabCommand}" CommandParameter="2" IsChevronVisible="False">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <ui:SymbolIcon Symbol="Edit24" FontSize="80" Margin="20,0,0,0" Grid.Column="0" />
+                                <StackPanel Grid.Column="1" Margin="20" VerticalAlignment="Center">
+                                    <ui:TextBlock Margin="0" FontTypography="BodyStrong" Text="Completion" TextWrapping="WrapWithOverflow" />
+                                    <ui:TextBlock Appearance="Secondary" Text="Stuck on a task? Let AI lend a hand, Code, scripts, poems, or emails, unleash your creativity's glance." TextWrapping="WrapWithOverflow" />
+                                </StackPanel>
+                            </Grid>
+                        </ui:CardAction>
+                        <ui:CardAction Grid.Column="2" Margin="0,0,4,0" Padding="0" VerticalAlignment="Stretch" Command="{Binding ChangeTabCommand}" CommandParameter="1" IsChevronVisible="False">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <ui:SymbolIcon Symbol="DocumentData24" FontSize="80" Margin="20,0,0,0" Grid.Column="0" />
+                                <StackPanel Grid.Column="1" Margin="20" VerticalAlignment="Center">
+                                    <ui:TextBlock Margin="0" FontTypography="BodyStrong" Text="Local Docs" TextWrapping="WrapWithOverflow" />
+                                    <ui:TextBlock Appearance="Secondary" Text="Analyze, summarize, extract insights, unlock knowledge unseen, AI interacts with files on your machine." TextWrapping="WrapWithOverflow" />
+                                </StackPanel>
+                            </Grid>
+                        </ui:CardAction>
+                    </Grid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Chat">
+                <Grid Margin="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Sidebar for Chat Sessions -->
+                    <ui:Card Grid.Column="0">
+                        <ui:NavigationView  OpenPaneLength="400" CompactPaneLength="0" IsBackButtonVisible="Collapsed" HeaderVisibility="Hidden" >
+                            <ui:NavigationView.MenuItems>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="50" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <ui:SymbolIcon Grid.Column="0" Symbol="Options24" FontSize="36" VerticalAlignment="Top" />
+                                    <TextBlock Grid.Column="0" Text="Chat Options" FontSize="24"
+                                               VerticalAlignment="Top" HorizontalAlignment="Center"
+                                               TextWrapping="Wrap" TextAlignment="Center"
+                                               RenderTransformOrigin="0.5,0.5" Width="185" Height="185" Margin="-160,25,0,0">
+                                        <TextBlock.RenderTransform>
+                                            <TransformGroup>
+                                                <ScaleTransform/>
+                                                <SkewTransform/>
+                                                <RotateTransform Angle="90"/>
+                                                <TranslateTransform X="0"/>
+                                            </TransformGroup>
+                                        </TextBlock.RenderTransform>
+                                    </TextBlock>
+                                    <Grid Grid.Column="1" Height="680" >
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Buttons for New Chat and Delete Chat -->
+                                        <Grid Grid.Row="0" Margin="10,0,10,0" >
+                                            <ui:SymbolIcon Symbol="Chat24"  FontSize="30" HorizontalAlignment="Left" />
+                                            <Label Content="Chats" FontSize="26" FontFamily="Cambria" FontWeight="Bold" Margin="35,5,0,0" />
+
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
+                                                <Button Command="{Binding ViewModel.ChatDeleteCommand}" Visibility="{Binding ViewModel.VisibilityDict[inchat]}" Margin="0,0,10,0">
+                                                    <ui:SymbolIcon Symbol="Delete24"  FontSize="26" />
+                                                </Button>
+                                                <Button Command="{Binding ViewModel.ChatCreateCommand}" >
+                                                    <ui:SymbolIcon Symbol="Add24"  FontSize="26" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <!-- Chat Logs -->
+                                        <ListView Grid.Row="1" ItemsSource="{Binding ViewModel.ChatSessions}" SelectedItem="{Binding ViewModel.SelectedChatSession}" Margin="10,25,10,100">
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding SessionName}" Margin="5"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+
+                                        <!-- StackPanel for bottom-aligned sliders and buttons -->
+                                        <Expander Grid.Row="2" Header="Customization" Width="320" Margin="0,0,0,0" VerticalAlignment="Bottom" FontSize="16" >
+                                            <StackPanel>
+                                                <!-- Sliders for different settings -->
+                                                <StackPanel Margin="10">
+                                                    <TextBlock Text="Max Tokens" />
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Slider Width="180" Minimum="100" Maximum="32000" Value="{Binding ViewModel.Parameters.MaxTokens}" TickFrequency="3200" TickPlacement="BottomRight" VerticalAlignment="Center" />
+                                                        <TextBox Text="{Binding ViewModel.Parameters.MaxTokens}" Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <StackPanel Margin="10">
+                                                    <TextBlock Text="Randomness" />
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Slider Width="180" Minimum="0" Maximum="2" Value="{Binding ViewModel.Parameters.Randomness}" VerticalAlignment="Center" TickFrequency="0.1" TickPlacement="BottomRight" />
+                                                        <TextBox Text="{Binding ViewModel.Parameters.Randomness}" Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <StackPanel Margin="10">
+                                                    <TextBlock Text="Randomness Booster" />
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Slider Width="180" Minimum="0" Maximum="1" Value="{Binding ViewModel.Parameters.RandomnessBooster}" VerticalAlignment="Center" TickFrequency="0.1" TickPlacement="BottomRight" />
+                                                        <TextBox Text="{Binding ViewModel.Parameters.RandomnessBooster}" Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <StackPanel Margin="10">
+                                                    <TextBlock Text="Optimal Probability" />
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Slider Width="180" Minimum="0" Maximum="2" Value="{Binding ViewModel.Parameters.OptimalProbability}" VerticalAlignment="Center" TickFrequency="0.1" TickPlacement="BottomRight" />
+                                                        <TextBox Text="{Binding ViewModel.Parameters.OptimalProbability}" Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <StackPanel Margin="10">
+                                                    <TextBlock Text="Frequency Penalty" />
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Slider Width="180" Minimum="0" Maximum="2" Value="{Binding ViewModel.Parameters.FrequencyPenalty}" VerticalAlignment="Center" TickFrequency="0.1" TickPlacement="BottomRight" />
+                                                        <TextBox Text="{Binding ViewModel.Parameters.FrequencyPenalty}" Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Expander>
+                                    </Grid>
+                                </Grid>
+                            </ui:NavigationView.MenuItems>
+                        </ui:NavigationView>
+                    </ui:Card>
+
+                    <!-- Chat UI -->
+                    <Grid Grid.Column="1" >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Chat Messages Container -->
+                        <ScrollViewer x:Name="ChatContainerView" Grid.Row="0" VerticalScrollBarVisibility="Auto" MaxHeight="650" >
+                            <ItemsControl ItemsSource="{Binding ViewModel.SelectedChatSession.Messages}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="5">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Column="0" Background="DarkRed" CornerRadius="10" Padding="8">
+                                                <TextBox Text="{Binding Message, Mode=TwoWay}" IsEnabled="{Binding IsEditable}" Foreground="White" TextWrapping="Wrap" MaxWidth="1000" />
+                                            </Border>
+                                            <Border Grid.Column="0" CornerRadius="10" Padding="8">
+                                                <!-- In-Message Controls -->
+                                                <StackPanel Orientation="Horizontal" Margin="100,30,0,0" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                                                    <Button Margin="5" Background="Transparent" Foreground="White" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageSlideCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="-1" >
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="Visibility" Value="Hidden" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding DataContext.ViewModel.SelectedChatSession.Edited, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                        <ui:SymbolIcon Symbol="ArrowLeft24" />
+                                                    </Button>
+                                                    <TextBlock Text="{Binding DataContext.ViewModel.SelectedChatSession.CurrentLogSTR, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Margin="10" >
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Visibility" Value="Hidden" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding DataContext.ViewModel.SelectedChatSession.Edited, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <Button Margin="5" Background="Transparent" Foreground="White" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageSlideCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="1" >
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="Visibility" Value="Hidden" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding DataContext.ViewModel.SelectedChatSession.Edited, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                        <ui:SymbolIcon Symbol="ArrowRight24" />
+                                                    </Button>
+                                                    <Button Margin="5" Background="Transparent" Foreground="White" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageEditCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="{Binding}" >
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="Visibility" Value="Hidden" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Sender}" Value="User">
+                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                        <ui:SymbolIcon Symbol="Edit24" />
+                                                    </Button>
+                                                    <Button Margin="5" Background="Transparent" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageCopyCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="{Binding}" >
+                                                        <ui:SymbolIcon Symbol="Copy24" />
+                                                    </Button>
+                                                </StackPanel>
+                                            </Border>
+                                            <Grid.Style>
+                                                <Style TargetType="Grid">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Sender}" Value="User">
+                                                            <Setter Property="HorizontalAlignment" Value="Right" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Sender}" Value="Assistant">
+                                                            <Setter Property="HorizontalAlignment" Value="Left" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Grid.Style>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <!-- Message Writing & Send Controls -->
+                        <Grid Grid.Row="1" Height="80" VerticalAlignment="Bottom">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ui:TextBox Margin="10" Text="{Binding ViewModel.ChatUserInput, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" PlaceholderText="Write your message here!" HorizontalAlignment="Stretch">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding ViewModel.MessageSendCommand}" />
+                                </TextBox.InputBindings>
+                            </ui:TextBox>
+                            <Button Command="{Binding ViewModel.MessageSendCommand}" Margin="10" Width="100" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="1">
+                                <ui:SymbolIcon Symbol="{Binding ViewModel.SwitchableIcons[SendMessage]}" FontSize="32" />
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Completion">
+                <Grid Margin="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Sidebar for Completion Sessions -->
+                    <ui:Card Grid.Column="0">
+                        <ui:NavigationView  OpenPaneLength="400" CompactPaneLength="0" IsBackButtonVisible="Collapsed" HeaderVisibility="Hidden" >
+                            <ui:NavigationView.MenuItems>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="50" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <ui:SymbolIcon Grid.Column="0" Symbol="Options24" FontSize="36" VerticalAlignment="Top" />
+                                    <TextBlock Grid.Column="0" Text="Completion Options" FontSize="24"
+                                               VerticalAlignment="Top" HorizontalAlignment="Center"
+                                               TextWrapping="Wrap" TextAlignment="Center"
+                                               RenderTransformOrigin="0.5,0.5" Width="250" Height="185" Margin="-160,75,0,0">
+                                        <TextBlock.RenderTransform>
+                                            <TransformGroup>
+                                                <ScaleTransform/>
+                                                <SkewTransform/>
+                                                <RotateTransform Angle="90"/>
+                                                <TranslateTransform X="0"/>
+                                            </TransformGroup>
+                                        </TextBlock.RenderTransform>
+                                    </TextBlock>
+                                    <Grid Grid.Column="1" Height="680" >
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Buttons for New Chat and Delete Chat -->
+                                        <Grid Grid.Row="0" Margin="10,0,10,0" >
+                                            <ui:SymbolIcon Symbol="Pen32"  FontSize="30" HorizontalAlignment="Left" />
+                                            <Label Content="Completion" FontSize="26" FontFamily="Cambria" FontWeight="Bold" Margin="35,5,0,0" />
+
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
+                                                <Button Command="{Binding ViewModel.CompletionDeleteCommand}" Visibility="{Binding ViewModel.VisibilityDict[incompletion]}" Margin="0,0,10,0">
+                                                    <ui:SymbolIcon Symbol="Delete24"  FontSize="26" />
+                                                </Button>
+                                                <Button Command="{Binding ViewModel.CompletionCreateCommand}" >
+                                                    <ui:SymbolIcon Symbol="Add24"  FontSize="26" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <!-- Chat Logs -->
+                                        <ListView Grid.Row="1" ItemsSource="{Binding ViewModel.CompletionSessions}" SelectedItem="{Binding ViewModel.SelectedCompletionSession}" Margin="10,25,10,100">
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding SessionName}" Margin="5"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+
+                                        <!-- StackPanel for bottom-aligned sliders and buttons -->
+                                        <Expander Grid.Row="2" Header="Customization" Width="320" Margin="0,0,0,0" VerticalAlignment="Bottom" FontSize="16" >
+                                            <TabControl>
+                                                <TabItem Header="Options" Width="140">
+                                                    <StackPanel>
+                                                        <!-- Sliders for different settings -->
+                                                        <StackPanel Margin="10">
+                                                            <TextBlock Text="Max Tokens" />
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <Slider Width="180" Minimum="100" Maximum="32000" Value="{Binding ViewModel.Parameters.MaxTokens}" TickFrequency="3200" TickPlacement="BottomRight" VerticalAlignment="Center" />
+                                                                <TextBox Text="{Binding ViewModel.Parameters.MaxTokens}" Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                        <StackPanel Margin="10">
+                                                            <TextBlock Text="Randomness" />
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <Slider Width="180" Minimum="0" Maximum="2" Value="{Binding ViewModel.Parameters.Randomness}" VerticalAlignment="Center" TickFrequency="0.1" TickPlacement="BottomRight" />
+                                                                <TextBox Text="{Binding ViewModel.Parameters.Randomness}" Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                        <StackPanel Margin="10">
+                                                            <TextBlock Text="Randomness Booster" />
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <Slider Width="180" Minimum="0" Maximum="1" Value="{Binding ViewModel.Parameters.RandomnessBooster}" VerticalAlignment="Center" TickFrequency="0.1" TickPlacement="BottomRight" />
+                                                                <TextBox Text="{Binding ViewModel.Parameters.RandomnessBooster}" Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                        <StackPanel Margin="10">
+                                                            <TextBlock Text="Optimal Probability" />
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <Slider Width="180" Minimum="0" Maximum="2" Value="{Binding ViewModel.Parameters.OptimalProbability}" VerticalAlignment="Center" TickFrequency="0.1" TickPlacement="BottomRight" />
+                                                                <TextBox Text="{Binding ViewModel.Parameters.OptimalProbability}" Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                        <StackPanel Margin="10">
+                                                            <TextBlock Text="Frequency Penalty" />
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <Slider Width="180" Minimum="0" Maximum="2" Value="{Binding ViewModel.Parameters.FrequencyPenalty}" VerticalAlignment="Center" TickFrequency="0.1" TickPlacement="BottomRight" />
+                                                                <TextBox Text="{Binding ViewModel.Parameters.FrequencyPenalty}" Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </TabItem>
+                                                <TabItem Header="Instructions" Width="150">
+                                                    <StackPanel>
+                                                        <StackPanel Margin="10">
+                                                            <TextBlock Text="System Message" />
+                                                            <ui:TextBox Text="{Binding ViewModel.CompletionPrompt.Item1, Mode=TwoWay}" AcceptsReturn="True" PlaceholderText="Write your Instruction here!" MaxHeight="300" TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <StackPanel Margin="10">
+                                                            <TextBlock Text="Prompt Prefix" />
+                                                            <ui:TextBox Text="{Binding ViewModel.CompletionPrompt.Item2, Mode=TwoWay}" AcceptsReturn="True" PlaceholderText="Text injected before the prompt." MaxHeight="300" TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <StackPanel Margin="10">
+                                                            <TextBlock Text="Prompt Suffix" />
+                                                            <ui:TextBox Text="{Binding ViewModel.CompletionPrompt.Item3, Mode=TwoWay}" AcceptsReturn="True" PlaceholderText="Text injected after the prompt." MaxHeight="300" TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </TabItem>
+                                            </TabControl>
+                                        </Expander>
+                                    </Grid>
+                                </Grid>
+                            </ui:NavigationView.MenuItems>
+                        </ui:NavigationView>
+                    </ui:Card>
+
+                    <!-- Completion UI -->
+                    <StackPanel Orientation="Horizontal" Grid.Column="1" Margin="25,-10,0,0" Height="40" VerticalAlignment="Top" HorizontalAlignment="Right" >
+                        <TextBlock Text="{Binding ViewModel.CompletionStatics}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" Margin="0,0,10,0" FontFamily="Old English Text MT" />
+                        <Button Command="{Binding ViewModel.CompletionSearchCommand}" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                            <ui:SymbolIcon Symbol="Search24" FontSize="24" />
+                        </Button>
+                    </StackPanel>
+                    <Grid Grid.Column="1" Margin="25,50,0,0" >
+                        <!-- Completion Container -->
+                        <ui:TextBox x:Name="CompletionTextEditor" Text="{Binding ViewModel.CompletionText, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" AcceptsReturn="True" PlaceholderText="Write your Instruction here!" PreviewKeyDown="Completion_PreviewKeyDown" MaxHeight="700" TextWrapping="Wrap" />
+                        <Button Command="{Binding ViewModel.CompletionGenerateCommand}" Margin="20" Width="75" Height="50" VerticalAlignment="Bottom" HorizontalAlignment="Right" >
+                            <ui:SymbolIcon Symbol="{Binding ViewModel.SwitchableIcons[SendMessage]}" FontSize="32" />
+                        </Button>
+                        <Popup x:Name="CompletionSuggestionPopup" Placement="Absolute" StaysOpen="False" IsOpen="False" AllowsTransparency="True" PopupAnimation="Scroll">
+                            <ListView x:Name="CompletionSuggestionList" Width="150" Height="100" Background="DarkRed" />
+                        </Popup>
+                    </Grid>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <!-- Model Selection & System Info -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <!-- System Info -->
+            <StackPanel Grid.Column="0" Margin="25,0,10,0" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                <Label Content="System Info" Margin="0,0,0,0" FontFamily="Cambria" FontWeight="Bold" />
+                <ui:Card Height="50">
+                    <StackPanel Orientation="Horizontal" >
+                        <StackPanel Margin="0,0,10,0" Orientation="Horizontal" >
+                            <TextBlock Text="- CPU Usage: %" FontFamily="Cambria" />
+                            <TextBlock Text="{Binding Info.CPU}" FontFamily="Cambria" />
+                        </StackPanel>
+                        <StackPanel Margin="0,0,10,0" Orientation="Horizontal" >
+                            <TextBlock Text="- RAM Usage: %" FontFamily="Cambria" />
+                            <TextBlock Text="{Binding Info.RAM}" FontFamily="Cambria" />
+                        </StackPanel>
+                        <StackPanel Margin="0,0,10,0" Orientation="Horizontal" >
+                            <TextBlock Text="- GPU Usage: %" FontFamily="Cambria" />
+                            <TextBlock Text="{Binding Info.GPU}" FontFamily="Cambria" />
+                        </StackPanel>
+                        <StackPanel Margin="0,0,10,0" Orientation="Horizontal" >
+                            <TextBlock Text="- GPU Memory Usage: %" FontFamily="Cambria" />
+                            <TextBlock Text="{Binding Info.VRAM}" FontFamily="Cambria" />
+                        </StackPanel>
+                    </StackPanel>
+                </ui:Card>
+
+
+            </StackPanel>
+
+            <!-- Model Selection & Unloading -->
+            <Grid Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="150"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Margin="0,0,5,0" >
+                    <Label Content="Model" FontFamily="Cambria" FontWeight="Bold" />
+                    <ComboBox ItemsSource="{Binding ViewModel.GenerationModels}" SelectedItem="{Binding ViewModel.SelectedGenerationModel}" DisplayMemberPath="Name" FontSize="24" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="5,0,5,0" >
+                    <Label Content="Weight" FontFamily="Cambria" FontWeight="Bold" />
+                    <ComboBox ItemsSource="{Binding ViewModel.SelectedGenerationModel.Downloaded}" SelectedItem="{Binding ViewModel.SelectedGenerationWeight}" DisplayMemberPath="Weight" FontSize="24" >
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="SelectionChanged">
+                                <i:InvokeCommandAction Command="{Binding ViewModel.GenerationSwitchModelsCommand}" CommandParameter="generation" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </ComboBox>
+                </StackPanel>
+            </Grid>
+            <Button Grid.Column="2" Margin="5,20,0,0" Width="50" Height="50" HorizontalAlignment="Left" VerticalAlignment="Center" Command="{Binding ViewModel.GenerationSwitchModelsCommand}" CommandParameter="unload" >
+                <StackPanel Orientation="Horizontal">
+                    <ui:SymbolIcon Symbol="ArrowReset24" FontSize="24" />
+                </StackPanel>
+            </Button>
+        </Grid>
+
+    </Grid>
+</Page>
