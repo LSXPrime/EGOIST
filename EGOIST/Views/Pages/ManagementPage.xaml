@@ -12,7 +12,7 @@
     d:DataContext="{d:DesignInstance local:ManagementPage,
     IsDesignTimeCreatable=False}"
     d:DesignHeight="920"
-    d:DesignWidth="1280"
+    d:DesignWidth="1920"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -95,14 +95,14 @@
                     <ListView Grid.Row="1" Margin="15" ItemsSource="{Binding ViewModel.DownloadModelsInfo}" SelectionMode="Single" >
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <Border CornerRadius="15" Background="#FF313131" Height="200">
+                                <Border CornerRadius="15" Background="#FF313131" Height="200" >
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <!-- Model Details -->
-                                        <ui:Card Grid.Column="0" Margin="10" >
+                                        <ui:Card x:Name="ModelDetailsCard" Grid.Column="0" Margin="10">
                                             <Grid Margin="10" Grid.Column="0" >
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
@@ -136,7 +136,7 @@
                                                         </StackPanel>
                                                     </Border>
                                                 </StackPanel>
-                                                <TextBox Grid.Row="2" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" BorderThickness="0" Background="Transparent" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Hidden" Text="{Binding Description}" />
+                                                <TextBlock Grid.Row="2" HorizontalAlignment="Left" MaxWidth="1200" TextWrapping="Wrap" Background="Transparent" Text="{Binding Description}" />
                                             </Grid>
                                         </ui:Card>
 

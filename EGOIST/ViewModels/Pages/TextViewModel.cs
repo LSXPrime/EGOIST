@@ -1,9 +1,7 @@
-﻿using System.IO;
-using Wpf.Ui.Controls;
+﻿using Wpf.Ui.Controls;
 using System.Collections.ObjectModel;
 using EGOIST.Data;
 using EGOIST.Enums;
-using Newtonsoft.Json.Linq;
 using Notification.Wpf;
 using System.Windows.Controls;
 using System.ComponentModel;
@@ -11,9 +9,16 @@ using NetFabric.Hyperlinq;
 using LLama.Common;
 using LLama;
 using LLama.Native;
-using LLama.Abstractions;
-using System.Text;
 using EGOIST.Helpers;
+using System.Windows.Controls.Primitives;
+using System.Reflection;
+using System.IO;
+using LLamaSharp.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel;
+using LLamaSharp.SemanticKernel.TextCompletion;
+using Microsoft.SemanticKernel.TextGeneration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.Services;
 
 namespace EGOIST.ViewModels.Pages;
 public partial class TextViewModel : ObservableObject, INavigationAware
@@ -21,10 +26,10 @@ public partial class TextViewModel : ObservableObject, INavigationAware
     #region SharedVariables
     private bool _isInitialized = false;
     [ObservableProperty]
-    private Dictionary<string, Visibility> _visibilityDict = new()
+    private static Dictionary<string, Visibility> _visibilityDict = new()
     {
         { "inchat", Visibility.Visible },
-        { "playaudio", Visibility.Visible },
+        { "SendMessage", Visibility.Visible },
         { "pauseaudio", Visibility.Visible },
         { "stopaudio", Visibility.Visible },
         { "generatebutton", Visibility.Visible },
@@ -33,41 +38,69 @@ public partial class TextViewModel : ObservableObject, INavigationAware
         { "transcribestarted", Visibility.Visible },
         { "transcribefinished", Visibility.Visible },
     };
+    [ObservableProperty]
+    private Dictionary<string, string> _switchableIcons = new()
+    {
+        {"SendMessage", "Send24" }
+    };
+
     private readonly NotificationManager notification = new();
-    internal ScrollViewer ChatContainerView;
     #endregion
 
     #region GenerationVariables
     [ObservableProperty]
     private GenerationState _generationState = GenerationState.None;
-
     [ObservableProperty]
     private TextGenerationParameters _parameters = new();
-
-    [ObservableProperty]
-    private ObservableCollection<ChatSession> _chatSessions = new();
-
-    [ObservableProperty]
-    private ChatSession _selectedChatSession;
-
     [ObservableProperty]
     private ObservableCollection<ModelInfo> _generationModels = new();
-
-    [ObservableProperty]
-    private string _userInput = string.Empty;
-    
     [ObservableProperty]
     private ModelInfo _selectedGenerationModel;
-
     [ObservableProperty]
     private ModelInfo.ModelInfoWeight _selectedGenerationWeight;
 
-    [ObservableProperty]
-    private string _textToGenerate = string.Empty;
-
     private LLamaWeights GenerationModel;
     private ModelParams GenerationModelParameters;
-    private CancellationToken ChatCancelToken;
+    private CancellationTokenSource GenerationCancelToken;
+    #endregion
+
+    #region ChatVariables
+    [ObservableProperty]
+    private ObservableCollection<ChatSession> _chatSessions = new();
+    [ObservableProperty]
+    private ChatSession _selectedChatSession;
+    [ObservableProperty]
+    private string _chatUserInput = string.Empty;
+
+    internal ScrollViewer ChatContainerView;
+    #endregion
+
+    #region CompletionVariables
+    [ObservableProperty]
+    private ObservableCollection<CompletionSession> _completionSessions = new();
+    [ObservableProperty]
+    private CompletionSession _selectedCompletionSession;
+
+    private string _completionText = string.Empty;
+    public string CompletionText
+    {
+        get => _completionText;
+        set
+        {
+            _completionText = value;
+            UpdateCompletionChanges();
+            OnPropertyChanged(nameof(CompletionText));
+        }
+    }
+    [ObservableProperty]
+    private string _completionStatics = string.Empty;
+    [ObservableProperty]
+    private (string, string, string) _completionPrompt = new("I want you to act as a storyteller. You will come up with entertaining stories that are engaging, imaginative and captivating for the audience.", string.Empty, string.Empty);
+
+    internal static string[] WordsDictionary;
+    internal Wpf.Ui.Controls.TextBox CompletionTextEditor;
+    internal Popup CompletionSuggestionPopup;
+    internal ListView CompletionSuggestionList;
     #endregion
 
     #region InitlizingMethods
@@ -96,16 +129,11 @@ public partial class TextViewModel : ObservableObject, INavigationAware
         while (true)
         {
             VisibilityDict["inchat"] = SelectedChatSession != null ? Visibility.Visible : Visibility.Hidden;
-            VisibilityDict["playaudio"] = GenerationState == GenerationState.Started ? Visibility.Hidden : Visibility.Visible;
-            VisibilityDict["pauseaudio"] = GenerationState == GenerationState.Started ? Visibility.Visible : Visibility.Hidden;
-            VisibilityDict["stopaudio"] = GenerationState != GenerationState.Finished ? Visibility.Visible : Visibility.Hidden;
-            VisibilityDict["generatebutton"] = GenerationState != GenerationState.Started ? Visibility.Visible : Visibility.Hidden;
-            VisibilityDict["resetaudiobutton"] = GenerationState == GenerationState.Finished ? Visibility.Visible : Visibility.Hidden;
-            VisibilityDict["transcribebutton"] = GenerationState != GenerationState.Started ? Visibility.Visible : Visibility.Hidden;
-            VisibilityDict["transcribestarted"] = GenerationState != GenerationState.None ? Visibility.Visible : Visibility.Hidden;
-            VisibilityDict["transcribefinished"] = GenerationState == GenerationState.Finished ? Visibility.Visible : Visibility.Hidden;
-            OnPropertyChanged(nameof(VisibilityDict));
+            VisibilityDict["incompletion"] = SelectedCompletionSession != null ? Visibility.Visible : Visibility.Hidden;
+            SwitchableIcons["SendMessage"] = GenerationState != GenerationState.Started ? "Send24" : "Stop24";
 
+            OnPropertyChanged(nameof(VisibilityDict));
+            OnPropertyChanged(nameof(SwitchableIcons));
             Thread.Sleep(1000);
         }
     }
@@ -116,6 +144,12 @@ public partial class TextViewModel : ObservableObject, INavigationAware
 
         var models = ManagementViewModel._modelsInfo.AsValueEnumerable().Where(x => x.Type.Contains("Text") && x.Downloaded.Count > 0).ToList();
         GenerationModels = new(models);
+
+        var resourceName = "EGOIST.Assets.dictionary.txt";
+        Assembly assembly = Assembly.GetExecutingAssembly();
+        using var stream = assembly.GetManifestResourceStream(resourceName);
+        using StreamReader reader = new(stream);
+        WordsDictionary = reader.ReadToEnd().Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
     }
     #endregion
 
@@ -125,10 +159,10 @@ public partial class TextViewModel : ObservableObject, INavigationAware
     {
         try
         {
-            if (task.Equals("unload"))
+            if (task.Contains("unload"))
             {
                 GenerationModel?.Dispose();
-                ResetGeneration();
+                GenerationState = GenerationState.None;
                 SelectedGenerationModel = null;
                 notification.Show(new NotificationContent { Title = "Text Generation", Message = $"Text Generation Model Unloaded", Type = NotificationType.Information }, areaName: "NotificationArea");
                 return;
@@ -148,7 +182,7 @@ public partial class TextViewModel : ObservableObject, INavigationAware
             NativeLibraryConfig.Instance.WithCuda(isGpu).WithAvx(NativeLibraryConfig.AvxLevel.Avx512).WithAutoFallback(true);
 
             // Load model
-            var modelPath = $"{AppConfig.Instance.ModelsPath}\\{SelectedGenerationModel.Type.RemoveSpaces()}\\{SelectedGenerationModel.Name.RemoveSpaces()}\\{SelectedGenerationWeight.Weight.RemoveSpaces()}";
+            var modelPath = $"{AppConfig.Instance.ModelsPath}\\{SelectedGenerationModel.Type.RemoveSpaces()}\\{SelectedGenerationModel.Name.RemoveSpaces()}\\{SelectedGenerationWeight.Weight.RemoveSpaces()}.{SelectedGenerationWeight.Extension.ToLower().RemoveSpaces()}";
             GenerationModelParameters = new ModelParams(modelPath)
             {
                 ContextSize = 4096,
@@ -158,13 +192,6 @@ public partial class TextViewModel : ObservableObject, INavigationAware
 
             notification.Show(new NotificationContent { Title = "Text Generation", Message = $"Text Generation Model loaded Successfully", Type = NotificationType.Information }, areaName: "NotificationArea");
         }
-    }
-
-    [RelayCommand]
-    private void ResetGeneration()
-    {
-        GenerationState = GenerationState.None;
-        TextToGenerate = string.Empty;
     }
     #endregion
 
@@ -183,14 +210,12 @@ public partial class TextViewModel : ObservableObject, INavigationAware
         var context = GenerationModel.CreateContext(GenerationModelParameters);
         var Executor = new InteractiveExecutor(context);
 
-        // TODO: Use InstructExecutor for Instruct Models
         // TODO: Change History Handeling to EGOIST instead LLamaSharp
 
         // Create a new chat session and add it to ChatSessions
         var newSession = new ChatSession
         {
-            Executor = Executor,
-            Inference = new LLama.ChatSession((InteractiveExecutor)Executor)
+            Executor = Executor
         };
         ChatSessions.Add(newSession);
         SelectedChatSession = newSession;
@@ -213,25 +238,33 @@ public partial class TextViewModel : ObservableObject, INavigationAware
     [RelayCommand]
     private void MessageSend()
     {
-        if (!string.IsNullOrEmpty(UserInput))
+        if (GenerationState == GenerationState.Started)
+        {
+            GenerationCancelToken.Cancel();
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(ChatUserInput))
         {
             if (SelectedGenerationModel == null)
             {
                 notification.Show(new NotificationContent { Title = "Text Generation", Message = $"Text Generation Model isn't loaded yet.", Type = NotificationType.Warning }, areaName: "NotificationArea");
                 return;
             }
-
             if (SelectedChatSession == null)
                 ChatCreate();
 
-            SelectedChatSession?.AddMessage("User", UserInput);
+            GenerationState = GenerationState.Started;
+
+            SelectedChatSession?.AddMessage("User", ChatUserInput);
             SelectedChatSession?.AddMessage("Assistant", string.Empty);
 
+            var Prompt = SelectedGenerationModel.TextConfig.Prompt(ChatUserInput);
 
-            ChatCancelToken = new();
-            Thread thread = new(() => MessageSendBG(UserInput));
+            GenerationCancelToken = new();
+            Thread thread = new(() => MessageSendBG(Prompt));
             thread.Start();
-            UserInput = string.Empty;
+            ChatUserInput = string.Empty;
         }
 
         // Scroll to the last item in Chat Container
@@ -252,11 +285,24 @@ public partial class TextViewModel : ObservableObject, INavigationAware
 
         var aiResponse = SelectedChatSession?.Messages.Last();
 
-        IAsyncEnumerable<string> tokens = SelectedChatSession?.Executor.InferAsync(UserMessage, MessageParams, ChatCancelToken);
-        await foreach (string token in SelectedGenerationModel.TextConfig.Filter(tokens).WithCancellation(ChatCancelToken))
+        IAsyncEnumerable<string> tokens = SelectedChatSession?.Executor.InferAsync(UserMessage, MessageParams, GenerationCancelToken.Token);
+        await foreach (var token in tokens)
         {
-            aiResponse.Message += token;
+            var filteredToken = token;
+            foreach (string blackToken in SelectedGenerationModel.TextConfig.BlackList)
+            {
+                if (token.Contains(blackToken))
+                {
+                    filteredToken = filteredToken.Replace(blackToken, " ");
+                    break;
+                }
+            }
+
+            aiResponse.Message += filteredToken;
         }
+
+        GenerationState = GenerationState.Finished;
+        GenerationCancelToken.Dispose();
     }
 
     [RelayCommand]
@@ -285,7 +331,7 @@ public partial class TextViewModel : ObservableObject, INavigationAware
             var message = new ChatMessage { Sender = "Assistant", Message = string.Empty };
             SelectedChatSession?.Messages.Add(message);
 
-            ChatCancelToken = new();
+            GenerationCancelToken = new();
             Thread thread = new Thread(() => MessageSendBG(message, editedMessage, ChatContainerView));
             thread.Start();
 
@@ -306,46 +352,226 @@ public partial class TextViewModel : ObservableObject, INavigationAware
     }
 
     #endregion
+
+    #region CompletionMethods
+
+    private void UpdateCompletionChanges()
+    {
+        var CompletionLineCount = CompletionText.Split('\n').Length;
+        var CompletionWord = CompletionText.Split(new[] { ' ', '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+        var CompletionCharacterCount = CompletionText.Length;
+
+        CompletionStatics = $"L: {CompletionLineCount} || W: {CompletionWord.Length} || C: {CompletionCharacterCount}";
+
+        if (GenerationState == GenerationState.Started)
+            return;
+
+        string searchText = CompletionWord[^1].ToLower();
+        string[] filteredList = WordsDictionary.AsValueEnumerable().Where(word => word.StartsWith(searchText)).ToArray();
+        if (CompletionTextEditor.IsFocused && filteredList.Length > 0)
+        {
+            CompletionSuggestionList.ItemsSource = filteredList;
+            CompletionSuggestionList.SelectedItem = filteredList[0];
+            var caretPosition = CompletionTextEditor.GetRectFromCharacterIndex(CompletionTextEditor.CaretIndex);
+            var point = CompletionTextEditor.PointToScreen(new Point(caretPosition.Right, caretPosition.Bottom));
+            CompletionSuggestionPopup.PlacementRectangle = new Rect(point.X, point.Y + caretPosition.Height, 0, 0);
+            CompletionSuggestionPopup.IsOpen = true;
+        }
+        else
+            CompletionSuggestionPopup.IsOpen = false;
+    }
+
+    [RelayCommand]
+    private async Task CompletionSearch()
+    {
+        var searchText = new Wpf.Ui.Controls.TextBox
+        {
+            Text = CompletionTextEditor.SelectedText,
+            PlaceholderText = "Search keyword",
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        var replaceText = new Wpf.Ui.Controls.TextBox
+        {
+            Text = string.Empty,
+            PlaceholderText = "Replacement keyword",
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+
+        var searchBox = new Wpf.Ui.Controls.MessageBox
+        {
+            Title = "Search / Replace",
+            Content = new StackPanel { Children = { searchText, replaceText } },
+            PrimaryButtonText = "Search",
+            SecondaryButtonText = "Replace",
+            CloseButtonText = "Cancel",
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+
+        var result = await searchBox.ShowDialogAsync();
+
+        if (result == Wpf.Ui.Controls.MessageBoxResult.Primary)
+        {
+            if (!string.IsNullOrEmpty(searchText.Text))
+            {
+                int cursorIndex = CompletionTextEditor.SelectionStart + CompletionTextEditor.SelectionLength;
+                int index = CompletionText.IndexOf(searchText.Text, cursorIndex);
+
+                if (index != -1)
+                {
+                    CompletionTextEditor.Focus();
+
+                    CompletionTextEditor.SelectionStart = index;
+                    CompletionTextEditor.SelectionLength = searchText.Text.Length;
+                }
+                else
+                    await new Wpf.Ui.Controls.MessageBox
+                    {
+                        Title = "Search / Replace",
+                        Content = "No results found",
+                        CloseButtonText = "Close",
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
+                        VerticalAlignment = VerticalAlignment.Center
+                    }.ShowDialogAsync();
+            }
+        }
+        else if (result == Wpf.Ui.Controls.MessageBoxResult.Secondary)
+        {
+            if (!string.IsNullOrEmpty(searchText.Text))
+                CompletionText = CompletionText.Replace(searchText.Text, replaceText.Text);
+        }
+    }
+
+    [RelayCommand]
+    private void CompletionCreate()
+    {
+        if (SelectedGenerationModel == null)
+        {
+            notification.Show(new NotificationContent { Title = "Text Generation", Message = $"Text Generation Model isn't loaded yet.", Type = NotificationType.Warning }, areaName: "NotificationArea");
+            return;
+        }
+
+        // Initialize a llama completion session
+        var newSession = new CompletionSession
+        {
+            Executor = new StatelessExecutor(GenerationModel, GenerationModelParameters)
+        };
+        CompletionSessions.Add(newSession);
+        SelectedCompletionSession = newSession;
+    }
+
+    [RelayCommand]
+    private void CompletionDelete()
+    {
+        notification.Show(new NotificationContent { Title = "Text Generation", Message = $"Session {SelectedCompletionSession.SessionName} Deleted", Type = NotificationType.None }, areaName: "NotificationArea");
+
+        SelectedCompletionSession.Executor.Context.Dispose();
+        CompletionSessions.Remove(SelectedCompletionSession);
+        SelectedCompletionSession = null;
+    }
+
+    [RelayCommand]
+    private async Task CompletionGenerate()
+    {
+        if (SelectedGenerationModel == null)
+        {
+            notification.Show(new NotificationContent { Title = "Text Generation", Message = $"Text Generation Model isn't loaded yet.", Type = NotificationType.Warning }, areaName: "NotificationArea");
+            return;
+        }
+        if (GenerationState == GenerationState.Started)
+        {
+            GenerationCancelToken.Cancel();
+            return;
+        }
+        if (SelectedCompletionSession == null)
+            CompletionCreate();
+
+        GenerationState = GenerationState.Started;
+        var Prompt = (!string.IsNullOrEmpty(CompletionPrompt.Item1) || !string.IsNullOrEmpty(CompletionPrompt.Item2) || !string.IsNullOrEmpty(CompletionPrompt.Item3)) ? SelectedGenerationModel.TextConfig.Prompt(CompletionText, CompletionPrompt.Item1, CompletionPrompt.Item2, CompletionPrompt.Item3) : SelectedGenerationModel.TextConfig.Prompt(CompletionText);
+
+        GenerationCancelToken = new();
+        Thread thread = new(() => CompletionGenerateBG(Prompt));
+        thread.Start();
+
+        async void CompletionGenerateBG(string prompt)
+        {
+            var MessageParams = new InferenceParams()
+            {
+                MaxTokens = Parameters.MaxTokens,
+                Temperature = Parameters.Randomness,
+                TopP = Parameters.RandomnessBooster,
+                TopK = (int)(Parameters.OptimalProbability * 100),
+                FrequencyPenalty = Parameters.FrequencyPenalty,
+                AntiPrompts = new List<string> { "User:" }
+            };
+
+            IAsyncEnumerable<string> tokens = SelectedCompletionSession?.Executor.InferAsync(prompt, MessageParams, GenerationCancelToken.Token);
+            await foreach (var token in tokens)
+            {
+                var filteredToken = token;
+                foreach (string blackToken in SelectedGenerationModel.TextConfig.BlackList)
+                {
+                    if (token.Contains(blackToken))
+                    {
+                        filteredToken = filteredToken.Replace(blackToken, " ");
+                        break;
+                    }
+                }
+
+                CompletionText += filteredToken;
+            }
+
+            GenerationState = GenerationState.Finished;
+            GenerationCancelToken.Dispose();
+        }
+    }
+
+    #endregion
+
+    #region InteractionMethods
+
+    private void InteractData()
+    {
+    }
+
+    #endregion
 }
 
+public partial class CompletionSession : ObservableObject
+{
+    public string SessionName { get; set; }
+    [ObservableProperty]
+    public string _content = string.Empty;
+
+    #region LLamaSharp
+    public StatelessExecutor Executor;
+    #endregion
+
+
+    public CompletionSession()
+    {
+        SessionName = $"Completion {DateTime.Now}";
+    }
+}
 public partial class ChatSession : ObservableObject, INotifyPropertyChanged
 {
     public string SessionName { get; set; }
-    public LLama.ChatSession Inference;
 
     [ObservableProperty]
     public Dictionary<int, ChatLog> _chatMessages = new();
     public ObservableCollection<ChatMessage> Messages => ChatMessages[_currentLog].Messages;
 
+    [ObservableProperty]
     public int _currentLog = 0;
-    public int CurrentLog
-    {
-        get => _currentLog;
-        set
-        {
-            if (_currentLog != value)
-            {
-                _currentLog = value;
-
-                // Create a copy of ChatHistory, Llama.cpp & LlamaSharp limitations
-                LlamaHistory.Messages.Clear();
-                foreach (var message in Messages)
-                {
-                    LlamaHistory.AddMessage((AuthorRole)Enum.Parse(typeof(AuthorRole), message.Sender), message.Message);
-                }
-
-                OnPropertyChanged(nameof(CurrentLog));
-            }
-        }
-    }
     public string CurrentLogSTR => string.Format("{0} / {1}", CurrentLog, Edits);
     public int Edits => ChatMessages.Count - 1;
     public bool Edited => Edits > 0;
+    public IKernelBuilder KernelBuilder;
 
     #region LLamaSharp
-    public ChatHistory LlamaHistory = new();
     public StatefulExecutorBase Executor;
-
     #endregion
 
 
@@ -359,7 +585,6 @@ public partial class ChatSession : ObservableObject, INotifyPropertyChanged
     {
         var userInput = new ChatMessage { Sender = user, Message = message };
         Messages.Add(userInput);
-        LlamaHistory.AddMessage((AuthorRole)Enum.Parse(typeof(AuthorRole), user), message);
     }
 
     public event PropertyChangedEventHandler PropertyChanged;

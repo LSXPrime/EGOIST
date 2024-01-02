@@ -261,7 +261,7 @@ public partial class ManagementViewModel : ObservableObject, INavigationAware
             {
                 Link = weight.Link,
                 Name = $"{modelInfo.Name} - {weight.Weight}",
-                LocalPath = $"{AppConfig.Instance.ModelsPath}/{modelInfo.Type.RemoveSpaces()}/{modelInfo.Name.RemoveSpaces()}/{weight.Weight.RemoveSpaces()}.{weight.Extension.RemoveSpaces()}",
+                LocalPath = $"{AppConfig.Instance.ModelsPath}/{modelInfo.Type.RemoveSpaces()}/{modelInfo.Name.RemoveSpaces()}/{weight.Weight.RemoveSpaces()}.{weight.Extension.ToLower().RemoveSpaces()}",
                 TotalBytes = 0,
                 DownloadedBytes = 0,
                 Status = DownloadStatus.Pending,
