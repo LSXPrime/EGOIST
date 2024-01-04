@@ -1,24 +1,25 @@
-﻿using Wpf.Ui.Controls;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Reflection;
+using System.IO;
+using System.Windows.Controls.Primitives;
+using System.Windows.Controls;
+using Wpf.Ui.Controls;
+using Notification.Wpf;
+using NetFabric.Hyperlinq;
 using EGOIST.Data;
 using EGOIST.Enums;
-using Notification.Wpf;
-using System.Windows.Controls;
-using System.ComponentModel;
-using NetFabric.Hyperlinq;
+using EGOIST.Helpers;
+using EGOIST.Data.Plugins;
 using LLama.Common;
 using LLama;
 using LLama.Native;
-using EGOIST.Helpers;
-using System.Windows.Controls.Primitives;
-using System.Reflection;
-using System.IO;
 using LLamaSharp.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel;
-using LLamaSharp.SemanticKernel.TextCompletion;
-using Microsoft.SemanticKernel.TextGeneration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel.Services;
+using EGOIST.Services;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace EGOIST.ViewModels.Pages;
 public partial class TextViewModel : ObservableObject, INavigationAware
@@ -209,12 +210,25 @@ public partial class TextViewModel : ObservableObject, INavigationAware
         // Initialize a llama chat session
         var context = GenerationModel.CreateContext(GenerationModelParameters);
         var Executor = new InteractiveExecutor(context);
+        
+        var chatService = new EGOISTChatCompletion(Executor);
 
+        var kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.Services.AddKeyedSingleton("local-llama", chatService);
+        var kernel = kernelBuilder.Build();
+        kernel.Plugins.AddFromType<WeatherPlugin>();
+
+        var service = kernel.GetRequiredService<EGOISTChatCompletion>();
+
+        var prompt = "What's Weather now in Cairo";
+        var result = service.GetStreamingChatMessageContentsAsync(prompt, executionSettings: null, kernel);
+        
         // TODO: Change History Handeling to EGOIST instead LLamaSharp
 
         // Create a new chat session and add it to ChatSessions
         var newSession = new ChatSession
         {
+        //    KernelBuilder = kernelBuilder,
             Executor = Executor
         };
         ChatSessions.Add(newSession);
@@ -563,15 +577,22 @@ public partial class ChatSession : ObservableObject, INotifyPropertyChanged
     public Dictionary<int, ChatLog> _chatMessages = new();
     public ObservableCollection<ChatMessage> Messages => ChatMessages[_currentLog].Messages;
 
+
+    #region Unused due LLama limitions
     [ObservableProperty]
     public int _currentLog = 0;
     public string CurrentLogSTR => string.Format("{0} / {1}", CurrentLog, Edits);
     public int Edits => ChatMessages.Count - 1;
     public bool Edited => Edits > 0;
-    public IKernelBuilder KernelBuilder;
+    #endregion
+
+    /*
+    public IKernelBuilder KernelBuilder { get; set; }
+    public IChatCompletionService Service { get; set; }
+    */
 
     #region LLamaSharp
-    public StatefulExecutorBase Executor;
+    public StatefulExecutorBase Executor { get; set; }
     #endregion
 
 
