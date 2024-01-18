@@ -12,7 +12,7 @@ public partial class SystemInfo : ObservableObject
     [ObservableProperty]
     public int _GPU;
     [ObservableProperty]
-    public float _VRAM;
+    public int _VRAM;
 
     private Computer? computer;
 
@@ -48,10 +48,7 @@ public partial class SystemInfo : ObservableObject
                         case HardwareType.GpuAmd:
                         case HardwareType.GpuIntel:
                             GPU = (int)(hardware.Sensors.AsValueEnumerable().FirstOrDefault(s => s.SensorType == SensorType.Load && s.Name == "GPU Core")?.Value ?? 0);
-                            var vramUsed = hardware.Sensors.AsValueEnumerable().FirstOrDefault(s => s.SensorType == SensorType.Load && s.Name == "GPU Memory")?.Value ?? 0;
-                            var vramTotal = hardware.Sensors.AsValueEnumerable().FirstOrDefault(s => s.SensorType == SensorType.SmallData && s.Name == "GPU Memory Total")?.Value ?? 0;
-                            VRAM = vramUsed;
-                            //VRAM = (int)(vramUsed / vramTotal * 100);
+                            VRAM = (int)(hardware.Sensors.AsValueEnumerable().FirstOrDefault(s => s.SensorType == SensorType.Load && s.Name == "GPU Memory")?.Value ?? 0);
                             break;
                     }
                 }
@@ -62,5 +59,5 @@ public partial class SystemInfo : ObservableObject
     }
 
     private static SystemInfo? instance;
-    public static SystemInfo Instance => instance ?? (instance = new SystemInfo());
+    public static SystemInfo Instance => instance ??= new SystemInfo();
 }

@@ -121,7 +121,7 @@ public partial class ManagementViewModel : ObservableObject, INavigationAware
 
             if (response.IsSuccessStatusCode)
             {
-                notification.Show(new NotificationContent { Title = "Management", Message = $"Models , A7a", Type = NotificationType.Error }, areaName: "NotificationArea");
+                Extensions.Notify(new NotificationContent { Title = "Management", Message = $"Models , A7a", Type = NotificationType.Error }, areaName: "NotificationArea");
 
                 string jsonResponse = await response.Content.ReadAsStringAsync();
 
@@ -171,11 +171,11 @@ public partial class ManagementViewModel : ObservableObject, INavigationAware
         }
         catch (TaskCanceledException ex)
         {
-            notification.Show(new NotificationContent { Title = "Management", Message = $"Models Fetching Timeout, Check Internet Connection", Type = NotificationType.Error }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "Management", Message = $"Models Fetching Timeout, Check Internet Connection", Type = NotificationType.Error }, areaName: "NotificationArea");
         }
         catch (HttpRequestException ex)
         {
-            notification.Show(new NotificationContent { Title = "Management", Message = $"Models Fetching Failed, Check Internet Connection", Type = NotificationType.Error }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "Management", Message = $"Models Fetching Failed, Check Internet Connection", Type = NotificationType.Error }, areaName: "NotificationArea");
         }
     }
     #endregion
@@ -268,14 +268,14 @@ public partial class ManagementViewModel : ObservableObject, INavigationAware
                 Model = modelInfo,
                 CancellationTokenSource = new()
             };
-            notification.Show(new NotificationContent { Title = "Management", Message = $"Model {downloadInfo.Name} Started Downloading", Type = NotificationType.Notification }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "Management", Message = $"Model {downloadInfo.Name} Started Downloading", Type = NotificationType.Notification }, areaName: "NotificationArea");
 
             DownloadsInfo.Add(downloadInfo);
             if (downloadHandlerTask == null || downloadHandlerTask.IsCompleted)
                 downloadHandlerTask = HandleDownloads();
         }
         else
-            notification.Show(new NotificationContent { Title = "Management", Message = $"Model Weight {weight.Weight} is Already Downloading", Type = NotificationType.Warning }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "Management", Message = $"Model Weight {weight.Weight} is Already Downloading", Type = NotificationType.Warning }, areaName: "NotificationArea");
     }
 
     public async Task HandleDownloads()
@@ -357,7 +357,7 @@ public partial class ManagementViewModel : ObservableObject, INavigationAware
                         {
                             pendingDownload.Status = DownloadStatus.Completed;
                             DownloadsInfo.Remove(pendingDownload);
-                            notification.Show(new NotificationContent { Title = "Management", Message = $"Model {pendingDownload.Name} Finished Downloading", Type = NotificationType.Notification }, areaName: "NotificationArea");
+                            Extensions.Notify(new NotificationContent { Title = "Management", Message = $"Model {pendingDownload.Name} Finished Downloading", Type = NotificationType.Notification }, areaName: "NotificationArea");
                         }
                     }
                     catch (OperationCanceledException ex)

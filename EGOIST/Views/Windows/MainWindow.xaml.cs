@@ -1,6 +1,7 @@
 ﻿using EGOIST.ViewModels.Windows;
 using EGOIST.Data;
 using Wpf.Ui.Controls;
+using EGOIST.Helpers;
 
 namespace EGOIST.Views.Windows;
 public partial class MainWindow
@@ -22,5 +23,7 @@ public partial class MainWindow
         contentDialogService.SetContentPresenter(RootContentDialog);
 
         NavigationView.SetServiceProvider(serviceProvider);
+        Extensions.SnackbarArea = SnackbarPresenter;
+        Extensions.ContentArea = RootContentDialog;
     }
 }

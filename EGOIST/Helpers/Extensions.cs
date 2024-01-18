@@ -1,9 +1,22 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
+using System.Windows.Controls;
+using Notification.Wpf;
+using Serilog;
+using Serilog.Events;
+using Wpf.Ui.Controls;
 
 namespace EGOIST.Helpers;
 public static class Extensions
 {
+    #region UIStatics
+
+    public static SnackbarPresenter? SnackbarArea;
+    public static ContentPresenter? ContentArea;
+    private static readonly NotificationManager notification = new();
+
+    #endregion
+
     public static string CalculateMD5Hash(this Stream stream)
     {
         using var md5 = System.Security.Cryptography.MD5.Create();
@@ -38,5 +51,30 @@ public static class Extensions
 
         double gigabytes = (double)bytes / gigabyte;
         return gigabytes;
+    }
+
+    public static void Notify(NotificationContent content, string areaName = "", TimeSpan? expirationTime = null, Action onClick = null, Action onClose = null, bool CloseOnClick = true, bool ShowXbtn = true, Exception ex = null, LogEventLevel logLevel = default)
+    {
+        Extensions.Notify(content, areaName, expirationTime, onClick, onClose, CloseOnClick, ShowXbtn);
+        Log.Logger.Write(logLevel != default ? logLevel : NotifyToLog(), $"{content.Title}, {content.Message}", ex);
+
+        LogEventLevel NotifyToLog()
+        {
+            switch (content.Type)
+            {
+                case NotificationType.None:
+                    return LogEventLevel.Debug;
+                case NotificationType.Information:
+                    return LogEventLevel.Information;
+                case NotificationType.Notification:
+                    return LogEventLevel.Verbose;
+                case NotificationType.Error:
+                    return LogEventLevel.Error;
+                case NotificationType.Warning:
+                    return LogEventLevel.Warning;
+            }
+
+            return LogEventLevel.Fatal;
+        }
     }
 }

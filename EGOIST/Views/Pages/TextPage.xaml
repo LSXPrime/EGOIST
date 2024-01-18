@@ -7,6 +7,7 @@
     xmlns:local="clr-namespace:EGOIST.Views.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:wv="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
     Title="TextPage"
     d:DataContext="{d:DesignInstance local:TextPage,
     IsDesignTimeCreatable=False}"
@@ -114,7 +115,7 @@
                                 </StackPanel>
                             </Grid>
                         </ui:CardAction>
-                        <ui:CardAction Grid.Column="2" Margin="0,0,4,0" Padding="0" VerticalAlignment="Stretch" Command="{Binding ChangeTabCommand}" CommandParameter="1" IsChevronVisible="False">
+                        <ui:CardAction Grid.Column="2" Margin="0,0,4,0" Padding="0" VerticalAlignment="Stretch" Command="{Binding ChangeTabCommand}" CommandParameter="3" IsChevronVisible="False">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -123,7 +124,7 @@
 
                                 <ui:SymbolIcon Symbol="DocumentData24" FontSize="80" Margin="20,0,0,0" Grid.Column="0" />
                                 <StackPanel Grid.Column="1" Margin="20" VerticalAlignment="Center">
-                                    <ui:TextBlock Margin="0" FontTypography="BodyStrong" Text="Local Docs" TextWrapping="WrapWithOverflow" />
+                                    <ui:TextBlock Margin="0" FontTypography="BodyStrong" Text="Local Memory" TextWrapping="WrapWithOverflow" />
                                     <ui:TextBlock Appearance="Secondary" Text="Analyze, summarize, extract insights, unlock knowledge unseen, AI interacts with files on your machine." TextWrapping="WrapWithOverflow" />
                                 </StackPanel>
                             </Grid>
@@ -249,95 +250,97 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
-                        <!-- Chat Messages Container -->
-                        <ScrollViewer x:Name="ChatContainerView" Grid.Row="0" VerticalScrollBarVisibility="Auto" MaxHeight="650" >
-                            <ItemsControl ItemsSource="{Binding ViewModel.SelectedChatSession.Messages}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Margin="5">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <Border Grid.Column="0" Background="DarkRed" CornerRadius="10" Padding="8">
-                                                <TextBox Text="{Binding Message, Mode=TwoWay}" IsEnabled="{Binding IsEditable}" Foreground="White" TextWrapping="Wrap" MaxWidth="1000" />
-                                            </Border>
-                                            <Border Grid.Column="0" CornerRadius="10" Padding="8">
-                                                <!-- In-Message Controls -->
-                                                <StackPanel Orientation="Horizontal" Margin="100,30,0,0" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-                                                    <Button Margin="5" Background="Transparent" Foreground="White" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageSlideCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="-1" >
-                                                        <Button.Style>
-                                                            <Style TargetType="Button">
-                                                                <Setter Property="Visibility" Value="Hidden" />
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding DataContext.ViewModel.SelectedChatSession.Edited, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Value="True">
-                                                                        <Setter Property="Visibility" Value="Visible" />
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </Button.Style>
-                                                        <ui:SymbolIcon Symbol="ArrowLeft24" />
-                                                    </Button>
-                                                    <TextBlock Text="{Binding DataContext.ViewModel.SelectedChatSession.CurrentLogSTR, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Margin="10" >
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
-                                                                <Setter Property="Visibility" Value="Hidden" />
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding DataContext.ViewModel.SelectedChatSession.Edited, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Value="True">
-                                                                        <Setter Property="Visibility" Value="Visible" />
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </TextBlock.Style>
-                                                    </TextBlock>
-                                                    <Button Margin="5" Background="Transparent" Foreground="White" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageSlideCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="1" >
-                                                        <Button.Style>
-                                                            <Style TargetType="Button">
-                                                                <Setter Property="Visibility" Value="Hidden" />
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding DataContext.ViewModel.SelectedChatSession.Edited, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Value="True">
-                                                                        <Setter Property="Visibility" Value="Visible" />
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </Button.Style>
-                                                        <ui:SymbolIcon Symbol="ArrowRight24" />
-                                                    </Button>
-                                                    <Button Margin="5" Background="Transparent" Foreground="White" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageEditCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="{Binding}" >
-                                                        <Button.Style>
-                                                            <Style TargetType="Button">
-                                                                <Setter Property="Visibility" Value="Hidden" />
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding Sender}" Value="User">
-                                                                        <Setter Property="Visibility" Value="Visible" />
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </Button.Style>
-                                                        <ui:SymbolIcon Symbol="Edit24" />
-                                                    </Button>
-                                                    <Button Margin="5" Background="Transparent" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageCopyCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="{Binding}" >
-                                                        <ui:SymbolIcon Symbol="Copy24" />
-                                                    </Button>
-                                                </StackPanel>
-                                            </Border>
-                                            <Grid.Style>
-                                                <Style TargetType="Grid">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Sender}" Value="User">
-                                                            <Setter Property="HorizontalAlignment" Value="Right" />
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Sender}" Value="Assistant">
-                                                            <Setter Property="HorizontalAlignment" Value="Left" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Grid.Style>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                        <!-- Chat Messages Container
+                        <ScrollViewer x:Name="ChatContainerView" Grid.Row="0" Margin="20" VerticalScrollBarVisibility="Auto" MaxHeight="640" >
+                        <ItemsControl ItemsSource="{Binding ViewModel.SelectedChatSession.Messages}">
+                        <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                        <Grid Margin="5">
+                        <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Background="DarkRed" CornerRadius="10" Padding="8">
+                        <FlowDocumentScrollViewer Document="{Binding RenderedMessage}" />
+                        </Border>
+                        <Border Grid.Column="0" CornerRadius="10" Padding="8">
+                        <StackPanel Orientation="Horizontal" Margin="100,30,0,0" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                        <Button Margin="5" Background="Transparent" Foreground="White" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageSlideCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="-1" >
+                        <Button.Style>
+                        <Style TargetType="Button">
+                        <Setter Property="Visibility" Value="Hidden" />
+                        <Style.Triggers>
+                        <DataTrigger Binding="{Binding DataContext.ViewModel.SelectedChatSession.Edited, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Value="True">
+                        <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        </Style.Triggers>
+                        </Style>
+                        </Button.Style>
+                        <ui:SymbolIcon Symbol="ArrowLeft24" />
+                        </Button>
+                        <TextBlock Text="{Binding DataContext.ViewModel.SelectedChatSession.CurrentLogSTR, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Margin="10" >
+                        <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Hidden" />
+                        <Style.Triggers>
+                        <DataTrigger Binding="{Binding DataContext.ViewModel.SelectedChatSession.Edited, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Value="True">
+                        <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        </Style.Triggers>
+                        </Style>
+                        </TextBlock.Style>
+                        </TextBlock>
+                        <Button Margin="5" Background="Transparent" Foreground="White" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageSlideCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="1" >
+                        <Button.Style>
+                        <Style TargetType="Button">
+                        <Setter Property="Visibility" Value="Hidden" />
+                        <Style.Triggers>
+                        <DataTrigger Binding="{Binding DataContext.ViewModel.SelectedChatSession.Edited, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Value="True">
+                        <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        </Style.Triggers>
+                        </Style>
+                        </Button.Style>
+                        <ui:SymbolIcon Symbol="ArrowRight24" />
+                        </Button>
+                        <Button Margin="5" Background="Transparent" Foreground="White" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageEditCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="{Binding}" >
+                        <Button.Style>
+                        <Style TargetType="Button">
+                        <Setter Property="Visibility" Value="Hidden" />
+                        <Style.Triggers>
+                        <DataTrigger Binding="{Binding Sender}" Value="User">
+                        <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        </Style.Triggers>
+                        </Style>
+                        </Button.Style>
+                        <ui:SymbolIcon Symbol="Edit24" />
+                        </Button>
+                        <Button Margin="5" Background="Transparent" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageCopyCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="{Binding}" >
+                        <ui:SymbolIcon Symbol="Copy24" />
+                        </Button>
+                        </StackPanel>
+                        </Border>
+                        <Grid.Style>
+                        <Style TargetType="Grid">
+                        <Style.Triggers>
+                        <DataTrigger Binding="{Binding Sender}" Value="User">
+                        <Setter Property="HorizontalAlignment" Value="Right" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Sender}" Value="Assistant">
+                        <Setter Property="HorizontalAlignment" Value="Left" />
+                        </DataTrigger>
+                        </Style.Triggers>
+                        </Style>
+                        </Grid.Style>
+                        </Grid>
+                        </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                         </ScrollViewer>
+                        -->
+
+                        <wv:WebView2 Name="ChatMessagesContainer" Loaded="ChatMessagesContainer_Loaded" Grid.Row="0" Margin="20" MaxHeight="640" Height="640" DefaultBackgroundColor="Transparent" />
 
                         <!-- Message Writing & Send Controls -->
                         <Grid Grid.Row="1" Height="80" VerticalAlignment="Bottom">
@@ -346,7 +349,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <ui:TextBox Margin="10" Text="{Binding ViewModel.ChatUserInput, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" PlaceholderText="Write your message here!" HorizontalAlignment="Stretch">
+                            <ui:TextBox Margin="10" Text="{Binding ViewModel.ChatUserInput, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" PlaceholderText="Write your message here!" AcceptsReturn="True" HorizontalAlignment="Stretch">
                                 <TextBox.InputBindings>
                                     <KeyBinding Key="Enter" Command="{Binding ViewModel.MessageSendCommand}" />
                                 </TextBox.InputBindings>
@@ -498,7 +501,13 @@
                     </StackPanel>
                     <Grid Grid.Column="1" Margin="25,50,0,0" >
                         <!-- Completion Container -->
-                        <ui:TextBox x:Name="CompletionTextEditor" Text="{Binding ViewModel.CompletionText, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" AcceptsReturn="True" PlaceholderText="Write your Instruction here!" PreviewKeyDown="Completion_PreviewKeyDown" MaxHeight="700" TextWrapping="Wrap" />
+                        <ui:TextBox x:Name="CompletionTextEditor" Text="{Binding ViewModel.CompletionText, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" AcceptsReturn="True" PlaceholderText="Write your Instruction here!" MaxHeight="700" TextWrapping="Wrap">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="PreviewKeyDown">
+                                    <i:InvokeCommandAction Command="{Binding ViewModel.CompletionSuggestionHandlerCommand}" CommandParameter="{Binding Key, RelativeSource={RelativeSource AncestorType=KeyEventArgs}}" />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </ui:TextBox>
                         <Button Command="{Binding ViewModel.CompletionGenerateCommand}" Margin="20" Width="75" Height="50" VerticalAlignment="Bottom" HorizontalAlignment="Right" >
                             <ui:SymbolIcon Symbol="{Binding ViewModel.SwitchableIcons[SendMessage]}" FontSize="32" />
                         </Button>
@@ -508,6 +517,200 @@
                     </Grid>
                 </Grid>
             </TabItem>
+            <TabItem Header="Memory">
+                <Grid Margin="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Sidebar for Memories -->
+                    <ui:Card Grid.Column="0">
+                        <ui:NavigationView  OpenPaneLength="400" CompactPaneLength="0" IsBackButtonVisible="Collapsed" HeaderVisibility="Hidden" >
+                            <ui:NavigationView.MenuItems>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="50" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <ui:SymbolIcon Grid.Column="0" Symbol="Options24" FontSize="36" VerticalAlignment="Top" />
+                                    <TextBlock Grid.Column="0" Text="Memories" FontSize="24"
+                                               VerticalAlignment="Top" HorizontalAlignment="Center"
+                                               TextWrapping="Wrap" TextAlignment="Center"
+                                               RenderTransformOrigin="0.5,0.5" Width="185" Height="185" Margin="-160,25,0,0">
+                                        <TextBlock.RenderTransform>
+                                            <TransformGroup>
+                                                <ScaleTransform/>
+                                                <SkewTransform/>
+                                                <RotateTransform Angle="90"/>
+                                                <TranslateTransform X="0"/>
+                                            </TransformGroup>
+                                        </TextBlock.RenderTransform>
+                                    </TextBlock>
+                                    <Grid Grid.Column="1" Height="680" >
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Buttons for New Chat and Delete Chat -->
+                                        <Grid Grid.Row="0" Margin="10,0,10,0" >
+                                            <ui:SymbolIcon Symbol="BrainCircuit24"  FontSize="30" HorizontalAlignment="Left" />
+                                            <Label Content="Memory" FontSize="26" FontFamily="Cambria" FontWeight="Bold" Margin="35,5,0,0" />
+
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
+                                                <Button Command="{Binding ViewModel.MemorySourceDeleteCommand}" Margin="0,0,10,0">
+                                                    <ui:SymbolIcon Symbol="Delete24"  FontSize="26" />
+                                                </Button>
+                                                <Button Command="{Binding ViewModel.MemorySourceAddCommand}">
+                                                    <ui:SymbolIcon Symbol="Add24"  FontSize="26" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <!-- Memories Logs -->
+                                        <ListView Grid.Row="1" ItemsSource="{Binding ViewModel.MemoriesPaths}" SelectedItem="{Binding ViewModel.SelectedMemory}" Width="340" Margin="10,25,10,100">
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Collection}" Margin="5"/>
+                                                        <ListView IsEnabled="False" ItemsSource="{Binding Documents}" Margin="20,0,0,0">
+                                                            <ListView.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="{Binding}" Margin="5"/>
+                                                                    </StackPanel>
+                                                                </DataTemplate>
+                                                            </ListView.ItemTemplate>
+                                                        </ListView>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+
+                                        <!-- StackPanel for bottom-aligned sliders and buttons -->
+                                        <Expander Grid.Row="2" Header="Customization" Width="320" Margin="0,0,0,0" VerticalAlignment="Bottom" FontSize="16" >
+                                            <StackPanel>
+                                                <!-- Sliders for different settings -->
+                                                <StackPanel Margin="10">
+                                                    <TextBlock Text="Max Tokens" />
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Slider Width="180" Minimum="100" Maximum="32000" Value="{Binding ViewModel.Parameters.MaxTokens}" TickFrequency="3200" TickPlacement="BottomRight" VerticalAlignment="Center" />
+                                                        <TextBox Text="{Binding ViewModel.Parameters.MaxTokens}" Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <StackPanel Margin="10">
+                                                    <TextBlock Text="Randomness" />
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Slider Width="180" Minimum="0" Maximum="2" Value="{Binding ViewModel.Parameters.Randomness}" VerticalAlignment="Center" TickFrequency="0.1" TickPlacement="BottomRight" />
+                                                        <TextBox Text="{Binding ViewModel.Parameters.Randomness}" Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <StackPanel Margin="10">
+                                                    <TextBlock Text="Randomness Booster" />
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Slider Width="180" Minimum="0" Maximum="1" Value="{Binding ViewModel.Parameters.RandomnessBooster}" VerticalAlignment="Center" TickFrequency="0.1" TickPlacement="BottomRight" />
+                                                        <TextBox Text="{Binding ViewModel.Parameters.RandomnessBooster}" Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <StackPanel Margin="10">
+                                                    <TextBlock Text="Optimal Probability" />
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Slider Width="180" Minimum="0" Maximum="2" Value="{Binding ViewModel.Parameters.OptimalProbability}" VerticalAlignment="Center" TickFrequency="0.1" TickPlacement="BottomRight" />
+                                                        <TextBox Text="{Binding ViewModel.Parameters.OptimalProbability}" Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <StackPanel Margin="10">
+                                                    <TextBlock Text="Frequency Penalty" />
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Slider Width="180" Minimum="0" Maximum="2" Value="{Binding ViewModel.Parameters.FrequencyPenalty}" VerticalAlignment="Center" TickFrequency="0.1" TickPlacement="BottomRight" />
+                                                        <TextBox Text="{Binding ViewModel.Parameters.FrequencyPenalty}" Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Expander>
+                                    </Grid>
+                                </Grid>
+                            </ui:NavigationView.MenuItems>
+                        </ui:NavigationView>
+                    </ui:Card>
+
+                    <!-- Memory UI -->
+                    <Grid Grid.Column="1" >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Memory Messages Container -->
+                        <ScrollViewer x:Name="MemoryContainerView" Grid.Row="0" VerticalScrollBarVisibility="Auto" Margin="25,0,0,0" MaxHeight="650" >
+                            <ItemsControl ItemsSource="{Binding ViewModel.SelectedMemory.Messages}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="5">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Column="0" Background="DarkRed" CornerRadius="10" Padding="10">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="*" />
+                                                    </Grid.RowDefinitions>
+                                                    <TextBlock Grid.Row="0" Text="{Binding Message}" TextWrapping="Wrap" MaxWidth="1000" />
+                                                    <ProgressBar Grid.Row="1" IsIndeterminate="True" Height="5" Margin="5,20,5,30" BorderThickness="0" Background="Transparent" Foreground="Red" >
+                                                        <ProgressBar.Style>
+                                                            <Style TargetType="ProgressBar">
+                                                                <Setter Property="Visibility" Value="Hidden" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Message}" Value="Gathering information from memories.">
+                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </ProgressBar.Style>
+                                                    </ProgressBar>
+                                                </Grid>
+
+                                            </Border>
+                                            <Border Grid.Column="0" CornerRadius="10" Padding="8">
+                                                <!-- In-Message Controls -->
+                                                <StackPanel Orientation="Horizontal" Margin="0,30,20,0" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                                                    <Button Margin="0" Background="Transparent" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageCopyCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="{Binding}" >
+                                                        <ui:SymbolIcon Symbol="Copy24" />
+                                                    </Button>
+                                                    <TextBlock Text="{Binding Sender}" Margin="0,5,0,0" />
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <!-- Message Writing & Send Controls -->
+                        <Grid Grid.Row="1" Height="80" VerticalAlignment="Bottom">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ui:TextBox Margin="10" Text="{Binding ViewModel.MemoryUserInput, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" PlaceholderText="Write your message here!" AcceptsReturn="True" HorizontalAlignment="Stretch">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding ViewModel.MemoryAskCommand}" />
+                                </TextBox.InputBindings>
+                            </ui:TextBox>
+                            <Button Command="{Binding ViewModel.MemoryAskCommand}" Margin="10" Width="100" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="1">
+                                <ui:SymbolIcon Symbol="{Binding ViewModel.SwitchableIcons[SendMessage]}" FontSize="32" />
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
         </TabControl>
 
         <!-- Model Selection & System Info -->
@@ -565,7 +768,7 @@
                     </ComboBox>
                 </StackPanel>
             </Grid>
-            <Button Grid.Column="2" Margin="5,20,0,0" Width="50" Height="50" HorizontalAlignment="Left" VerticalAlignment="Center" Command="{Binding ViewModel.GenerationSwitchModelsCommand}" CommandParameter="unload" >
+            <Button Grid.Column="2" Margin="5,20,0,0" Width="50" Height="50" HorizontalAlignment="Left" VerticalAlignment="Center" Command="{Binding ViewModel.GenerationUnloadModelCommand}" >
                 <StackPanel Orientation="Horizontal">
                     <ui:SymbolIcon Symbol="ArrowReset24" FontSize="24" />
                 </StackPanel>

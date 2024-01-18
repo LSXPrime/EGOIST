@@ -101,11 +101,11 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware, INo
     [RelayCommand]
     private async Task StartBackend()
     {
-        notification.Show(new NotificationContent { Title = "EGOIST - Backend", Message = $"Backend is warming up.", Type = NotificationType.Information }, areaName: "NotificationArea");
+        Extensions.Notify(new NotificationContent { Title = "EGOIST - Backend", Message = $"Backend is warming up.", Type = NotificationType.Information }, areaName: "NotificationArea");
         await InitlizeBackend();
         await CheckBackendRequirements();
         await FinalizeBackend();
-        notification.Show(new NotificationContent { Title = "EGOIST - Backend", Message = $"Backend started successfully.", Type = NotificationType.Information }, areaName: "NotificationArea");
+        Extensions.Notify(new NotificationContent { Title = "EGOIST - Backend", Message = $"Backend started successfully.", Type = NotificationType.Information }, areaName: "NotificationArea");
     }
 
     private async Task InitlizeBackend()
@@ -212,7 +212,7 @@ call ""venv\Scripts\python""  ""{Directory.GetCurrentDirectory()}\Backend\check_
 
         // Check if the completion message was received
         if (result.Contains("Installation Complete"))
-            notification.Show(new NotificationContent { Title = "EGOIST - Backend", Message = $"All dependencies installed.", Type = NotificationType.Information }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "EGOIST - Backend", Message = $"All dependencies installed.", Type = NotificationType.Information }, areaName: "NotificationArea");
     }
 
     private async Task FinalizeBackend()
@@ -287,7 +287,7 @@ pause
 
                 if (result == Wpf.Ui.Controls.MessageBoxResult.Primary)
                 {
-                    notification.Show(new NotificationContent { Title = "EGOIST", Message = $"Update {releaseInfo.tag_name} started downloading.", Type = NotificationType.Information }, areaName: "NotificationArea");
+                    Extensions.Notify(new NotificationContent { Title = "EGOIST", Message = $"Update {releaseInfo.tag_name} started downloading.", Type = NotificationType.Information }, areaName: "NotificationArea");
 
                     var responseDownload = await client.GetAsync(downloadUrl);
                     if (responseDownload.IsSuccessStatusCode)
@@ -301,7 +301,7 @@ pause
                 }
             }
             else
-                notification.Show(new NotificationContent { Title = "EGOIST", Message = $"No available Updates yet.", Type = NotificationType.Information }, areaName: "NotificationArea");
+                Extensions.Notify(new NotificationContent { Title = "EGOIST", Message = $"No available Updates yet.", Type = NotificationType.Information }, areaName: "NotificationArea");
         }
 
         static void FinalizeUpdate()

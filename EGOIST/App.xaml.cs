@@ -6,6 +6,8 @@
 using System.IO;
 using System.Reflection;
 using System.Windows.Threading;
+using DocumentFormat.OpenXml.EMMA;
+using EGOIST.Data;
 using EGOIST.Services;
 using EGOIST.ViewModels.Pages;
 using EGOIST.ViewModels.Windows;
@@ -14,6 +16,7 @@ using EGOIST.Views.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 
 namespace EGOIST;
 /// <summary>
@@ -70,6 +73,12 @@ public partial class App
         _host.Start();
         GetService<ManagementViewModel>().LoadData();
         _ = GetService<SettingsViewModel>().CheckForUpdate();
+        _ = SystemInfo.Instance.Montitor();
+
+        Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Verbose()
+                .WriteTo.File("EGOIST_Handler.log", rollingInterval: RollingInterval.Month)
+                .CreateLogger();
     }
 
     /// <summary>
@@ -77,8 +86,8 @@ public partial class App
     /// </summary>
     private async void OnExit(object sender, ExitEventArgs e)
     {
+        Log.CloseAndFlush();
         await _host.StopAsync();
-
         _host.Dispose();
     }
 
