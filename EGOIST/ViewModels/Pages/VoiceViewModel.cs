@@ -13,6 +13,8 @@ using Whisper.net;
 using NAudio.Wave.SampleProviders;
 using Notification.Wpf;
 using NetFabric.Hyperlinq;
+using DocumentFormat.OpenXml.Spreadsheet;
+using LLama.Common;
 
 namespace EGOIST.ViewModels.Pages;
 public partial class VoiceViewModel : ObservableObject, INavigationAware
@@ -401,7 +403,7 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
             var index = 1; // incase of SRT
             string previousEndTime = "00:00:00,000"; // incase of SRT, Track previous end time for relative timestamp calculation
 
-            await foreach (var result in results)
+            await Parallel.ForEachAsync(results, (result, cancelToken) =>
             {
                 switch (SelectedTranscribeType)
                 {
@@ -417,11 +419,13 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
                         TranscribeAudioResult += $"{index}\n{startTimeStr} --> {endTimeStr}\n{result.Text}\n\n";
 
                         // Update previous end time for next iteration
-                        previousEndTime = endTimeStr; 
+                        previousEndTime = endTimeStr;
                         index++;
                         break;
                 }
-            }
+
+                return new ValueTask();
+            });
 
             TranscribeState = GenerationState.Finished;
             Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Process Finished", Type = NotificationType.Information }, areaName: "NotificationArea");

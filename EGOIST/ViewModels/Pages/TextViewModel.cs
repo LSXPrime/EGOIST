@@ -4,6 +4,7 @@ using System.Reflection;
 using System.IO;
 using System.Windows.Controls.Primitives;
 using System.Windows.Controls;
+using System.Threading.Tasks;
 using Wpf.Ui.Controls;
 using Notification.Wpf;
 using NetFabric.Hyperlinq;
@@ -22,14 +23,6 @@ using Microsoft.KernelMemory.ContentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.Handlers;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
-using Markdig;
-using Markdown.ColorCode;
-using System.Windows.Documents;
-using System.Windows.Threading;
-using Serilog;
-using Markdig.Renderers;
-using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.Web.WebView2.Wpf;
 
 namespace EGOIST.ViewModels.Pages;
 public partial class TextViewModel : ObservableObject, INavigationAware
@@ -64,42 +57,55 @@ public partial class TextViewModel : ObservableObject, INavigationAware
     [ObservableProperty]
     private ObservableCollection<ModelInfo> _generationModels = new();
     [ObservableProperty]
-    private ModelInfo _selectedGenerationModel;
+    private ModelInfo? _selectedGenerationModel;
     [ObservableProperty]
-    private ModelInfo.ModelInfoWeight _selectedGenerationWeight;
+    private ModelInfo.ModelInfoWeight? _selectedGenerationWeight;
 
-    private LLamaWeights GenerationModel;
-    private LLamaEmbedder GenerationModelEmbedder;
-    private ModelParams GenerationModelParameters;
-    private IKernelMemory GenerationMemory;
-    private CancellationTokenSource GenerationCancelToken;
+    private LLamaWeights? GenerationModel;
+    private LLamaEmbedder? GenerationModelEmbedder;
+    private ModelParams? GenerationModelParameters;
+    private IKernelMemory? GenerationMemory;
+    private CancellationTokenSource? GenerationCancelToken;
     #endregion
 
     #region ChatVariables
     [ObservableProperty]
     private ObservableCollection<ChatSession> _chatSessions = new();
     [ObservableProperty]
-    private ChatSession _selectedChatSession;
+    private ChatSession? _selectedChatSession;
     [ObservableProperty]
     private string _chatUserInput = string.Empty;
 
-    private MarkdownPipeline markdownPipline;
-    internal ScrollViewer ChatContainerView;
-    internal WebView2 ChatMessagesContainer;
+    internal ScrollViewer? ChatContainerView;
     #endregion
 
     #region CompletionVariables
     [ObservableProperty]
     private ObservableCollection<CompletionSession> _completionSessions = new();
-    [ObservableProperty]
-    private CompletionSession _selectedCompletionSession;
+    private CompletionSession? _selectedCompletionSession;
+    public CompletionSession SelectedCompletionSession
+    {
+        get => _selectedCompletionSession;
+        set
+        {
+            _selectedCompletionSession = value;
+            CompletionText = value != null ? _selectedCompletionSession.Content : string.Empty;
+            OnPropertyChanged(nameof(SelectedCompletionSession));
+        }
+    }
 
     private string _completionText = string.Empty;
     public string CompletionText
     {
-        get => _completionText;
+        get => SelectedCompletionSession != null ? SelectedCompletionSession.Content : _completionText;
         set
         {
+            if (SelectedCompletionSession != null)
+            {
+                SelectedCompletionSession.Content = value;
+                OnPropertyChanged(nameof(SelectedCompletionSession.Content));
+            }
+
             _completionText = value;
             UpdateCompletionChanges();
             OnPropertyChanged(nameof(CompletionText));
@@ -108,12 +114,12 @@ public partial class TextViewModel : ObservableObject, INavigationAware
     [ObservableProperty]
     private string _completionStatics = string.Empty;
     [ObservableProperty]
-    private (string, string, string) _completionPrompt = new("I want you to act as a storyteller. You will come up with entertaining stories that are engaging, imaginative and captivating for the audience.", string.Empty, string.Empty);
+    private ModelInfo.TextConfiguration _completionPrompt = new() { SystemPrompt = "I want you to act as a storyteller. You will come up with entertaining stories that are engaging, imaginative and captivating for the audience." };
 
-    internal static string[] WordsDictionary;
-    internal Wpf.Ui.Controls.TextBox CompletionTextEditor;
-    internal Popup CompletionSuggestionPopup;
-    internal ListView CompletionSuggestionList;
+    internal static string[]? WordsDictionary;
+    internal Wpf.Ui.Controls.TextBox? CompletionTextEditor;
+    internal Popup? CompletionSuggestionPopup;
+    internal ListView? CompletionSuggestionList;
     #endregion
 
     #region MemoryVariables
@@ -122,39 +128,34 @@ public partial class TextViewModel : ObservableObject, INavigationAware
     private ObservableCollection<MemorySource> _memoriesPaths = new();
 
     [ObservableProperty]
-    private MemorySource _selectedMemory;
+    private MemorySource? _selectedMemory;
 
     [ObservableProperty]
     private string _memoryUserInput = string.Empty;
     
-    internal ScrollViewer MemoryContainerView;
+    internal ScrollViewer? MemoryContainerView;
 
     #endregion
 
     #region InitlizingMethods
+    public void OnStartup()
+    {
+        Extensions.onSaveData += SaveData;
+        Extensions.onLoadData += LoadData;
+        AppConfig.Instance.ConfigSavedEvent += LoadData;
+
+        GenerationState = GenerationState.None;
+        Thread thread = new(UIHandler);
+        thread.Start();
+    }
+
     public void OnNavigatedTo()
     {
-        if (!_isInitialized)
-            InitializeViewModel();
     }
 
     public void OnNavigatedFrom()
     {
-    }
-
-    private void InitializeViewModel()
-    {
-        LoadData();
-        AppConfig.Instance.ConfigSavedEvent += LoadData;
-        _isInitialized = true;
-        GenerationState = GenerationState.None;
-        markdownPipline = new MarkdownPipelineBuilder()
-            .UseAdvancedExtensions()
-            .UseColorCode()
-            .Build();
-
-        Thread thread = new(UIHandler);
-        thread.Start();
+        Extensions.SaveData();
     }
 
     private void UIHandler()
@@ -177,12 +178,41 @@ public partial class TextViewModel : ObservableObject, INavigationAware
 
         var models = ManagementViewModel._modelsInfo.AsValueEnumerable().Where(x => x.Type.Contains("Text") && x.Downloaded.Count > 0).ToList();
         GenerationModels = new(models);
-
         var resourceName = "EGOIST.Assets.dictionary.txt";
         Assembly assembly = Assembly.GetExecutingAssembly();
         using var stream = assembly.GetManifestResourceStream(resourceName);
         using StreamReader reader = new(stream);
         WordsDictionary = reader.ReadToEnd().Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+        var dataPath = $"{Directory.GetCurrentDirectory()}\\EGOIST_Data.bin";
+        if (!File.Exists(dataPath))
+            return;
+
+        var dataEncrypted = File.ReadAllBytes(dataPath);
+        var data = Extensions.Decrypt<SaveInfo>(dataEncrypted);
+        if (data == null)
+            return;
+
+        _chatSessions = data.ChatSessions;
+        CompletionSessions = data.CompletionSessions;
+        MemoriesPaths = data.MemoriesPaths;
+        ChatUserInput = data.ChatUserInput;
+        CompletionText = data.CompletionText;
+        MemoryUserInput = data.MemoryUserInput;
+    }
+
+    private void SaveData()
+    {
+        var data = SaveInfo.Instance;
+        data.ChatSessions = _chatSessions;
+        data.CompletionSessions = CompletionSessions;
+        data.MemoriesPaths = MemoriesPaths;
+        data.ChatUserInput = ChatUserInput;
+        data.CompletionText = CompletionText;
+        data.MemoryUserInput = MemoryUserInput;
+
+        var dataEncrypted = Extensions.Encrypt(data);
+        File.WriteAllBytes($"{Directory.GetCurrentDirectory()}\\EGOIST_Data.bin", dataEncrypted);
     }
     #endregion
 
@@ -194,6 +224,9 @@ public partial class TextViewModel : ObservableObject, INavigationAware
         {
             try
             {
+                if (SelectedGenerationModel == null)
+                    return;
+
                 Extensions.Notify(new NotificationContent { Title = "Text Generation", Message = $"Text Generation Model {SelectedGenerationModel.Name} Started loading", Type = NotificationType.Information }, areaName: "NotificationArea");
                 var isGpu = AppConfig.Instance.Device == Device.GPU;
                 NativeLibraryConfig.Instance.WithCuda(isGpu).WithAvx(NativeLibraryConfig.AvxLevel.Avx512).WithAutoFallback(true);
@@ -278,7 +311,7 @@ public partial class TextViewModel : ObservableObject, INavigationAware
     }
 
     [RelayCommand]
-    private void MessageSend()
+    private async void MessageSend()
     {
         if (GenerationState == GenerationState.Started)
         {
@@ -296,64 +329,54 @@ public partial class TextViewModel : ObservableObject, INavigationAware
             if (SelectedChatSession == null)
                 ChatCreate();
 
+            if (SelectedChatSession?.Executor == null)
+                SelectedChatSession.Executor = new InteractiveExecutor(GenerationModel.CreateContext(GenerationModelParameters));
+
             GenerationState = GenerationState.Started;
 
             var userMessage = SelectedChatSession?.AddMessage("User", ChatUserInput);
-            SelectedChatSession?.AddMessage("Assistant", string.Empty);
-            ((Paragraph)userMessage.RenderedMessage.Blocks.FirstBlock).Inlines.Add(ChatUserInput);
+            var aiMessage = SelectedChatSession?.AddMessage("Assistant", string.Empty);
 
             var Prompt = SelectedGenerationModel.TextConfig.Prompt(ChatUserInput);
+            ChatUserInput = string.Empty;
 
             GenerationCancelToken = new();
-            Thread thread = new(() => MessageSendBG(Prompt));
-            thread.Start();
-            ChatUserInput = string.Empty;
-        }
-
-        // Scroll to the last item in Chat Container
-        ChatContainerView.ScrollToBottom();
-    }
-
-    async void MessageSendBG(string UserMessage)
-    {
-        var MessageParams = new InferenceParams()
-        {
-            MaxTokens = Parameters.MaxTokens,
-            Temperature = Parameters.Randomness,
-            TopP = Parameters.RandomnessBooster,
-            TopK = (int)(Parameters.OptimalProbability * 100),
-            FrequencyPenalty = Parameters.FrequencyPenalty,
-            AntiPrompts = new List<string> { "User:" }
-        };
-
-        var aiResponse = SelectedChatSession?.Messages.Last();
-
-        IAsyncEnumerable<string> tokens = SelectedChatSession?.Executor.InferAsync(UserMessage, MessageParams, GenerationCancelToken.Token);
-
-        await foreach (var token in tokens)
-        {
-            var filteredToken = token;
-            foreach (string blackToken in SelectedGenerationModel.TextConfig.BlackList)
+            var MessageParams = new InferenceParams()
             {
-                if (token.Contains(blackToken))
+                MaxTokens = Parameters.MaxTokens,
+                Temperature = Parameters.Randomness,
+                TopP = Parameters.RandomnessBooster,
+                TopK = (int)(Parameters.OptimalProbability * 100),
+                FrequencyPenalty = Parameters.FrequencyPenalty,
+                AntiPrompts = new List<string> { "User:" }
+            };
+
+            IAsyncEnumerable<string>? tokens = SelectedChatSession?.Executor.InferAsync(Prompt, MessageParams, GenerationCancelToken.Token);
+            await Parallel.ForEachAsync(tokens, (token, cancelToken) =>
+            {
+                var filteredToken = token;
+                foreach (string blackToken in SelectedGenerationModel.TextConfig.BlackList)
                 {
-                    int index = token.IndexOf(blackToken);
-                    filteredToken = filteredToken.Remove(index, blackToken.Length);
-                    break;
+                    if (token.Contains(blackToken))
+                    {
+                        int index = token.IndexOf(blackToken);
+                        filteredToken = filteredToken.Remove(index, blackToken.Length);
+                        break;
+                    }
                 }
-            }
 
-            aiResponse.Message += filteredToken;
-            aiResponse.Dispatcher.Invoke(() => { ((Paragraph)aiResponse.RenderedMessage.Blocks.FirstBlock).Inlines.Add(filteredToken); });
+                aiMessage.Message += filteredToken;
+                return new ValueTask();
+            });
+
+            ChatContainerView.ScrollToBottom();
+            GenerationState = GenerationState.Finished;
+            GenerationCancelToken.Dispose();
         }
-        aiResponse.Dispatcher.Invoke(() => { aiResponse.Render(markdownPipline); });
-
-        GenerationState = GenerationState.Finished;
-        GenerationCancelToken.Dispose();
     }
 
     [RelayCommand]
-    private void MessageCopy(ChatMessage message)
+    private static void MessageCopy(ChatMessage message)
     {
         Clipboard.SetText(message.Message);
         Extensions.Notify(new NotificationContent { Title = "Text Generation", Message = $"Message Copied to Clipboard", Type = NotificationType.None }, areaName: "NotificationArea");
@@ -410,7 +433,7 @@ public partial class TextViewModel : ObservableObject, INavigationAware
 
         CompletionStatics = $"L: {CompletionLineCount} || W: {CompletionWord.Length} || C: {CompletionCharacterCount}";
 
-        if (GenerationState == GenerationState.Started)
+        if (GenerationState == GenerationState.Started || CompletionTextEditor == null)
             return;
 
         string searchText = CompletionWord[^1].ToLower();
@@ -492,40 +515,6 @@ public partial class TextViewModel : ObservableObject, INavigationAware
     }
 
     [RelayCommand]
-    private void CompletionSuggestionHandler(System.Windows.Forms.KeyEventArgs e)
-    {
-        switch (e.KeyCode)
-        {
-            case System.Windows.Forms.Keys.Escape:
-                CompletionSuggestionPopup.IsOpen = false;
-                break;
-            case System.Windows.Forms.Keys.Tab:
-                e.Handled = true;
-                int lastWordIndex = CompletionTextEditor.Text.LastIndexOf(' ');
-                if (lastWordIndex >= 0)
-                {
-                    string newText = $"{CompletionTextEditor.Text[..(lastWordIndex + 1)]}{CompletionSuggestionList.SelectedItem}";
-                    CompletionTextEditor.Text = newText;
-                    CompletionTextEditor.CaretIndex = CompletionTextEditor.Text.Length;
-                }
-                CompletionSuggestionPopup.IsOpen = false;
-                break;
-            case System.Windows.Forms.Keys.Up:
-                if (CompletionSuggestionPopup.IsOpen)
-                    e.Handled = true;
-                CompletionSuggestionList.SelectedIndex += CompletionSuggestionList.SelectedIndex > 0 ? -1 : 0;
-                CompletionSuggestionList.ScrollIntoView(CompletionSuggestionList.SelectedItem);
-                break;
-            case System.Windows.Forms.Keys.Down:
-                if (CompletionSuggestionPopup.IsOpen)
-                    e.Handled = true;
-                CompletionSuggestionList.SelectedIndex += CompletionSuggestionList.SelectedIndex < CompletionSuggestionList.Items.Count ? 1 : 0;
-                CompletionSuggestionList.ScrollIntoView(CompletionSuggestionList.SelectedItem);
-                break;
-        }
-    }
-
-    [RelayCommand]
     private void CompletionCreate()
     {
         if (SelectedGenerationModel == null)
@@ -548,13 +537,13 @@ public partial class TextViewModel : ObservableObject, INavigationAware
     {
         Extensions.Notify(new NotificationContent { Title = "Text Generation", Message = $"Session {SelectedCompletionSession.SessionName} Deleted", Type = NotificationType.None }, areaName: "NotificationArea");
 
-        SelectedCompletionSession.Executor.Context.Dispose();
+        SelectedCompletionSession.Executor?.Context.Dispose();
         CompletionSessions.Remove(SelectedCompletionSession);
         SelectedCompletionSession = null;
     }
 
     [RelayCommand]
-    private async Task CompletionGenerate()
+    private async void CompletionGenerate()
     {
         if (SelectedGenerationModel == null)
         {
@@ -569,44 +558,43 @@ public partial class TextViewModel : ObservableObject, INavigationAware
         if (SelectedCompletionSession == null)
             CompletionCreate();
 
+        if (SelectedCompletionSession?.Executor == null)
+            SelectedCompletionSession.Executor = new StatelessExecutor(GenerationModel, GenerationModelParameters);
+
         GenerationState = GenerationState.Started;
-        var Prompt = (!string.IsNullOrEmpty(CompletionPrompt.Item1) || !string.IsNullOrEmpty(CompletionPrompt.Item2) || !string.IsNullOrEmpty(CompletionPrompt.Item3)) ? SelectedGenerationModel.TextConfig.Prompt(CompletionText, CompletionPrompt.Item1, CompletionPrompt.Item2, CompletionPrompt.Item3) : SelectedGenerationModel.TextConfig.Prompt(CompletionText);
+        var Prompt = SelectedGenerationModel.TextConfig.Prompt(CompletionText, CompletionPrompt);
 
         GenerationCancelToken = new();
-        Thread thread = new(() => CompletionGenerateBG(Prompt));
-        thread.Start();
-
-        async void CompletionGenerateBG(string prompt)
+        var MessageParams = new InferenceParams()
         {
-            var MessageParams = new InferenceParams()
-            {
-                MaxTokens = Parameters.MaxTokens,
-                Temperature = Parameters.Randomness,
-                TopP = Parameters.RandomnessBooster,
-                TopK = (int)(Parameters.OptimalProbability * 100),
-                FrequencyPenalty = Parameters.FrequencyPenalty,
-                AntiPrompts = new List<string> { "User:" }
-            };
+            MaxTokens = Parameters.MaxTokens,
+            Temperature = Parameters.Randomness,
+            TopP = Parameters.RandomnessBooster,
+            TopK = (int)(Parameters.OptimalProbability * 100),
+            FrequencyPenalty = Parameters.FrequencyPenalty,
+            AntiPrompts = new List<string> { "User:" }
+        };
 
-            IAsyncEnumerable<string> tokens = SelectedCompletionSession?.Executor.InferAsync(prompt, MessageParams, GenerationCancelToken.Token);
-            await foreach (var token in tokens)
+        IAsyncEnumerable<string>? tokens = SelectedCompletionSession?.Executor.InferAsync(Prompt, MessageParams, GenerationCancelToken.Token);
+        await Parallel.ForEachAsync(tokens, (token, cancelToken) =>
+        {
+            var filteredToken = token;
+            foreach (string blackToken in SelectedGenerationModel.TextConfig.BlackList)
             {
-                var filteredToken = token;
-                foreach (string blackToken in SelectedGenerationModel.TextConfig.BlackList)
+                if (token.Contains(blackToken))
                 {
-                    if (token.Contains(blackToken))
-                    {
-                        filteredToken = filteredToken.Replace(blackToken, " ");
-                        break;
-                    }
+                    int index = token.IndexOf(blackToken);
+                    filteredToken = filteredToken.Remove(index, blackToken.Length);
+                    break;
                 }
-
-                CompletionText += filteredToken;
             }
 
-            GenerationState = GenerationState.Finished;
-            GenerationCancelToken.Dispose();
-        }
+            CompletionText += filteredToken;
+            return new ValueTask();
+        });
+
+        GenerationState = GenerationState.Finished;
+        GenerationCancelToken.Dispose();
     }
 
     #endregion
@@ -649,7 +637,7 @@ public partial class TextViewModel : ObservableObject, INavigationAware
             }
         };
 
-        docPathDialog.Click += async (sender, e) =>
+        docPathDialog.Click += (sender, e) =>
         {
             var openFileDialog = new System.Windows.Forms.OpenFileDialog
             {
@@ -810,7 +798,7 @@ public partial class TextViewModel : ObservableObject, INavigationAware
 
             GenerationCancelToken = new();
             MemoryUserInput = string.Empty;
-            MemoryContainerView.ScrollToBottom();
+            MemoryContainerView?.ScrollToBottom();
 
             var answer = await GenerationMemory.AskAsync(userMessage.Message, filter: new MemoryFilter().ByDocument(SelectedMemory.Collection), cancellationToken: GenerationCancelToken.Token);
             memoryMessage.Message = answer.Result;
@@ -833,7 +821,8 @@ public partial class CompletionSession : ObservableObject
     public string _content = string.Empty;
 
     #region LLamaSharp
-    public StatelessExecutor Executor;
+    [NonSerialized]
+    public StatelessExecutor? Executor;
     #endregion
 
 
@@ -847,8 +836,8 @@ public partial class ChatSession : ObservableObject, INotifyPropertyChanged
     public string SessionName { get; set; }
 
     [ObservableProperty]
-    public Dictionary<int, ChatLog> _chatMessages = new();
-    public ObservableCollection<ChatMessage> Messages => ChatMessages[_currentLog].Messages;
+    private Dictionary<int, ChatLog> _chatMessages = new();
+    public ObservableCollection<ChatMessage> Messages => ChatMessages[CurrentLog].Messages;
 
 
     #region Unused due LLama tokenizer/embeddings limitions
@@ -860,7 +849,8 @@ public partial class ChatSession : ObservableObject, INotifyPropertyChanged
     #endregion
 
     #region LLamaSharp
-    public StatefulExecutorBase Executor { get; set; }
+    [NonSerialized]
+    public StatefulExecutorBase? Executor;
     #endregion
 
 
@@ -889,32 +879,19 @@ public partial class ChatSession : ObservableObject, INotifyPropertyChanged
 public partial class ChatLog : ObservableObject
 {
     [ObservableProperty]
-    public int _ID = 0;
+    private int _ID = 0;
     [ObservableProperty]
-    public ObservableCollection<ChatMessage> _messages = new();
+    private ObservableCollection<ChatMessage> _messages = new();
 }
 
 public partial class ChatMessage : ObservableObject
 {
-    public string Sender { get; set; }
     [ObservableProperty]
-    public string _message;
+    private string _sender = string.Empty;
     [ObservableProperty]
-    private FlowDocument _renderedMessage = new(new Paragraph());
+    private string _message = string.Empty;
     [ObservableProperty]
-    public bool _isEditable;
-
-    public Dispatcher Dispatcher { get; }
-
-    public ChatMessage()
-    {
-        Dispatcher = Dispatcher.CurrentDispatcher;
-    }
-
-    public void Render(MarkdownPipeline pipline)
-    {
-        RenderedMessage = Markdig.Wpf.Markdown.ToFlowDocument(Message, pipline);
-    }
+    private bool _isEditable;
 }
 
 public partial class MemorySource : ObservableObject

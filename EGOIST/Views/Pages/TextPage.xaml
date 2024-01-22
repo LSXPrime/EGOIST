@@ -250,97 +250,94 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
-                        <!-- Chat Messages Container
+                        <!-- Chat Messages Container -->
                         <ScrollViewer x:Name="ChatContainerView" Grid.Row="0" Margin="20" VerticalScrollBarVisibility="Auto" MaxHeight="640" >
-                        <ItemsControl ItemsSource="{Binding ViewModel.SelectedChatSession.Messages}">
-                        <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                        <Grid Margin="5">
-                        <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Background="DarkRed" CornerRadius="10" Padding="8">
-                        <FlowDocumentScrollViewer Document="{Binding RenderedMessage}" />
-                        </Border>
-                        <Border Grid.Column="0" CornerRadius="10" Padding="8">
-                        <StackPanel Orientation="Horizontal" Margin="100,30,0,0" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-                        <Button Margin="5" Background="Transparent" Foreground="White" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageSlideCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="-1" >
-                        <Button.Style>
-                        <Style TargetType="Button">
-                        <Setter Property="Visibility" Value="Hidden" />
-                        <Style.Triggers>
-                        <DataTrigger Binding="{Binding DataContext.ViewModel.SelectedChatSession.Edited, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Value="True">
-                        <Setter Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                        </Style.Triggers>
-                        </Style>
-                        </Button.Style>
-                        <ui:SymbolIcon Symbol="ArrowLeft24" />
-                        </Button>
-                        <TextBlock Text="{Binding DataContext.ViewModel.SelectedChatSession.CurrentLogSTR, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Margin="10" >
-                        <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                        <Setter Property="Visibility" Value="Hidden" />
-                        <Style.Triggers>
-                        <DataTrigger Binding="{Binding DataContext.ViewModel.SelectedChatSession.Edited, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Value="True">
-                        <Setter Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                        </Style.Triggers>
-                        </Style>
-                        </TextBlock.Style>
-                        </TextBlock>
-                        <Button Margin="5" Background="Transparent" Foreground="White" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageSlideCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="1" >
-                        <Button.Style>
-                        <Style TargetType="Button">
-                        <Setter Property="Visibility" Value="Hidden" />
-                        <Style.Triggers>
-                        <DataTrigger Binding="{Binding DataContext.ViewModel.SelectedChatSession.Edited, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Value="True">
-                        <Setter Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                        </Style.Triggers>
-                        </Style>
-                        </Button.Style>
-                        <ui:SymbolIcon Symbol="ArrowRight24" />
-                        </Button>
-                        <Button Margin="5" Background="Transparent" Foreground="White" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageEditCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="{Binding}" >
-                        <Button.Style>
-                        <Style TargetType="Button">
-                        <Setter Property="Visibility" Value="Hidden" />
-                        <Style.Triggers>
-                        <DataTrigger Binding="{Binding Sender}" Value="User">
-                        <Setter Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                        </Style.Triggers>
-                        </Style>
-                        </Button.Style>
-                        <ui:SymbolIcon Symbol="Edit24" />
-                        </Button>
-                        <Button Margin="5" Background="Transparent" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageCopyCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="{Binding}" >
-                        <ui:SymbolIcon Symbol="Copy24" />
-                        </Button>
-                        </StackPanel>
-                        </Border>
-                        <Grid.Style>
-                        <Style TargetType="Grid">
-                        <Style.Triggers>
-                        <DataTrigger Binding="{Binding Sender}" Value="User">
-                        <Setter Property="HorizontalAlignment" Value="Right" />
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding Sender}" Value="Assistant">
-                        <Setter Property="HorizontalAlignment" Value="Left" />
-                        </DataTrigger>
-                        </Style.Triggers>
-                        </Style>
-                        </Grid.Style>
-                        </Grid>
-                        </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                            <ItemsControl ItemsSource="{Binding ViewModel.SelectedChatSession.Messages}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="5">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Column="0" Background="DarkRed" CornerRadius="10" Padding="8">
+                                                <TextBox Text="{Binding Message}" IsReadOnly="True" IsEnabled="True" MaxWidth="900" TextWrapping="Wrap" />
+                                            </Border>
+                                            <Border Grid.Column="0" CornerRadius="10" Padding="8">
+                                                <StackPanel Orientation="Horizontal" Margin="100,30,0,0" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                                                    <Button Margin="5" Background="Transparent" Foreground="White" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageSlideCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="-1" >
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="Visibility" Value="Hidden" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding DataContext.ViewModel.SelectedChatSession.Edited, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                        <ui:SymbolIcon Symbol="ArrowLeft24" />
+                                                    </Button>
+                                                    <TextBlock Text="{Binding DataContext.ViewModel.SelectedChatSession.CurrentLogSTR, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Margin="10" >
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Visibility" Value="Hidden" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding DataContext.ViewModel.SelectedChatSession.Edited, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <Button Margin="5" Background="Transparent" Foreground="White" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageSlideCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="1" >
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="Visibility" Value="Hidden" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding DataContext.ViewModel.SelectedChatSession.Edited, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                        <ui:SymbolIcon Symbol="ArrowRight24" />
+                                                    </Button>
+                                                    <Button Margin="5" Background="Transparent" Foreground="White" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageEditCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="{Binding}" >
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="Visibility" Value="Hidden" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Sender}" Value="User">
+                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                        <ui:SymbolIcon Symbol="Edit24" />
+                                                    </Button>
+                                                    <Button Margin="5" Background="Transparent" BorderThickness="0" Command="{Binding DataContext.ViewModel.MessageCopyCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" CommandParameter="{Binding}" >
+                                                        <ui:SymbolIcon Symbol="Copy24" />
+                                                    </Button>
+                                                </StackPanel>
+                                            </Border>
+                                            <Grid.Style>
+                                                <Style TargetType="Grid">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Sender}" Value="User">
+                                                            <Setter Property="HorizontalAlignment" Value="Right" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Sender}" Value="Assistant">
+                                                            <Setter Property="HorizontalAlignment" Value="Left" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Grid.Style>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </ScrollViewer>
-                        -->
-
-                        <wv:WebView2 Name="ChatMessagesContainer" Loaded="ChatMessagesContainer_Loaded" Grid.Row="0" Margin="20" MaxHeight="640" Height="640" DefaultBackgroundColor="Transparent" />
 
                         <!-- Message Writing & Send Controls -->
                         <Grid Grid.Row="1" Height="80" VerticalAlignment="Bottom">
@@ -472,15 +469,15 @@
                                                     <StackPanel>
                                                         <StackPanel Margin="10">
                                                             <TextBlock Text="System Message" />
-                                                            <ui:TextBox Text="{Binding ViewModel.CompletionPrompt.Item1, Mode=TwoWay}" AcceptsReturn="True" PlaceholderText="Write your Instruction here!" MaxHeight="300" TextWrapping="Wrap" />
+                                                            <ui:TextBox Text="{Binding ViewModel.CompletionPrompt.SystemPrompt, Mode=TwoWay}" AcceptsReturn="True" PlaceholderText="Write your Instruction here!" MaxHeight="300" TextWrapping="Wrap" />
                                                         </StackPanel>
                                                         <StackPanel Margin="10">
                                                             <TextBlock Text="Prompt Prefix" />
-                                                            <ui:TextBox Text="{Binding ViewModel.CompletionPrompt.Item2, Mode=TwoWay}" AcceptsReturn="True" PlaceholderText="Text injected before the prompt." MaxHeight="300" TextWrapping="Wrap" />
+                                                            <ui:TextBox Text="{Binding ViewModel.CompletionPrompt.PromptPrefix, Mode=TwoWay}" AcceptsReturn="True" PlaceholderText="Text injected before the prompt." MaxHeight="300" TextWrapping="Wrap" />
                                                         </StackPanel>
                                                         <StackPanel Margin="10">
                                                             <TextBlock Text="Prompt Suffix" />
-                                                            <ui:TextBox Text="{Binding ViewModel.CompletionPrompt.Item3, Mode=TwoWay}" AcceptsReturn="True" PlaceholderText="Text injected after the prompt." MaxHeight="300" TextWrapping="Wrap" />
+                                                            <ui:TextBox Text="{Binding ViewModel.CompletionPrompt.PromptSuffix, Mode=TwoWay}" AcceptsReturn="True" PlaceholderText="Text injected after the prompt." MaxHeight="300" TextWrapping="Wrap" />
                                                         </StackPanel>
                                                     </StackPanel>
                                                 </TabItem>
@@ -501,13 +498,7 @@
                     </StackPanel>
                     <Grid Grid.Column="1" Margin="25,50,0,0" >
                         <!-- Completion Container -->
-                        <ui:TextBox x:Name="CompletionTextEditor" Text="{Binding ViewModel.CompletionText, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" AcceptsReturn="True" PlaceholderText="Write your Instruction here!" MaxHeight="700" TextWrapping="Wrap">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="PreviewKeyDown">
-                                    <i:InvokeCommandAction Command="{Binding ViewModel.CompletionSuggestionHandlerCommand}" CommandParameter="{Binding Key, RelativeSource={RelativeSource AncestorType=KeyEventArgs}}" />
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </ui:TextBox>
+                        <ui:TextBox x:Name="CompletionTextEditor" Text="{Binding ViewModel.CompletionText, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" PreviewKeyDown="CompletionSuggestionHandler" AcceptsReturn="True" PlaceholderText="Write your Instruction here!" MaxHeight="700" TextWrapping="Wrap" />
                         <Button Command="{Binding ViewModel.CompletionGenerateCommand}" Margin="20" Width="75" Height="50" VerticalAlignment="Bottom" HorizontalAlignment="Right" >
                             <ui:SymbolIcon Symbol="{Binding ViewModel.SwitchableIcons[SendMessage]}" FontSize="32" />
                         </Button>

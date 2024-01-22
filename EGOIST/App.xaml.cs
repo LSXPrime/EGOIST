@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Windows.Threading;
 using DocumentFormat.OpenXml.EMMA;
 using EGOIST.Data;
+using EGOIST.Helpers;
 using EGOIST.Services;
 using EGOIST.ViewModels.Pages;
 using EGOIST.ViewModels.Windows;
@@ -72,8 +73,10 @@ public partial class App
     {
         _host.Start();
         GetService<ManagementViewModel>().LoadData();
+        GetService<TextViewModel>().OnStartup();
         _ = GetService<SettingsViewModel>().CheckForUpdate();
         _ = SystemInfo.Instance.Montitor();
+        Extensions.LoadData();
 
         Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
@@ -86,6 +89,7 @@ public partial class App
     /// </summary>
     private async void OnExit(object sender, ExitEventArgs e)
     {
+        Extensions.SaveData();
         Log.CloseAndFlush();
         await _host.StopAsync();
         _host.Dispose();

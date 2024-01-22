@@ -8,7 +8,6 @@ using Wpf.Ui.Appearance;
 using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using Notification.Wpf;
 using System.IO.Compression;

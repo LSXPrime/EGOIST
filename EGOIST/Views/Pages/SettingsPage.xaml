@@ -10,7 +10,7 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="SettingsPage"
     d:DataContext="{d:DesignInstance local:SettingsPage,
-                                     IsDesignTimeCreatable=False}"
+    IsDesignTimeCreatable=False}"
     d:DesignHeight="600"
     d:DesignWidth="800"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
@@ -34,14 +34,14 @@
 
 
         <!-- Themes -->
-            <TextBlock Margin="15,10,0,0" Text="Theme" FontWeight="Bold" HorizontalAlignment="Left" />
-            <ComboBox ItemsSource="{Binding ViewModel.ThemesValues}" SelectedItem="{Binding ViewModel.CurrentTheme}" VerticalAlignment="Stretch" HorizontalAlignment="Right" >
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="SelectionChanged">
-                        <i:InvokeCommandAction Command="{Binding ViewModel.SwitchThemeCommand}" />
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </ComboBox>
+        <TextBlock Margin="15,10,0,0" Text="Theme" FontWeight="Bold" HorizontalAlignment="Left" />
+        <ComboBox ItemsSource="{Binding ViewModel.ThemesValues}" SelectedItem="{Binding ViewModel.CurrentTheme}" VerticalAlignment="Stretch" HorizontalAlignment="Right" >
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="SelectionChanged">
+                    <i:InvokeCommandAction Command="{Binding ViewModel.SwitchThemeCommand}" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </ComboBox>
 
         <StackPanel Grid.Row="2" Margin="10,20,0,0">
             <!-- Paths -->
@@ -58,7 +58,7 @@
                                 </StackPanel>
                             </StackPanel>
                         </ui:Card>
-                        
+
 
                         <!-- Voices Path -->
                         <ui:Card Margin="0,0,0,10" >
@@ -70,7 +70,7 @@
                                 </StackPanel>
                             </StackPanel>
                         </ui:Card>
-                        
+
 
                         <!-- Results Path -->
                         <ui:Card Margin="0,0,0,10" >
@@ -93,13 +93,19 @@
                         <ui:Card Margin="0,0,0,10">
                             <StackPanel>
                                 <TextBlock Text="API Host:" Margin="0,0,0,10"/>
-                                <TextBox Text="{Binding ViewModel.Config.ApiHost, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Margin="0,0,0,0" InputScope="Url"/>
+                                <TextBox Text="{Binding ViewModel.Config.ApiHost, Mode=TwoWay}" InputScope="Url"/>
                             </StackPanel>
                         </ui:Card>
                         <ui:Card Margin="0,0,0,10">
                             <StackPanel>
                                 <TextBlock Text="API Port:" Margin="0,0,0,10"/>
-                                <TextBox Text="{Binding ViewModel.Config.ApiPort, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Margin="0,0,0,0" InputScope="Number"/>
+                                <TextBox Text="{Binding ViewModel.Config.ApiPort, Mode=TwoWay}" InputScope="Number"/>
+                            </StackPanel>
+                        </ui:Card>
+                        <ui:Card Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="Data Secret Code" Margin="0,0,0,10"/>
+                                <TextBox Text="{Binding ViewModel.Config.DataSecretKey, Mode=TwoWay}" />
                             </StackPanel>
                         </ui:Card>
                         <ui:Card Margin="0,0,0,10">
@@ -167,6 +173,6 @@
                 </StackPanel>
             </ui:Hyperlink>
         </StackPanel>
-        
+
     </Grid>
 </Page>

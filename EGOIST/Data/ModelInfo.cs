@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using EGOIST.Helpers;
 using NetFabric.Hyperlinq;
+using System.ComponentModel;
 
 namespace EGOIST.Data;
 
@@ -26,7 +27,7 @@ public class ModelInfo
         public string Size { get; set; }
     }
 
-    public class TextConfiguration
+    public class TextConfiguration : INotifyPropertyChanged
     {
         public string PromptPrefix { get; set; }
         public string PromptSuffix { get; set; }
@@ -35,11 +36,12 @@ public class ModelInfo
         public string SystemPrompt { get; set; }
         public List<string> BlackList { get; set; }
 
+
         public string Prompt(string prompt) => $"{SystemPrefix}{SystemPrompt}{SystemSuffix}{PromptPrefix}{prompt}{PromptSuffix}";
 
         public string Prompt(string prompt, string system) => $"{SystemPrefix}{system}{SystemSuffix}{PromptPrefix}{prompt}{PromptSuffix}";
         public string Prompt(string prompt, string system, string prefix, string suffix) => $"{SystemPrefix}{(string.IsNullOrEmpty(system) ? SystemPrompt : system) }{SystemSuffix}{(string.IsNullOrEmpty(prefix) ? PromptPrefix : prefix)}{prompt}{(string.IsNullOrEmpty(suffix) ? PromptSuffix : suffix)}";
-
+        public string Prompt(string prompt, TextConfiguration configuration) => $"{SystemPrefix}{(string.IsNullOrEmpty(configuration.SystemPrompt) ? SystemPrompt : configuration.SystemPrompt)}{SystemSuffix}{(string.IsNullOrEmpty(configuration.PromptPrefix) ? PromptPrefix : configuration.PromptPrefix)}{prompt}{(string.IsNullOrEmpty(configuration.PromptSuffix) ? PromptSuffix : configuration.PromptSuffix)}";
         // TODO: Filtering not working, It's not returning anything
         public async IAsyncEnumerable<string> Filter(IAsyncEnumerable<string> tokens, CancellationToken cancellationToken)
         {
@@ -66,6 +68,12 @@ public class ModelInfo
                 if (containsBlacklisted)
                     yield return current;
             }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        public virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 

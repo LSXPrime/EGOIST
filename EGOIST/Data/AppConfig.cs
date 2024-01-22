@@ -1,97 +1,34 @@
 ﻿using System.Collections;
-using System.ComponentModel;
 using System.IO;
 using EGOIST.Enums;
 
 namespace EGOIST.Data;
 
-public class AppConfig : INotifyPropertyChanged
+public partial class AppConfig : ObservableObject
 {
     #region API
     public string ApiUrl => string.Format("{0}:{1}", ApiHost, ApiPort);
 
+    [ObservableProperty]
     private string _apiHost = "http://127.0.0.1";
-    public string ApiHost
-    {
-        get => _apiHost;
-        set
-        {
-            if (_apiHost != value)
-            {
-                _apiHost = value;
-                OnPropertyChanged(nameof(ApiHost));
-            }
-        }
-    }
+    [ObservableProperty]
     private int _apiPort = 8000;
-    public int ApiPort
-    {
-        get => _apiPort;
-        set
-        {
-            if (_apiPort != value)
-            {
-                _apiPort = value;
-                OnPropertyChanged(nameof(ApiPort));
-            }
-        }
-    }
+    [ObservableProperty]
+    private string _dataSecretKey = "USER_SECRET_KEY_TO_DECRYPT_DATA";
     #endregion
     #region Paths
+    [ObservableProperty]
     private string _modelsPath = string.Empty;
-    public string ModelsPath
-    {
-        get => _modelsPath;
-        set
-        {
-            if (_modelsPath != value)
-            {
-                _modelsPath = value;
-                OnPropertyChanged(nameof(ModelsPath));
-            }
-        }
-    }
+    [ObservableProperty]
     private string _voicesPath = string.Empty;
-    public string VoicesPath
-    {
-        get => _voicesPath;
-        set
-        {
-            if (_voicesPath != value)
-            {
-                _voicesPath = value;
-                OnPropertyChanged(nameof(VoicesPath));
-            }
-        }
-    }
+    [ObservableProperty]
     private string _resultsPath = string.Empty;
-    public string ResultsPath
-    {
-        get => _resultsPath;
-        set
-        {
-            if (_resultsPath != value)
-            {
-                _resultsPath = value;
-                OnPropertyChanged(nameof(ResultsPath));
-            }
-        }
-    }
-
-    private static readonly string filePath = Directory.GetCurrentDirectory() + "\\Config.json";
+    private static readonly string filePath = $"{Directory.GetCurrentDirectory()}\\Config.json";
     #endregion
     #region Inference
+    [ObservableProperty]
     public Device _device = Device.GPU;
-    public Device Device
-    {
-        get => _device;
-        set
-        {
-            _device = value;
-            OnPropertyChanged(nameof(Device));
-        }
-    }
-    public IEnumerable DeviceValues => Enum.GetValues(typeof(Device));
+    public static IEnumerable DeviceValues => Enum.GetValues(typeof(Device));
     #endregion
 
     public AppConfig()
@@ -137,7 +74,7 @@ public class AppConfig : INotifyPropertyChanged
     // Save settings to a JSON file
     public void Save()
     {
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(this);
+        var json = Newtonsoft.Json.JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented);
         File.WriteAllText(filePath, json);
         ExportToBackend();
         CheckPaths();
@@ -172,15 +109,9 @@ public class AppConfig : INotifyPropertyChanged
         file.Close();
     }
 
-    public event PropertyChangedEventHandler PropertyChanged;
-    protected virtual void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
     public delegate void ConfigSavedDelegate();
     public event ConfigSavedDelegate ConfigSavedEvent;
 
     private static AppConfig? instance;
-    public static AppConfig Instance => instance ?? (instance = new AppConfig());
+    public static AppConfig Instance => instance ??= new AppConfig();
 }
