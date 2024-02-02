@@ -23,6 +23,10 @@ public partial class AppConfig : ObservableObject
     private string _voicesPath = string.Empty;
     [ObservableProperty]
     private string _resultsPath = string.Empty;
+    [ObservableProperty]
+    private string _charactersPath = string.Empty;
+    [ObservableProperty]
+    private string _backgroundsPath = string.Empty;
     private static readonly string filePath = $"{Directory.GetCurrentDirectory()}\\Config.json";
     #endregion
     #region Inference
@@ -38,6 +42,8 @@ public partial class AppConfig : ObservableObject
         ModelsPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Models\\Checkpoints";
         VoicesPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Voices";
         ResultsPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Results";
+        CharactersPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Characters";
+        BackgroundsPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Backgrounds";
     }
 
     // Load settings from a JSON file
@@ -55,6 +61,8 @@ public partial class AppConfig : ObservableObject
         ModelsPath = self.ModelsPath;
         VoicesPath = self.VoicesPath;
         ResultsPath = self.ResultsPath;
+        CharactersPath = self.CharactersPath;
+        BackgroundsPath = self.BackgroundsPath;
         Device = self.Device;
 
         CheckPaths();
@@ -63,12 +71,14 @@ public partial class AppConfig : ObservableObject
 
     private void CheckPaths()
     {
-        var transcribeModelsPath = ModelsPath + "\\VoiceGeneration\\transcribe";
-        var cloneModelsPath = ModelsPath + "\\VoiceGeneration\\clone";
+        var transcribeModelsPath = $"{ModelsPath}\\VoiceGeneration\\transcribe";
+        var cloneModelsPath = $"{ModelsPath}\\VoiceGeneration\\clone";
         Directory.CreateDirectory(transcribeModelsPath);
         Directory.CreateDirectory(cloneModelsPath);
         Directory.CreateDirectory(VoicesPath);
-        Directory.CreateDirectory(ResultsPath+ "\\VoiceGeneration");
+        Directory.CreateDirectory($"{ResultsPath}\\VoiceGeneration");
+        Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\Resources\\Characters");
+        Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\Resources\\Backgrounds");
     }
 
     // Save settings to a JSON file
@@ -88,17 +98,19 @@ public partial class AppConfig : ObservableObject
 
         ApiHost = "http://127.0.0.1";
         ApiPort = 8000;
-        ModelsPath = Directory.GetCurrentDirectory() + "\\Resources\\Models\\Checkpoints";
-        VoicesPath = Directory.GetCurrentDirectory() + "\\Resources\\Voices";
-        ResultsPath = Directory.GetCurrentDirectory() + "\\Resources\\Results";
+        ModelsPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Models\\Checkpoints";
+        VoicesPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Voices";
+        ResultsPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Results";
+        CharactersPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Characters";
+        BackgroundsPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Backgrounds";
         Save();
     }
 
     // For backend config
     public void ExportToBackend()
     {
-        var backendPath = Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\Backend");
-        using StreamWriter file = new StreamWriter($"{backendPath}\\.env");
+        var backendPath = Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\Backend");
+        using var file = new StreamWriter($"{backendPath}\\.env");
 
         file.WriteLine($"HOST_IP={new Uri(ApiHost).Host}");
         file.WriteLine($"HOST_PORT={ApiPort}");
@@ -106,6 +118,8 @@ public partial class AppConfig : ObservableObject
         file.WriteLine($"MODELS_PATH={ModelsPath}");
         file.WriteLine($"VOICES_PATH={VoicesPath}");
         file.WriteLine($"RESULTS_PATH={ResultsPath}");
+        file.WriteLine($"CHARACTER_PATH={CharactersPath}");
+        file.WriteLine($"BACKGROUNDS_PATH={BackgroundsPath}");
         file.Close();
     }
 

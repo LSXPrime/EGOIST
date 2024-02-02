@@ -9,16 +9,25 @@ using System.Net;
 using EGOIST.Helpers;
 using EGOIST.Data;
 using EGOIST.Enums;
+using EGOIST.Views.Pages;
+using System.Text.Json;
+using System.Text;
+using MetadataExtractor;
+using Directory = System.IO.Directory;
+using MetadataExtractor.Formats.Exif;
 
 namespace EGOIST.ViewModels.Pages;
 
 public partial class ManagementViewModel : ObservableObject, INavigationAware
 {
     #region SharedVariables
-    private bool _isInitialized = false;
     [ObservableProperty]
     public static ObservableCollection<ModelInfo> _modelsInfo = new();
-    private readonly NotificationManager notification = new();
+    [ObservableProperty]
+    private static Dictionary<string, Visibility> _visibilityDict = new()
+    {
+        { "DownloadingCharacter", Visibility.Visible },
+    };
     #endregion
 
     #region OverviewVariables
@@ -78,38 +87,88 @@ public partial class ManagementViewModel : ObservableObject, INavigationAware
     private Task? downloadHandlerTask;
     #endregion
 
+    #region RPCharactersVariables
+    [ObservableProperty]
+    private RoleplayCharacter _roleplayCharacterCreator = new();
+    [ObservableProperty]
+    private RoleplayCharacter _roleplayCharacterPreview = new();
+
+    [ObservableProperty]
+    public static ObservableCollection<RoleplayCharacter> _roleplayCharacters = new();
+
+    /*
+    private string _roleplaySearchText = string.Empty;
+    public string RoleplaySearchText
+    {
+        get => _roleplaySearchText;
+        set
+        {
+            _roleplaySearchText = value;
+            RoleplayCharactersFilter($"SCHAR:{value}");
+            OnPropertyChanged(nameof(RoleplaySearchText));
+        }
+    }
+
+    [ObservableProperty]
+    private ObservableCollection<RoleplayCharacter> _roleplayCharactersFiltered = new();
+
+    [ObservableProperty]
+    private ObservableCollection<string> _roleplayCharactersTags = new();
+    [ObservableProperty]
+    private ObservableCollection<string> _roleplayCharactersTagsFiltered = new();
+    */
+    #endregion
+
     #region InitlizingMethods
+    public void OnStartup()
+    {
+        Extensions.onLoadData += LoadData;
+        AppConfig.Instance.ConfigSavedEvent += LoadData;
+    }
+
     public void OnNavigatedTo()
     {
-        if (!_isInitialized)
-            InitializeViewModel();
     }
 
     public void OnNavigatedFrom()
     {
     }
 
-    private void InitializeViewModel()
-    {
-        LoadData();
-        AppConfig.Instance.ConfigSavedEvent += LoadData;
-        _isInitialized = true;
-    }
-
     public void LoadData()
     {
-        string modelsData = File.ReadAllText("Models_Data.json");
-        ModelsInfo = JsonConvert.DeserializeObject<ObservableCollection<ModelInfo>>(modelsData);
-        DownloadModelsInfo.Clear();
-        DownloadModelsInfo.AddRange(ModelsInfo);
+        if (File.Exists("EGOIST_ModelsData.json"))
+        {
+            var modelsData = File.ReadAllText("EGOIST_ModelsData.json");
+            ModelsInfo = JsonConvert.DeserializeObject<ObservableCollection<ModelInfo>>(modelsData);
+            DownloadModelsInfo.Clear();
+            DownloadModelsInfo.AddRange(ModelsInfo);
+        }
+
+        RoleplayCharacters.Clear();
+        var charactersPaths = Directory.GetDirectories(AppConfig.Instance.CharactersPath);
+        foreach (var charPath in charactersPaths)
+        {
+            var charImported = File.ReadAllText($"{charPath}\\{Path.GetFileName(charPath)}.json");
+            var charData = RoleplayCharacter.FromJson(charImported);
+            RoleplayCharacters.Add(charData);
+        }
+        /*
+        RoleplayCharactersFiltered.AddRange(RoleplayCharacters);
+
+        RoleplayCharactersTags.Clear();
+        foreach (var charInfo in RoleplayCharacters)
+        {
+            var tag = charInfo.Tags.AsValueEnumerable().Where(x => !RoleplayCharactersTags.Contains(x));
+            RoleplayCharactersTags.AddRange(tag);
+        }
+        */
 
         Task.Run(LoadModels);
     }
 
     private async Task LoadModels()
     {
-        //  string apiUrl = $"https://api.github.com/repos/LSXPrime/EGOIST-Models-Catalog/contents/Configs";
-        string apiUrl = "http://120.0.0.1";
+        string apiUrl = $"https://api.github.com/repos/LSXPrime/EGOIST-Models-Catalog/contents/Models";
 
         using HttpClient client = new() { Timeout = TimeSpan.FromSeconds(3) };
         client.DefaultRequestHeaders.Add("User-Agent", "EGOIST");
@@ -121,52 +180,28 @@ public partial class ManagementViewModel : ObservableObject, INavigationAware
 
             if (response.IsSuccessStatusCode)
             {
-                Extensions.Notify(new NotificationContent { Title = "Management", Message = $"Models , A7a", Type = NotificationType.Error }, areaName: "NotificationArea");
-
                 string jsonResponse = await response.Content.ReadAsStringAsync();
-
                 ModelsInfo = new ObservableCollection<ModelInfo>();
 
-                // Can be easily achived in one line by using dynamic json, but as Game Developer, I hate LINQ
-                int startIndex = jsonResponse.IndexOf("{\"name\":");
-                while (startIndex != -1)
+                using HttpClient client2 = new() { Timeout = TimeSpan.FromSeconds(3) };
+                var files = JsonConvert.DeserializeObject<List<GithubFileInfo>>(jsonResponse);
+                foreach (var file in files)
                 {
-                    int endIndex = jsonResponse.IndexOf("{\"name\":", startIndex + 1);
-                    if (endIndex == -1)
-                        endIndex = jsonResponse.LastIndexOf('}');
-
-                    string fileData = jsonResponse.Substring(startIndex, endIndex - startIndex + 1);
-
-                    // Check if the file is of type "file" and ends with ".json"
-                    if (fileData.Contains("\"type\":\"file\"") && fileData.Contains("\"name\":\"") && fileData.Contains(".json\""))
+                    var fileResponse = await client.GetAsync(file.download_url);
+                    if (fileResponse.IsSuccessStatusCode)
                     {
-                        // Extract the name and download_url
-                        int nameStart = fileData.IndexOf("\"name\":\"") + 8;
-                        int nameEnd = fileData.IndexOf(".json\"", nameStart) + 5;
-                        string fileName = fileData[nameStart..nameEnd];
-
-                        int downloadUrlStart = fileData.IndexOf("\"download_url\":\"") + 16;
-                        int downloadUrlEnd = fileData.IndexOf("\",\"", downloadUrlStart);
-                        string fileUrl = fileData[downloadUrlStart..downloadUrlEnd];
-
-                        HttpResponseMessage fileResponse = await client.GetAsync(fileUrl);
-
-                        if (fileResponse.IsSuccessStatusCode)
-                        {
-                            string fileContent = await fileResponse.Content.ReadAsStringAsync();
-                            ModelInfo modelInfo = ModelInfo.FromJson(fileContent);
-                            ModelsInfo.Add(modelInfo);
-                        }
+                        string fileContent = await fileResponse.Content.ReadAsStringAsync();
+                        ModelInfo modelInfo = ModelInfo.FromJson(fileContent);
+                        ModelsInfo.Add(modelInfo);
                     }
-
-                    startIndex = jsonResponse.IndexOf("{\"name\":", endIndex + 1);
                 }
 
                 // Keep offline copy
                 var json = JsonConvert.SerializeObject(ModelsInfo);
-                File.WriteAllText("Models_Data.json", json);
+                File.WriteAllText("EGOIST_ModelsData.json", json);
                 DownloadModelsInfo.Clear();
                 DownloadModelsInfo.AddRange(ModelsInfo);
+                Extensions.Notify(new NotificationContent { Title = "Management", Message = $"Models Fetching Successed", Type = NotificationType.None }, areaName: "NotificationArea");
             }
         }
         catch (TaskCanceledException ex)
@@ -406,4 +441,170 @@ public partial class ManagementViewModel : ObservableObject, INavigationAware
     }
 
     #endregion
+
+    #region RPCharactersMethods
+
+    /*
+    [RelayCommand]
+    private void RoleplayCharactersFilter(string tag)
+    {
+        if (!string.IsNullOrEmpty(tag))
+        {
+            if (tag.StartsWith("SCHAR:"))
+            {
+                tag = tag[6..];
+                RoleplayCharactersFiltered = new ObservableCollection<RoleplayCharacter>(RoleplayCharacters.Where(x => x.Name.Contains(tag) && x.Tags.Intersect(RoleplayCharactersTagsFiltered).Any()));
+            }
+            else
+            {
+                if (RoleplayCharactersTagsFiltered.Contains(tag))
+                    RoleplayCharactersTagsFiltered.Remove(tag);
+                else
+                    RoleplayCharactersTagsFiltered.Add(tag);
+
+                RoleplayCharactersFiltered = new ObservableCollection<RoleplayCharacter>(RoleplayCharacters.Where(x=> x.Tags.Intersect(RoleplayCharactersTagsFiltered).Any()));
+            }
+        }
+        else
+        {
+            RoleplayCharactersFiltered.Clear();
+            RoleplayCharactersFiltered.AddRange(RoleplayCharacters);
+        }
+
+        OnPropertyChanged(nameof(RoleplayCharactersFiltered));
+    }
+    */
+
+    [RelayCommand]
+    public async Task RPCharactersCreate()
+    {
+        var charPath = $"{AppConfig.Instance.CharactersPath}\\{RoleplayCharacterCreator.Name}";
+        Directory.CreateDirectory(charPath);
+        if (File.Exists(RoleplayCharacterCreator.Avatar))
+        {
+            File.Copy(RoleplayCharacterCreator.Avatar, $"{charPath}\\{RoleplayCharacterCreator.Name}{Path.GetExtension(RoleplayCharacterCreator.Avatar)}", true);
+            RoleplayCharacterCreator.Avatar = $"{RoleplayCharacterCreator.Name}{Path.GetExtension(RoleplayCharacterCreator.Avatar)}";
+        }
+        else
+            RoleplayCharacterCreator.Avatar = $"{RoleplayCharacterCreator.Name}.webp";
+        var createdCharacter = RoleplayCharacterCreator.ToJson();
+        await File.WriteAllTextAsync($"{charPath}\\{RoleplayCharacterCreator.Name}.json", createdCharacter);
+        Extensions.Notify("Management", $"Character {RoleplayCharacterCreator.Name} Created Successfully");
+        RPCharactersReset();
+        LoadData();
+    }
+
+    [RelayCommand]
+    public void RPCharactersReset() => RoleplayCharacterCreator = RoleplayCharacterPreview = new();
+
+    [RelayCommand]
+    public async Task RPCharactersImport()
+    {
+        var openFileDialog = new System.Windows.Forms.OpenFileDialog { Filter = "Text|*.json;*.txt;*.log|" + "Images|*.png;*.webp|" + "All Supported Files|*.json;*.txt;*.log;*.png;*.webp" };
+        if (openFileDialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+            return;
+        
+        var charPath = openFileDialog.FileName;
+        var charFormat = Path.GetExtension(charPath);
+        var charParsed = string.Empty;
+        if (new[] { ".json", ".txt", ".log" }.Contains(Path.GetExtension(charPath)))
+        {
+            charParsed = await File.ReadAllTextAsync(charPath);
+            var charData = RoleplayCharacter.FromJson(charParsed);
+            if (charData != null)
+                RoleplayCharacterCreator = charData;
+        }
+        else if (new[] { ".webp", ".png" }.Contains(Path.GetExtension(charPath)))
+        {
+            switch (charFormat)
+            {
+                case ".webp":
+                    try
+                    {
+                        var directories = ImageMetadataReader.ReadMetadata(charPath);
+
+                        var exifDirectory = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
+                        var description = exifDirectory?.GetDescription(ExifDirectoryBase.TagUserComment);
+
+                        if (description == "Undefined" && exifDirectory != null && exifDirectory.TryGetInt32(ExifDirectoryBase.TagUserComment, out int value))
+                        {
+                            charParsed = value.ToString();
+                            break;
+                        }
+
+                        try
+                        {
+                            JsonDocument.Parse(description);
+                            charParsed = description;
+                            break;
+                        }
+                        catch
+                        {
+                            var byteArr = Array.ConvertAll(description.Split(','), byte.Parse);
+                            charParsed = Encoding.UTF8.GetString(byteArr);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Extensions.Notify("Management",  $"Character Importing Failed, Exception: {ex.Message}", NotificationType.Error);
+                    }
+                    break;
+                case ".png":
+                    try
+                    {
+                        var buffer = File.ReadAllBytes(charPath);
+                        int index = 8;
+                        while (index < buffer.Length)
+                        {
+                            int chunkLength = BitConverter.ToInt32(buffer, index);
+                            index += 8 + chunkLength;
+                            if (Encoding.ASCII.GetString(buffer, index - 8, 4) == "tEXt")
+                                charParsed = Encoding.UTF8.GetString(buffer, index - chunkLength, chunkLength);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Extensions.Notify("Management", $"Character Importing Failed, Exception: {ex.Message}", NotificationType.Error);
+                    }
+                    break;
+            }
+
+            var charData = JsonConvert.DeserializeObject<RoleplayCharacter>(charParsed, new RoleplayCharacterTavenAIConverter());
+            charData.Avatar = charPath;
+            if (charData != null)
+                RoleplayCharacterCreator = charData;
+        }
+    }
+
+    [RelayCommand]
+    public void RPCharactersPreviewEdit()
+    {
+        RoleplayCharacterCreator = RoleplayCharacterPreview;
+        App.GetService<ManagementPage>().Tabs.SelectedIndex = 3;
+    }
+
+    [RelayCommand]
+    public void RPCharactersPreviewDelete()
+    {
+        var charPath = $"{AppConfig.Instance.CharactersPath}\\{RoleplayCharacterPreview.Name}";
+        if (!string.IsNullOrEmpty(RoleplayCharacterPreview.Name) && Directory.Exists(charPath))
+            Directory.Delete(charPath, true);
+
+        RoleplayCharacterPreview = new();
+    }
+
+    #endregion
+}
+
+public class GithubFileInfo
+{
+    public string name { get; set; }
+    public string path { get; set; }
+    public string sha { get; set; }
+    public int size { get; set; }
+    public string url { get; set; }
+    public string html_url { get; set; }
+    public string git_url { get; set; }
+    public string download_url { get; set; }
+    public string type { get; set; }
 }

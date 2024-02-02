@@ -18,9 +18,12 @@
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     ScrollViewer.CanContentScroll="True"
     mc:Ignorable="d">
+    <Page.Resources>
+        <helpers:EnumToBoolConverter x:Key="EnumToBoolConverter" />
+    </Page.Resources>
 
     <Grid Margin="20">
-        <TabControl>
+        <TabControl x:Name="Tabs">
             <TabItem Header="Overview" >
                 <Grid>
                     <Grid.RowDefinitions>
@@ -156,9 +159,6 @@
                                                                 <Button Height="20" Margin="3" HorizontalAlignment="Stretch" Command="{Binding DataContext.ViewModel.DownloadModelCommand, RelativeSource={RelativeSource AncestorType={x:Type Page}}}" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}" >
                                                                     <ui:SymbolIcon Symbol="ArrowDownload24" />
                                                                 </Button>
-                                                                <Button Height="20" Margin="3" HorizontalAlignment="Stretch" Command="{Binding DataContext.ViewModel.LoadModelCommand, RelativeSource={RelativeSource AncestorType={x:Type Page}}}" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}" >
-                                                                    <ui:SymbolIcon Symbol="Play24" />
-                                                                </Button>
                                                             </StackPanel>
                                                         </Border>
                                                     </DataTemplate>
@@ -281,6 +281,352 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Characters" >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition MaxWidth="400" Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <!-- Background & Overview -->
+                        <Border x:Name="RPCharactersBackground" Grid.Row="0" Height="400" CornerRadius="8">
+                            <Border.Background>
+                                <ImageBrush ImageSource="/Assets/BG.png" RenderOptions.BitmapScalingMode="HighQuality" Stretch="Fill" />
+                            </Border.Background>
+                            <Border CornerRadius="8">
+                                <Border.Background>
+                                    <RadialGradientBrush>
+                                        <GradientStop Offset="0" Color="#1F000000" />
+                                        <GradientStop Offset="1" Color="#4F000000" />
+                                    </RadialGradientBrush>
+                                </Border.Background>
+
+                                <Grid>
+                                    <StackPanel Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="50">
+                                        <ui:TextBlock FontTypography="Title" Foreground="#FFFFFF" Text="EGOIST" />
+                                        <ui:TextBlock FontTypography="Subtitle" Foreground="#B7FFFFFF" Text="Characters" />
+                                        <ui:TextBlock FontTypography="BodyStrong" Foreground="#B7FFFFFF" Text="Download, manage roleplay characters.&#x0a;" />
+                                        <!-- Filtering Options
+                                        <ui:TextBox Grid.Row="0" Icon="Search24" IconPlacement="Right" Width="360" Text="{Binding ViewModel.RoleplaySearchText, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Search for your roleplay waifu by name" />
+                                        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,10,0,0">
+                                        // Type Filter
+                                        <ComboBox  Width="200" Margin="0,0,5,0" ItemsSource="{Binding ViewModel.RoleplayCharactersTags}" >
+                                        <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                        <CheckBox Content="{Binding}" Command="{Binding DataContext.ViewModel.RoleplayCharactersFilterCommand, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Page}}" />
+                                        </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <Button VerticalAlignment="Stretch" HorizontalAlignment="Right" Width="150" Margin="5,0,0,0" Command="{Binding ViewModel.FiltersApplyCommand}" CommandParameter="{x:Null}" >
+                                        <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon Symbol="ArrowReset24" FontSize="18" Margin="0,0,10,0" />
+                                        <TextBlock Text="Reset" FontSize="18" />
+                                        </StackPanel>
+                                        </Button>
+                                        </StackPanel>
+                                        -->
+                                    </StackPanel>
+
+                                    <!-- Roleplay Character Downloading -->
+                                    <Grid Visibility="Hidden" Background="Black">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <ui:ProgressRing IsIndeterminate="True" Foreground="Red" />
+                                            <TextBlock Text="Loading Character" FontSize="36" FontFamily="Calisto MT" Margin="15" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </Border>
+
+                        <ListView Grid.Row="1" Margin="0,15" ItemsSource="{Binding ViewModel.RoleplayCharacters}" SelectedItem="{Binding ViewModel.RoleplayCharacterPreview}" SelectionMode="Single" >
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <!-- Character Details -->
+                                    <ui:Card x:Name="ModelDetailsCard" MaxHeight="200">
+                                        <Grid Margin="10" >
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="800" />
+                                                <ColumnDefinition Width="300" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid Grid.Row="0">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="40" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Name}" FontSize="36" FontFamily="Calisto MT" />
+                                                <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Height="30" >
+                                                    <Border CornerRadius="5" Background="DarkRed" Margin="5">
+                                                        <StackPanel Margin="5,0,5,0" Orientation="Horizontal">
+                                                            <Label Content="{Binding Tags[0]}" FontWeight="Bold" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                </StackPanel>
+                                                <TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" MaxWidth="1200" TextWrapping="Wrap" Text="{Binding Summary}" />
+
+                                            </Grid>
+
+                                            <Grid Grid.Column="1">
+
+                                                <StackPanel Orientation="Horizontal">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Created By" FontWeight="Bold" />
+                                                        <TextBlock Text="{Binding Creator}" FontSize="24" FontFamily="Calisto MT" />
+                                                        <TextBlock Text="Version" FontWeight="Bold" Margin="0,10,0,0" />
+                                                        <TextBlock Text="{Binding Version}" FontSize="24" FontFamily="Calisto MT" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="25,0,0,0">
+                                                        <TextBlock Text="Author Notes" FontWeight="Bold" />
+                                                        <TextBox Text="{Binding Notes}" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" Width="200" MaxHeight="125" />
+                                                    </StackPanel>
+
+                                                </StackPanel>
+                                            </Grid>
+                                        </Grid>
+                                    </ui:Card>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+
+                    <!-- Roleplay Character Card -->
+                    <Border x:Name="RPCharacterInfo" Grid.Column="1" CornerRadius="10" Margin="10,0,0,0">
+                        <Border.Background>
+                            <RadialGradientBrush>
+                                <GradientStop Offset="0" Color="#3F000000" />
+                            </RadialGradientBrush>
+                        </Border.Background>
+                        <StackPanel>
+                            <TextBlock Text="Waifu Card" FontSize="36" FontWeight="Bold" FontFamily="Cambria" Margin="25" />
+                            <Line Stroke="DarkRed" StrokeThickness="5" X1="225"  />
+                            <StackPanel Margin="25">
+                                <TextBlock Text="Avatar" FontSize="24" FontWeight="Bold" FontFamily="Cambria" />
+                                <Image Source="{Binding ViewModel.RoleplayCharacterPreview.AvatarPath}" Stretch="Fill" Width="150" Height="150" HorizontalAlignment="Left" Margin="5" />
+                                <TextBlock Text="Name" FontSize="24" FontWeight="Bold" FontFamily="Cambria" Margin="0,30,0,0" />
+                                <TextBlock Text="{Binding ViewModel.RoleplayCharacterPreview.Name}" FontFamily="Cambria" FontSize="36" Margin="0,5,0,0"  />
+                                <TextBlock Text="Interactions" FontSize="24" FontFamily="Cambria" Margin="0,30,0,0" />
+                                <TextBlock Text="{Binding ViewModel.RoleplayCharacterPreview.InteractionFrequancy}" FontFamily="Cambria" FontSize="36" Margin="0,5,0,0" />
+                                <TextBlock Text="Personality" FontSize="24" FontWeight="Bold" FontFamily="Cambria" Margin="0,30,0,0" />
+                                <ScrollViewer MaxHeight="150">
+                                    <TextBlock Text="{Binding ViewModel.RoleplayCharacterPreview.Summary}" FontFamily="Cambria" TextWrapping="Wrap" FontSize="36" Margin="0,5,0,0" MaxWidth="300" />
+                                </ScrollViewer>
+                                <TextBlock Text="Scenario" FontSize="24" FontWeight="Bold" FontFamily="Cambria" Margin="0,30,0,0" />
+                                <ScrollViewer MaxHeight="150">
+                                    <TextBlock Text="{Binding ViewModel.RoleplayCharacterPreview.Scenario}" FontFamily="Cambria" TextWrapping="Wrap" FontSize="36" Margin="0,5,0,0" MaxWidth="300" />
+                                </ScrollViewer>
+                                <TextBlock Text="Description" FontSize="24" FontWeight="Bold" FontFamily="Cambria" Margin="0,30,0,0" />
+                                <ScrollViewer MaxHeight="150">
+                                    <TextBlock Text="{Binding ViewModel.RoleplayCharacterPreview.Description}" FontFamily="Cambria" TextWrapping="Wrap" FontSize="36" Margin="0,5,0,0" MaxWidth="300" />
+                                </ScrollViewer>
+                                <TextBlock Text="First Message" FontSize="24" FontWeight="Bold" FontFamily="Cambria" Margin="0,30,0,0" />
+                                <ScrollViewer MaxHeight="150">
+                                    <TextBlock Text="{Binding ViewModel.RoleplayCharacterPreview.FirstMessage}" FontFamily="Cambria" TextWrapping="Wrap" FontSize="36" Margin="0,5,0,0" MaxWidth="300" />
+                                </ScrollViewer>
+
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,25">
+                                    <Button Margin="10" Command="{Binding ViewModel.RPCharactersPreviewEditCommand}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="Edit24" FontSize="24" Margin="0,0,15,0" />
+                                            <TextBlock Text="Edit" FontSize="24" FontFamily="Cambria" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Margin="10" Command="{Binding ViewModel.RPCharactersPreviewDeleteCommand}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="Delete24" FontSize="24" Margin="0,0,15,0" />
+                                            <TextBlock Text="Delete" FontSize="24" FontFamily="Cambria" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+
+                        </StackPanel>
+
+                    </Border>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Character Creator" >
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="20"   >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="20,0,0,0" >
+                            <TextBlock Text="Name" FontSize="52" FontFamily="Cambria" />
+                            <TextBlock Text="The Character Name" Foreground="Red" FontSize="16" FontFamily="Cambria" />
+                            <ui:TextBox Text="{Binding ViewModel.RoleplayCharacterCreator.Name}" PlaceholderText="Character name..." FontSize="36" Margin="0,5,0,0" Width="525" />
+                            <TextBlock Text="Interactions" FontSize="52" FontFamily="Cambria" Margin="0,30,0,0" />
+                            <TextBlock Text="How often the character speaks in  group chats!" Foreground="Red" FontSize="16" FontFamily="Cambria" />
+                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0" >
+                                <RadioButton Content="Shy" Command="{Binding ViewModel.RoleplayCharacterCreator.SetInteractionCommand}" CommandParameter="Shy" IsChecked="{Binding ViewModel.RoleplayCharacterCreator.InteractionFrequancy, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Shy, Mode=OneWay}" />
+                                <RadioButton Content="Normal" Command="{Binding ViewModel.RoleplayCharacterCreator.SetInteractionCommand}" CommandParameter="Normal" IsChecked="{Binding ViewModel.RoleplayCharacterCreator.InteractionFrequancy, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Normal, Mode=OneWay}" />
+                                <RadioButton Content="Chatty" Command="{Binding ViewModel.RoleplayCharacterCreator.SetInteractionCommand}" CommandParameter="Chatty" IsChecked="{Binding ViewModel.RoleplayCharacterCreator.InteractionFrequancy, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Chatty, Mode=OneWay}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="50,0,0,0" >
+                            <TextBlock Text="Personality Summary" FontSize="52" FontFamily="Cambria" />
+                            <TextBlock Text="A brief description of the personality" Foreground="Red" FontSize="16" FontFamily="Cambria" />
+                            <ui:TextBox Text="{Binding ViewModel.RoleplayCharacterCreator.Summary}" PlaceholderText="Summary character description.." FontSize="36" Margin="0,5,0,0" Width="525" />
+                            <TextBlock Text="Scenario" FontSize="52" FontFamily="Cambria" Margin="0,30,0,0" />
+                            <TextBlock Text="Circumstances and context of the dialogue" Foreground="Red" FontSize="16" FontFamily="Cambria" />
+                            <ui:TextBox Text="{Binding ViewModel.RoleplayCharacterCreator.Scenario}" PlaceholderText="Context of the interaction" FontSize="36" Margin="0,5,0,0" Width="525" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" HorizontalAlignment="Right" >
+                            <Image Source="{Binding ViewModel.RoleplayCharacterCreator.Avatar}" Stretch="Fill" Width="300" Height="300" />
+                            <ui:Card Width="300" Margin="0,10,0,0">
+                                <Grid>
+                                    <TextBlock Text="Avatar" FontSize="52" FontFamily="Cambria" />
+                                    <Button HorizontalAlignment="Right" Margin="0,10,0,0" Command="{Binding ViewModel.RoleplayCharacterCreator.SetAvatarCommand}">
+                                        <ui:SymbolIcon Symbol="ImageEdit24" FontSize="36" />
+                                    </Button>
+                                </Grid>
+                            </ui:Card>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Grid.Row="1" Margin="20" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="10" >
+                            <TextBlock Text="Description " FontSize="52" FontFamily="Cambria" />
+                            <TextBlock Text="Personality and other characteristics" Foreground="Red" FontSize="16" FontFamily="Cambria" />
+                            <ui:TextBox Text="{Binding ViewModel.RoleplayCharacterCreator.Description}" PlaceholderText="Describe character's physical and mental traits." FontSize="36" AcceptsReturn="True" TextWrapping="Wrap" Height="400" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="10" >
+                            <TextBlock Text="First Message" FontSize="52" FontFamily="Cambria" />
+                            <TextBlock Text="The character first thought" Foreground="Red" FontSize="16" FontFamily="Cambria" />
+                            <ui:TextBox Text="{Binding ViewModel.RoleplayCharacterCreator.FirstMessage}" PlaceholderText="The first message from the character you receive every new chat." FontSize="36" AcceptsReturn="True" TextWrapping="Wrap" Height="400" />
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Grid.Row="2" Margin="20" >
+                        <TextBlock Text="Dialogue Example" FontSize="52" FontFamily="Cambria" />
+                        <TextBlock Text="A peak on how this character talk, forms the personality more clearly" Foreground="Red" FontSize="16" FontFamily="Cambria" />
+                        <Grid>
+                            <ListView x:Name="RPCreatorExampleDialogue" Height="250" Margin="0,5,120,0" ItemsSource="{Binding ViewModel.RoleplayCharacterCreator.ExampleDialogue}" >
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="10,0,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="150" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <ComboBox Grid.Column="0" SelectedValue="{Binding Sender, Mode=TwoWay}" SelectedValuePath="Content">
+                                                <ComboBoxItem>User</ComboBoxItem>
+                                                <ComboBoxItem>Assistant</ComboBoxItem>
+                                            </ComboBox>
+                                            <TextBox Text="{Binding Message}" Margin="15,0,0,0" Grid.Column="1" HorizontalAlignment="Stretch" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+
+                            <StackPanel>
+                                <Button HorizontalAlignment="Right" Margin="0,10,0,0" Command="{Binding ViewModel.RoleplayCharacterCreator.AddDialogueLineCommand}" >
+                                    <ui:SymbolIcon Symbol="Add48" FontSize="82" />
+                                </Button>
+                                <Button HorizontalAlignment="Right" Margin="0,10,0,0" Command="{Binding ViewModel.RoleplayCharacterCreator.RemoveDialogueLineCommand}" CommandParameter="{Binding SelectedItem, ElementName=RPCreatorExampleDialogue}" >
+                                    <ui:SymbolIcon Symbol="Delete48" FontSize="82" />
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="3">
+                        <TextBlock Text="Metadata" FontSize="72" FontFamily="Cambria" TextAlignment="Center" />
+                        <TextBlock Text="- Doesn't affect character or model, only help in attribute and filtering. -" FontSize="16" TextAlignment="Center" />
+                    </StackPanel>
+
+                    <Grid Grid.Row="4" Margin="20" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="20" >
+                            <TextBlock Text="Creater" FontSize="52" FontFamily="Cambria" />
+                            <TextBlock Text="The name of character card creater" Foreground="Red" FontSize="16" FontFamily="Cambria" />
+                            <ui:TextBox Text="{Binding ViewModel.RoleplayCharacterCreator.Creator}" PlaceholderText="Creator name..." FontSize="36" Margin="0,5,0,0" Width="525" />
+                            <TextBlock Text="Version" FontSize="52" FontFamily="Cambria" Margin="0,30,0,0" />
+                            <TextBlock Text="Versioning helps to keep changes in track" Foreground="Red" FontSize="16" FontFamily="Cambria" />
+                            <ui:NumberBox Text="{Binding ViewModel.RoleplayCharacterCreator.Version}" PlaceholderText="1.0" FontSize="36" Margin="0,5,0,0" Width="525" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="20" >
+                            <TextBlock Text="Notes" FontSize="52" FontFamily="Cambria" />
+                            <TextBlock Text="A notes of creator" Foreground="Red" FontSize="16" FontFamily="Cambria" />
+                            <ui:TextBox Text="{Binding ViewModel.RoleplayCharacterCreator.Notes}" PlaceholderText="Use tips or models that works &#x0a;well with this character" FontSize="36" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,5,0,0" Height="250" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Margin="20" >
+                            <TextBlock Text="Tags" FontSize="52" FontFamily="Cambria" />
+                            <TextBlock Text="Tags used for searching and filtering cards" Foreground="Red" FontSize="16" FontFamily="Cambria" />
+                            <Grid>
+                                <ListView x:Name="RPCreatorTags" ItemsSource="{Binding ViewModel.RoleplayCharacterCreator.Tags}" Height="250" Margin="0,5,120,0" >
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="T" FontSize="52" FontFamily="Cambria" VerticalAlignment="Center" Margin="10,0,15,0" />
+                                                <TextBox Text="{Binding Path=., Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" FontSize="48" FontFamily="Cambria"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+
+                                <StackPanel>
+                                    <Button HorizontalAlignment="Right" Margin="0,10,0,0" Command="{Binding ViewModel.RoleplayCharacterCreator.AddTagCommand}" >
+                                        <ui:SymbolIcon Symbol="TextAddT24" FontSize="82" />
+                                    </Button>
+                                    <Button HorizontalAlignment="Right" Margin="0,10,0,0" Command="{Binding ViewModel.RoleplayCharacterCreator.RemoveTagCommand}" CommandParameter="{Binding SelectedItem, ElementName=RPCreatorTags}" >
+                                        <ui:SymbolIcon Symbol="Delete48" FontSize="82" />
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Grid.Row="5"  HorizontalAlignment="Center" Height="300" Orientation="Horizontal">
+                        <Button Margin="10" Command="{Binding ViewModel.RPCharactersCreateCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="DocumentSave24" FontSize="36" Margin="0,0,15,0" />
+                                <TextBlock Text="Save" FontSize="36" FontFamily="Cambria" />
+                            </StackPanel>
+                        </Button>
+                        <Button Margin="10" Command="{Binding ViewModel.RPCharactersResetCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="ArrowReset32" FontSize="36" Margin="0,0,15,0" />
+                                <TextBlock Text="Reset" FontSize="36" FontFamily="Cambria" />
+                            </StackPanel>
+                        </Button>
+                        <Button Margin="10" Command="{Binding ViewModel.RPCharactersImportCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="ArrowImport24" FontSize="36" Margin="0,0,15,0" />
+                                <TextBlock Text="Import" FontSize="36" FontFamily="Cambria" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
                 </Grid>
             </TabItem>
         </TabControl>

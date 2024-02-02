@@ -18,6 +18,7 @@ public partial class TextPage : INavigableView<TextViewModel>
         InitializeComponent();
 
         viewModel.ChatContainerView = ChatContainerView;
+        viewModel.RoleplayContainerView = RoleplayContainerView;
         viewModel.MemoryContainerView = MemoryContainerView;
         viewModel.CompletionTextEditor = CompletionTextEditor;
         viewModel.CompletionSuggestionPopup = CompletionSuggestionPopup;

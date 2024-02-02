@@ -8,6 +8,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+	<PublishSingleFile>true</PublishSingleFile>
+	<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 	<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
 	<Version>$(VersionPrefix)</Version>
 	<AssemblyVersion>1.0.0</AssemblyVersion>
@@ -31,6 +33,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebugType>embedded</DebugType>
   </PropertyGroup>
+
+	<PropertyGroup>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+	</PropertyGroup>
 	
   <ItemGroup>
     <None Remove="Assets\Backend.zip" />
@@ -48,26 +54,19 @@
   </ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="ExifLibNet" Version="2.1.4" />
 		<PackageReference Include="LLamaSharp" Version="0.9.1" />
 		<PackageReference Include="LLamaSharp.Backend.Cpu" Version="0.9.1" />
 		<PackageReference Include="LLamaSharp.Backend.Cuda11" Version="0.9.1" />
 		<PackageReference Include="LLamaSharp.kernel-memory" Version="0.9.1" />
-		<PackageReference Include="LLamaSharp.semantic-kernel" Version="0.9.1" />
+		<PackageReference Include="MetadataExtractor" Version="2.8.1" />
 		
 		<PackageReference Include="Microsoft.KernelMemory.Core" Version="0.24.231228.5" />
 		<PackageReference Include="Microsoft.KernelMemory.AI.LlamaSharp" Version="0.24.231228.5" />
-		
-		<PackageReference Include="Microsoft.SemanticKernel" Version="1.0.1" />
-		<PackageReference Include="Microsoft.SemanticKernel.Plugins.Core" Version="1.0.1-alpha" />
-		<PackageReference Include="Microsoft.SemanticKernel.Plugins.Document" Version="1.0.1-alpha" />
-		<PackageReference Include="Microsoft.SemanticKernel.Plugins.Memory" Version="1.0.1-alpha" />
-		<PackageReference Include="Microsoft.SemanticKernel.Plugins.MsGraph" Version="1.0.1-alpha" />
-		<PackageReference Include="Microsoft.SemanticKernel.Plugins.Web" Version="1.0.1-alpha" />
 
 		<PackageReference Include="runtime.native.System.Security.Cryptography.OpenSsl" Version="4.3.3" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+
+		<PackageReference Include="System.Runtime.Caching" Version="8.0.0" />
 		<PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
 		<PackageReference Include="NetFabric.Hyperlinq" Version="3.0.0-beta48" />
 
