@@ -101,17 +101,18 @@ A project that aims to simplify interaction with various AI models across differ
 
 ## Screenshots
 
-![[Screenshots/Screenshot_01.jpg]]
-![[Screenshots/Screenshot_02.jpg]]
-![[Screenshots/Screenshot_03.jpg]]
-![[Screenshots/Screenshot_04.jpg]]
-![[Screenshots/Screenshot_05.jpg]]
-![[Screenshots/Screenshot_06.jpg]]
-![[Screenshots/Screenshot_07.jpg]]
-![[Screenshots/Screenshot_08.jpg]]
-![[Screenshots/Screenshot_09.jpg]]
-![[Screenshots/Screenshot_10.jpg]]
-![[Screenshots/Screenshot_11.jpg]]
-![[Screenshots/Screenshot_12.jpg]]
-![[Screenshots/Screenshot_13.jpg]]
-![[Screenshots/Screenshot_14.jpg]]
+![](Screenshots/Screenshot_01.jpg)
+![](Screenshots/Screenshot_02.jpg)
+![](Screenshots/Screenshot_03.jpg)
+![](Screenshots/Screenshot_04.jpg)
+![](Screenshots/Screenshot_05.jpg)
+![](Screenshots/Screenshot_06.jpg)
+![](Screenshots/Screenshot_07.jpg)
+![](Screenshots/Screenshot_08.jpg)
+![](Screenshots/Screenshot_09.jpg)
+![](Screenshots/Screenshot_10.jpg)
+![](Screenshots/Screenshot_11.jpg)
+![](Screenshots/Screenshot_12.jpg)
+![](Screenshots/Screenshot_13.jpg)
+![](Screenshots/Screenshot_14.jpg)
+
