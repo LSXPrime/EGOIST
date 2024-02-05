@@ -1,97 +1,38 @@
 ﻿using System.Collections;
-using System.ComponentModel;
 using System.IO;
 using EGOIST.Enums;
 
 namespace EGOIST.Data;
 
-public class AppConfig : INotifyPropertyChanged
+public partial class AppConfig : ObservableObject
 {
     #region API
     public string ApiUrl => string.Format("{0}:{1}", ApiHost, ApiPort);
 
+    [ObservableProperty]
     private string _apiHost = "http://127.0.0.1";
-    public string ApiHost
-    {
-        get => _apiHost;
-        set
-        {
-            if (_apiHost != value)
-            {
-                _apiHost = value;
-                OnPropertyChanged(nameof(ApiHost));
-            }
-        }
-    }
+    [ObservableProperty]
     private int _apiPort = 8000;
-    public int ApiPort
-    {
-        get => _apiPort;
-        set
-        {
-            if (_apiPort != value)
-            {
-                _apiPort = value;
-                OnPropertyChanged(nameof(ApiPort));
-            }
-        }
-    }
+    [ObservableProperty]
+    private string _dataSecretKey = "USER_SECRET_KEY_TO_DECRYPT_DATA";
     #endregion
     #region Paths
+    [ObservableProperty]
     private string _modelsPath = string.Empty;
-    public string ModelsPath
-    {
-        get => _modelsPath;
-        set
-        {
-            if (_modelsPath != value)
-            {
-                _modelsPath = value;
-                OnPropertyChanged(nameof(ModelsPath));
-            }
-        }
-    }
+    [ObservableProperty]
     private string _voicesPath = string.Empty;
-    public string VoicesPath
-    {
-        get => _voicesPath;
-        set
-        {
-            if (_voicesPath != value)
-            {
-                _voicesPath = value;
-                OnPropertyChanged(nameof(VoicesPath));
-            }
-        }
-    }
+    [ObservableProperty]
     private string _resultsPath = string.Empty;
-    public string ResultsPath
-    {
-        get => _resultsPath;
-        set
-        {
-            if (_resultsPath != value)
-            {
-                _resultsPath = value;
-                OnPropertyChanged(nameof(ResultsPath));
-            }
-        }
-    }
-
-    private static readonly string filePath = Directory.GetCurrentDirectory() + "\\Config.json";
+    [ObservableProperty]
+    private string _charactersPath = string.Empty;
+    [ObservableProperty]
+    private string _backgroundsPath = string.Empty;
+    private static readonly string filePath = $"{Directory.GetCurrentDirectory()}\\Config.json";
     #endregion
     #region Inference
+    [ObservableProperty]
     public Device _device = Device.GPU;
-    public Device Device
-    {
-        get => _device;
-        set
-        {
-            _device = value;
-            OnPropertyChanged(nameof(Device));
-        }
-    }
-    public IEnumerable DeviceValues => Enum.GetValues(typeof(Device));
+    public static IEnumerable DeviceValues => Enum.GetValues(typeof(Device));
     #endregion
 
     public AppConfig()
@@ -101,6 +42,8 @@ public class AppConfig : INotifyPropertyChanged
         ModelsPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Models\\Checkpoints";
         VoicesPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Voices";
         ResultsPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Results";
+        CharactersPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Characters";
+        BackgroundsPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Backgrounds";
     }
 
     // Load settings from a JSON file
@@ -118,6 +61,8 @@ public class AppConfig : INotifyPropertyChanged
         ModelsPath = self.ModelsPath;
         VoicesPath = self.VoicesPath;
         ResultsPath = self.ResultsPath;
+        CharactersPath = self.CharactersPath;
+        BackgroundsPath = self.BackgroundsPath;
         Device = self.Device;
 
         CheckPaths();
@@ -126,18 +71,20 @@ public class AppConfig : INotifyPropertyChanged
 
     private void CheckPaths()
     {
-        var transcribeModelsPath = ModelsPath + "\\VoiceGeneration\\transcribe";
-        var cloneModelsPath = ModelsPath + "\\VoiceGeneration\\clone";
+        var transcribeModelsPath = $"{ModelsPath}\\VoiceGeneration\\transcribe";
+        var cloneModelsPath = $"{ModelsPath}\\VoiceGeneration\\clone";
         Directory.CreateDirectory(transcribeModelsPath);
         Directory.CreateDirectory(cloneModelsPath);
         Directory.CreateDirectory(VoicesPath);
-        Directory.CreateDirectory(ResultsPath+ "\\VoiceGeneration");
+        Directory.CreateDirectory($"{ResultsPath}\\VoiceGeneration");
+        Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\Resources\\Characters");
+        Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\Resources\\Backgrounds");
     }
 
     // Save settings to a JSON file
     public void Save()
     {
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(this);
+        var json = Newtonsoft.Json.JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented);
         File.WriteAllText(filePath, json);
         ExportToBackend();
         CheckPaths();
@@ -151,17 +98,19 @@ public class AppConfig : INotifyPropertyChanged
 
         ApiHost = "http://127.0.0.1";
         ApiPort = 8000;
-        ModelsPath = Directory.GetCurrentDirectory() + "\\Resources\\Models\\Checkpoints";
-        VoicesPath = Directory.GetCurrentDirectory() + "\\Resources\\Voices";
-        ResultsPath = Directory.GetCurrentDirectory() + "\\Resources\\Results";
+        ModelsPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Models\\Checkpoints";
+        VoicesPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Voices";
+        ResultsPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Results";
+        CharactersPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Characters";
+        BackgroundsPath = $"{Directory.GetCurrentDirectory()}\\Resources\\Backgrounds";
         Save();
     }
 
     // For backend config
     public void ExportToBackend()
     {
-        var backendPath = Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\Backend");
-        using StreamWriter file = new StreamWriter($"{backendPath}\\.env");
+        var backendPath = Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\Backend");
+        using var file = new StreamWriter($"{backendPath}\\.env");
 
         file.WriteLine($"HOST_IP={new Uri(ApiHost).Host}");
         file.WriteLine($"HOST_PORT={ApiPort}");
@@ -169,18 +118,14 @@ public class AppConfig : INotifyPropertyChanged
         file.WriteLine($"MODELS_PATH={ModelsPath}");
         file.WriteLine($"VOICES_PATH={VoicesPath}");
         file.WriteLine($"RESULTS_PATH={ResultsPath}");
+        file.WriteLine($"CHARACTER_PATH={CharactersPath}");
+        file.WriteLine($"BACKGROUNDS_PATH={BackgroundsPath}");
         file.Close();
-    }
-
-    public event PropertyChangedEventHandler PropertyChanged;
-    protected virtual void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     public delegate void ConfigSavedDelegate();
     public event ConfigSavedDelegate ConfigSavedEvent;
 
     private static AppConfig? instance;
-    public static AppConfig Instance => instance ?? (instance = new AppConfig());
+    public static AppConfig Instance => instance ??= new AppConfig();
 }

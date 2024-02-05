@@ -8,60 +8,58 @@ using Wpf.Ui.Appearance;
 using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using Notification.Wpf;
 using System.IO.Compression;
 using System.Reflection;
+using EGOIST.Views.Windows;
+using System.Windows.Media.Imaging;
+using System.Windows.Media;
+using NetFabric.Hyperlinq;
 
 namespace EGOIST.ViewModels.Pages;
 public partial class SettingsViewModel : ObservableObject, INavigationAware, INotifyPropertyChanged
 {
-    private bool _isInitialized = false;
-
     [ObservableProperty]
     private ThemeType _currentTheme = ThemeType.Dark;
 
     [ObservableProperty]
-    private string _appVersion = "1.0.0";
+    private string _appVersion = "1.1.0";
 
-    private NotificationManager notification = new();
-    private AppConfig _config = AppConfig.Instance;
-    public IEnumerable ThemesValues => Enum.GetValues(typeof(ThemeType));
-
-    public AppConfig Config
+    private KeyValuePair<string, string> _backgroundPath = new();
+    public KeyValuePair<string, string> BackgroundPath
     {
-        get => _config;
+        get => _backgroundPath;
         set
         {
-            _config = value;
-            OnPropertyChanged(nameof(Config));
+            _backgroundPath = value;
+            App.GetService<MainWindow>().MainBG.Background = string.IsNullOrEmpty(_backgroundPath.Value) ? null : new ImageBrush(new BitmapImage(new Uri(_backgroundPath.Value)));
+            OnPropertyChanged(nameof(BackgroundPath));
         }
+    }
+    [ObservableProperty]
+    private Dictionary<string, string>? _backgrounds;
+
+    public static AppConfig Config => AppConfig.Instance;
+    public static IEnumerable ThemesValues => Enum.GetValues(typeof(ThemeType));
+
+    public void OnStartup()
+    {
+        CurrentTheme = Theme.GetAppTheme();
+        Backgrounds = Directory.GetFiles(AppConfig.Instance.BackgroundsPath).Prepend("").ToDictionary(x => string.IsNullOrEmpty(x) ? "Transperant" : Path.GetFileNameWithoutExtension(x), x => x);
+    //    BackgroundPath.Value = Backgrounds[Backgrounds.Keys.AsValueEnumerable().ElementAt(Random.Shared.Next(1, Backgrounds.Count)).Value];
     }
 
     public void OnNavigatedTo()
     {
-        if (!_isInitialized)
-            InitializeViewModel();
     }
 
     public void OnNavigatedFrom()
     {
     }
 
-    private void InitializeViewModel()
-    {
-        CurrentTheme = Theme.GetAppTheme();
-    //    AppVersion = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty}";
-
-        _isInitialized = true;
-    }
-
     [RelayCommand]
-    private void SwitchTheme(string parameter)
-    {
-        Theme.Apply(CurrentTheme);
-    }
+    private void SwitchTheme(string parameter) => Theme.Apply(CurrentTheme);
 
     [RelayCommand]
     private void ModelsPathBrowse_Click(string targetPath)
@@ -87,13 +85,13 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware, INo
     }
 
     [RelayCommand]
-    private void SaveSettings()
+    private static void SaveSettings()
     {
         Config.Save();
     }
 
     [RelayCommand]
-    private void ResetSettings()
+    private static void ResetSettings()
     {
         Config.Reset();
     }
@@ -101,11 +99,11 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware, INo
     [RelayCommand]
     private async Task StartBackend()
     {
-        notification.Show(new NotificationContent { Title = "EGOIST - Backend", Message = $"Backend is warming up.", Type = NotificationType.Information }, areaName: "NotificationArea");
+        Extensions.Notify(new NotificationContent { Title = "EGOIST - Backend", Message = $"Backend is warming up.", Type = NotificationType.Information }, areaName: "NotificationArea");
         await InitlizeBackend();
         await CheckBackendRequirements();
         await FinalizeBackend();
-        notification.Show(new NotificationContent { Title = "EGOIST - Backend", Message = $"Backend started successfully.", Type = NotificationType.Information }, areaName: "NotificationArea");
+        Extensions.Notify(new NotificationContent { Title = "EGOIST - Backend", Message = $"Backend started successfully.", Type = NotificationType.Information }, areaName: "NotificationArea");
     }
 
     private async Task InitlizeBackend()
@@ -212,7 +210,7 @@ call ""venv\Scripts\python""  ""{Directory.GetCurrentDirectory()}\Backend\check_
 
         // Check if the completion message was received
         if (result.Contains("Installation Complete"))
-            notification.Show(new NotificationContent { Title = "EGOIST - Backend", Message = $"All dependencies installed.", Type = NotificationType.Information }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "EGOIST - Backend", Message = $"All dependencies installed.", Type = NotificationType.Information }, areaName: "NotificationArea");
     }
 
     private async Task FinalizeBackend()
@@ -287,7 +285,7 @@ pause
 
                 if (result == Wpf.Ui.Controls.MessageBoxResult.Primary)
                 {
-                    notification.Show(new NotificationContent { Title = "EGOIST", Message = $"Update {releaseInfo.tag_name} started downloading.", Type = NotificationType.Information }, areaName: "NotificationArea");
+                    Extensions.Notify(new NotificationContent { Title = "EGOIST", Message = $"Update {releaseInfo.tag_name} started downloading.", Type = NotificationType.Information }, areaName: "NotificationArea");
 
                     var responseDownload = await client.GetAsync(downloadUrl);
                     if (responseDownload.IsSuccessStatusCode)
@@ -301,7 +299,7 @@ pause
                 }
             }
             else
-                notification.Show(new NotificationContent { Title = "EGOIST", Message = $"No available Updates yet.", Type = NotificationType.Information }, areaName: "NotificationArea");
+                Extensions.Notify(new NotificationContent { Title = "EGOIST", Message = $"No available Updates yet.", Type = NotificationType.Information }, areaName: "NotificationArea");
         }
 
         static void FinalizeUpdate()

@@ -8,7 +8,6 @@ using System.Collections.ObjectModel;
 using EGOIST.Data;
 using EGOIST.Enums;
 using EGOIST.Helpers;
-using Newtonsoft.Json.Linq;
 using System.Windows.Forms;
 using Whisper.net;
 using NAudio.Wave.SampleProviders;
@@ -189,7 +188,7 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
     {
         try
         {
-            notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Model Switching to {SelectedCloneModel.Name} Started", Type = NotificationType.Information }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = $"Model Switching to {SelectedCloneModel.Name} Started", Type = NotificationType.Information }, areaName: "NotificationArea");
 
         //    var modelPath = $"{AppConfig.Instance.ModelsPath}\\{SelectedCloneModel.Type.RemoveSpaces()}\\{SelectedCloneModel.Name.RemoveSpaces()}\\{SelectedCloneModel.Weights[0].Weight.RemoveSpaces()}.{SelectedCloneModel.Weights[0].Extension.ToLower().RemoveSpaces()}";
 
@@ -208,11 +207,11 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
             var response = await client.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
-                notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Model Switched to {SelectedCloneModel.Name} Successfully", Type = NotificationType.Success }, areaName: "NotificationArea");
+                Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = $"Model Switched to {SelectedCloneModel.Name} Successfully", Type = NotificationType.Success }, areaName: "NotificationArea");
             else
             {
                 // Handle failure response
-                notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Model Switching to {SelectedCloneModel.Name} Failed, Error: {response.StatusCode}", Type = NotificationType.Error }, areaName: "NotificationArea");
+                Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = $"Model Switching to {SelectedCloneModel.Name} Failed, Error: {response.StatusCode}", Type = NotificationType.Error }, areaName: "NotificationArea");
                 SelectedCloneModel = null;
             }
 
@@ -220,7 +219,7 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
         catch (Exception ex)
         {
             // Handle exceptions (if needed)
-            notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Model Switching to {SelectedCloneModel.Name} Failed, Exception: {ex.Message}", Type = NotificationType.Error }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = $"Model Switching to {SelectedCloneModel.Name} Failed, Exception: {ex.Message}", Type = NotificationType.Error }, areaName: "NotificationArea");
         }
     }
 
@@ -229,7 +228,7 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
     {
         try
         {
-            notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Voice Cloning Process Started", Type = NotificationType.Information }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = $"Voice Cloning Process Started", Type = NotificationType.Information }, areaName: "NotificationArea");
             CloneState = GenerationState.Started;
             var voiceDataPath = $"{AppConfig.Instance.VoicesPath}\\{SelectedVoice}\\speaker.wav";
             var voiceData = File.ReadAllBytes(voiceDataPath);
@@ -261,11 +260,11 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
 
             if (response.IsSuccessStatusCode)
             {
-                notification.Show(new NotificationContent { Title = "Voice Generation", Message = "Voice Cloning Process Completed Successfully", Type = NotificationType.Success }, areaName: "NotificationArea");
+                Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = "Voice Cloning Process Completed Successfully", Type = NotificationType.Success }, areaName: "NotificationArea");
 
                 // Handle successful response
                 var responseContent = await response.Content.ReadAsStringAsync();
-                dynamic config = JObject.Parse(responseContent);
+                dynamic config = Newtonsoft.Json.Linq.JObject.Parse(responseContent);
                 string audioData = config.audio ?? string.Empty;
 
                 // Decode the base64-encoded data to get the serialized audio
@@ -273,10 +272,10 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
 
                 // Decompress the data
                 byte[] decompressedAudioData;
-                using (MemoryStream decompressedStream = new MemoryStream())
+                using (var decompressedStream = new MemoryStream())
                 {
-                    using (MemoryStream compressedDataStream = new MemoryStream(serializedAudio))
-                    using (DeflateStream decompressionStream = new DeflateStream(compressedDataStream, CompressionMode.Decompress))
+                    using (var compressedDataStream = new MemoryStream(serializedAudio))
+                    using (var decompressionStream = new DeflateStream(compressedDataStream, CompressionMode.Decompress))
                     {
                         decompressionStream.CopyTo(decompressedStream);
                     }
@@ -293,14 +292,13 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
             else
             {
                 // Handle failure response
-                notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Failed to receive audio. Status code: {response.StatusCode}", Type = NotificationType.Error }, areaName: "NotificationArea");
+                Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = $"Failed to receive audio. Status code: {response.StatusCode}", Type = NotificationType.Error }, areaName: "NotificationArea");
             }
             CloneState = GenerationState.Finished;
         }
         catch (Exception ex)
         {
-            // Handle exceptions (if needed)
-            notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Failed to receive audio. Exception: {ex.Message}", Type = NotificationType.Error }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = $"Failed to receive audio. Exception: {ex.Message}", Type = NotificationType.Error }, areaName: "NotificationArea");
             CloneState = GenerationState.None;
         }
     }
@@ -329,16 +327,16 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
                 TranscribeProcessor?.Dispose();
                 ResetTranscribe();
                 SelectedTranscribeModel = null;
-                notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Model Unloaded", Type = NotificationType.Information }, areaName: "NotificationArea");
+                Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Model Unloaded", Type = NotificationType.Information }, areaName: "NotificationArea");
                 return;
             }
-            notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Model {SelectedTranscribeModel} Started loading", Type = NotificationType.Information }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Model {SelectedTranscribeModel} Started loading", Type = NotificationType.Information }, areaName: "NotificationArea");
             Thread thread = new(SwitchMethodBG);
             thread.Start();
         }
         catch (Exception ex)
         {
-            notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Model Switching to {SelectedTranscribeModel} Failed, Exception: {ex.Message}", Type = NotificationType.Error }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = $"Model Switching to {SelectedTranscribeModel} Failed, Exception: {ex.Message}", Type = NotificationType.Error }, areaName: "NotificationArea");
         }
 
         void SwitchMethodBG()
@@ -348,7 +346,7 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
             var isGpu = AppConfig.Instance.Device == Device.GPU;
             TranscribeModel = WhisperFactory.FromPath(modelPath, false, null, false, isGpu);
             TranscribeProcessor = TranscribeModel.CreateBuilder().WithLanguage("auto").Build();
-            notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Model loaded Successfully", Type = NotificationType.Information }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Model loaded Successfully", Type = NotificationType.Information }, areaName: "NotificationArea");
         }
     }
 
@@ -370,7 +368,7 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
     {
         try
         {
-            notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Process Started", Type = NotificationType.Information }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Process Started", Type = NotificationType.Information }, areaName: "NotificationArea");
             TranscribeState = GenerationState.Started;
             using var fileStream = File.OpenRead(SelectedTranscribeAudio);
             using var wavStream = new MemoryStream();
@@ -403,7 +401,7 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
             var index = 1; // incase of SRT
             string previousEndTime = "00:00:00,000"; // incase of SRT, Track previous end time for relative timestamp calculation
 
-            await foreach (var result in results)
+            await Parallel.ForEachAsync(results, (result, cancelToken) =>
             {
                 switch (SelectedTranscribeType)
                 {
@@ -419,18 +417,20 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
                         TranscribeAudioResult += $"{index}\n{startTimeStr} --> {endTimeStr}\n{result.Text}\n\n";
 
                         // Update previous end time for next iteration
-                        previousEndTime = endTimeStr; 
+                        previousEndTime = endTimeStr;
                         index++;
                         break;
                 }
-            }
+
+                return new ValueTask();
+            });
 
             TranscribeState = GenerationState.Finished;
-            notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Process Finished", Type = NotificationType.Information }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Process Finished", Type = NotificationType.Information }, areaName: "NotificationArea");
         }
         catch (Exception ex)
         {
-            notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Process Failed, Exception: {ex.Message}", Type = NotificationType.Error }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Process Failed, Exception: {ex.Message}", Type = NotificationType.Error }, areaName: "NotificationArea");
             ResetTranscribe();
         }
     }
@@ -454,7 +454,7 @@ public partial class VoiceViewModel : ObservableObject, INavigationAware
         if (result == DialogResult.OK)
         {
             File.WriteAllText(saveFileDialog.FileName, TranscribeAudioResult);
-            notification.Show(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Text Saved, Path:  {saveFileDialog.FileName}", Type = NotificationType.Information }, areaName: "NotificationArea");
+            Extensions.Notify(new NotificationContent { Title = "Voice Generation", Message = $"Audio Transcribe Text Saved, Path:  {saveFileDialog.FileName}", Type = NotificationType.Information }, areaName: "NotificationArea");
 
         }
     }

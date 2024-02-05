@@ -8,13 +8,21 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+	<PublishSingleFile>true</PublishSingleFile>
+	<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 	<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
 	<Version>$(VersionPrefix)</Version>
 	<AssemblyVersion>1.0.0</AssemblyVersion>
+	<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 	
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+	
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DebugType>embedded</DebugType>
   </PropertyGroup>
 
@@ -22,6 +30,14 @@
     <DebugType>embedded</DebugType>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+	<PropertyGroup>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+	</PropertyGroup>
+	
   <ItemGroup>
     <None Remove="Assets\Backend.zip" />
     <None Remove="Assets\dictionary.txt" />
@@ -38,22 +54,27 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AvalonEdit" Version="6.3.0.90" />
-		<PackageReference Include="LangChain" Version="0.12.3-dev.64" />
-		<PackageReference Include="LangChain.Providers.LLamaSharp" Version="0.12.3-dev.64" />
-		<PackageReference Include="LibreHardwareMonitorLib" Version="0.9.3" />
-		<PackageReference Include="LLamaSharp" Version="0.8.1" />
-		<PackageReference Include="LLamaSharp.Backend.Cpu" Version="0.8.1" />
-		<PackageReference Include="LLamaSharp.Backend.Cuda11" Version="0.8.1" />
-		<PackageReference Include="LLamaSharp.semantic-kernel" Version="0.8.1" />
-		<PackageReference Include="Markdig" Version="0.34.0" />
-		<PackageReference Include="Markdown.ColorCode" Version="2.1.0" />
+		<PackageReference Include="ExifLibNet" Version="2.1.4" />
+		<PackageReference Include="LLamaSharp" Version="0.9.1" />
+		<PackageReference Include="LLamaSharp.Backend.Cpu" Version="0.9.1" />
+		<PackageReference Include="LLamaSharp.Backend.Cuda11" Version="0.9.1" />
+		<PackageReference Include="LLamaSharp.kernel-memory" Version="0.9.1" />
+		<PackageReference Include="MetadataExtractor" Version="2.8.1" />
+		
+		<PackageReference Include="Microsoft.KernelMemory.Core" Version="0.24.231228.5" />
 		<PackageReference Include="Microsoft.KernelMemory.AI.LlamaSharp" Version="0.24.231228.5" />
-		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2210.55" />
+
+		<PackageReference Include="runtime.native.System.Security.Cryptography.OpenSsl" Version="4.3.3" />
+
+		<PackageReference Include="System.Runtime.Caching" Version="8.0.0" />
+		<PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
 		<PackageReference Include="NetFabric.Hyperlinq" Version="3.0.0-beta48" />
+
 		<PackageReference Include="Serilog" Version="3.1.1" />
+		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+		<PackageReference Include="LibreHardwareMonitorLib" Version="0.9.3" />
 		<PackageReference Include="WPF-UI" Version="3.0.0-preview.4" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
 		<PackageReference Include="Notification.Wpf" Version="8.0.0" />
