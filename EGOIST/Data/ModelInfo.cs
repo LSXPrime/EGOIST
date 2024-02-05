@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using EGOIST.Helpers;
 using NetFabric.Hyperlinq;
 using System.ComponentModel;
@@ -29,6 +29,7 @@ public class ModelInfo
     }
 
     public class TextConfiguration : INotifyPropertyChanged
+    public class TextConfiguration
     {
         public string PromptPrefix { get; set; }
         public string PromptSuffix { get; set; }

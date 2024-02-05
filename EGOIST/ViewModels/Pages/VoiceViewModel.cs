@@ -13,8 +13,6 @@ using Whisper.net;
 using NAudio.Wave.SampleProviders;
 using Notification.Wpf;
 using NetFabric.Hyperlinq;
-using DocumentFormat.OpenXml.Spreadsheet;
-using LLama.Common;
 
 namespace EGOIST.ViewModels.Pages;
 public partial class VoiceViewModel : ObservableObject, INavigationAware

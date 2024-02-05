@@ -81,7 +81,6 @@
                     <!-- Navigation Buttons -->
                     <UniformGrid Grid.Row="2" Height="200" VerticalAlignment="Bottom" Margin="10,10,10,10" >
 
-
                         <ui:CardAction Grid.Row="0" Grid.Column="0" Margin="5" Padding="0" VerticalAlignment="Stretch" Command="{Binding ChangeTabCommand}" CommandParameter="1" IsChevronVisible="False">
                             <Grid>
                                 <Grid.ColumnDefinitions>

@@ -16,6 +16,7 @@ using MetadataExtractor;
 using Directory = System.IO.Directory;
 using MetadataExtractor.Formats.Exif;
 
+
 namespace EGOIST.ViewModels.Pages;
 
 public partial class ManagementViewModel : ObservableObject, INavigationAware
@@ -28,6 +29,7 @@ public partial class ManagementViewModel : ObservableObject, INavigationAware
     {
         { "DownloadingCharacter", Visibility.Visible },
     };
+
     #endregion
 
     #region OverviewVariables

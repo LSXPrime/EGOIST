@@ -202,7 +202,6 @@ public partial class TextViewModel : ObservableObject, INavigationAware
 
         RoleplayBackgrounds = Directory.GetFiles(AppConfig.Instance.BackgroundsPath);
         RoleplayBackgroundPath = RoleplayBackgrounds.Length > 0 ? RoleplayBackgrounds[Random.Shared.Next(0, RoleplayBackgrounds.Length - 1)] : string.Empty;
-
         var resourceName = "EGOIST.Assets.dictionary.txt";
         Assembly assembly = Assembly.GetExecutingAssembly();
         using var stream = assembly.GetManifestResourceStream(resourceName);

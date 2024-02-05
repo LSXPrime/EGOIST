@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -9,6 +9,7 @@ using Notification.Wpf;
 using Serilog;
 using Serilog.Events;
 using Wpf.Ui.Controls;
+
 
 namespace EGOIST.Helpers;
 public static class Extensions
