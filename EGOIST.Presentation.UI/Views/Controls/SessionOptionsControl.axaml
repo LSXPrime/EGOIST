@@ -1,0 +1,298 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:EGOIST.Presentation.UI.Views.Controls"
+        xmlns:helpers="using:EGOIST.Presentation.UI.Helpers"
+        xmlns:icons="clr-namespace:FluentIcons.Avalonia;assembly=FluentIcons.Avalonia"
+        x:DataType="controls:SessionOptionsControl">
+    <Design.PreviewWith>
+        <controls:SessionOptionsControl />
+    </Design.PreviewWith>
+
+    <!--
+    <Design.DataContext>
+        <controls:SessionOptionsControl />
+    </Design.DataContext> -->
+    <Styles.Resources>
+        <helpers:CollectionStringConverter x:Key="CollectionStringConverter" />
+    </Styles.Resources>
+
+    <Style Selector="controls|SessionOptionsControl">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <SplitView
+                    CornerRadius="16"
+                    CompactPaneLength="70"
+                    DisplayMode="CompactInline"
+                    PanePlacement="Right"
+                    OpenPaneLength="400"
+                    IsPaneOpen="{TemplateBinding IsOpen}"
+                    PaneBackground="Transparent"
+                    VerticalAlignment="Stretch">
+                    <SplitView.Pane>
+                        <Border CornerRadius="16">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="Transparent" Offset="0.0" />
+                                    <GradientStop Color="#44000000" Offset="0.5" />
+                                    <GradientStop Color="#22000000" Offset="1.0" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+
+                            <Grid ColumnDefinitions="70,*" Margin="0,20,10,0">
+                                <Button Name="PART_TogglePaneBtn" 
+                                        Grid.Column="0"
+                                        VerticalAlignment="Top"
+                                        Classes="transparent"
+                                        Height="50"
+                                        Width="50" 
+                                        Margin="10,0,0,0">
+                                    <icons:SymbolIcon Symbol="Options" FontSize="26" />
+                                </Button>
+                                <TextBlock Grid.Column="0"
+                                           Text="{TemplateBinding Title}"
+                                           FontSize="24"
+                                           VerticalAlignment="Top"
+                                           TextAlignment="Left"
+                                           TextWrapping="Wrap"
+                                           Width="300"
+                                           Margin="0,200,0,0">
+                                    <TextBlock.RenderTransform>
+                                        <TransformGroup>
+                                            <ScaleTransform />
+                                            <SkewTransform />
+                                            <RotateTransform Angle="90" />
+                                            <TranslateTransform X="0" />
+                                        </TransformGroup>
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+
+                                <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*,Auto">
+                                    <Grid Grid.Row="0" Margin="10,0,10,0">
+                                        <icons:SymbolIcon Symbol="Chat" FontSize="30" HorizontalAlignment="Left" />
+                                        <Label Content="Options" FontSize="26" FontFamily="Cambria" FontWeight="Bold"
+                                               Margin="35,5,0,0" />
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        </StackPanel>
+                                    </Grid>
+                                    <ScrollViewer Grid.Row="1" Height="{Binding $parent.Bounds.Height}">
+                                        <Grid RowDefinitions="Auto,Auto,Auto,65">
+                                            <!-- settings of tokens parameters -->
+                                            <Expander Header="Customization" IsExpanded="True">
+                                                <StackPanel>
+                                                    <StackPanel Margin="10">
+                                                        <TextBlock Text="Max Tokens" />
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Slider Width="180" Minimum="0" Maximum="32000"
+                                                                    Value="{Binding Parameters.MaxTokens, Mode=TwoWay}"
+                                                                    TickFrequency="2048" 
+                                                                    TickPlacement="BottomRight" 
+                                                                    IsSnapToTickEnabled="True"
+                                                                    VerticalAlignment="Center" />
+                                                            <NumericUpDown
+                                                                Value="{Binding Parameters.MaxTokens, Mode=TwoWay}"
+                                                                Increment="100"
+                                                                FormatString="0"
+                                                                ShowButtonSpinner="False"
+                                                                Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10">
+                                                        <TextBlock Text="Randomness" />
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Slider Width="180" Minimum="0" Maximum="2"
+                                                                    Value="{Binding Parameters.Randomness, Mode=TwoWay}"
+                                                                    VerticalAlignment="Center" TickFrequency="0.1"
+                                                                    TickPlacement="BottomRight" />
+                                                            <NumericUpDown
+                                                                Value="{Binding Parameters.Randomness, Mode=TwoWay}"
+                                                                Increment="0.1"
+                                                                ShowButtonSpinner="False"
+                                                                Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10">
+                                                        <TextBlock Text="Randomness Booster" />
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Slider Width="180" Minimum="0" Maximum="1"
+                                                                    Value="{Binding Parameters.RandomnessBooster, Mode=TwoWay}"
+                                                                    VerticalAlignment="Center" TickFrequency="0.1"
+                                                                    TickPlacement="BottomRight" />
+                                                            <NumericUpDown
+                                                                Value="{Binding Parameters.RandomnessBooster, Mode=TwoWay}"
+                                                                Increment="0.1"
+                                                                ShowButtonSpinner="False"
+                                                                Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10">
+                                                        <TextBlock Text="Optimal Probability" />
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Slider Width="180" Minimum="0" Maximum="2"
+                                                                    Value="{Binding Parameters.OptimalProbability, Mode=TwoWay}"
+                                                                    VerticalAlignment="Center" TickFrequency="0.1"
+                                                                    TickPlacement="BottomRight" />
+                                                            <NumericUpDown
+                                                                Value="{Binding Parameters.OptimalProbability, Mode=TwoWay}"
+                                                                Increment="0.1"
+                                                                ShowButtonSpinner="False"
+                                                                Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10">
+                                                        <TextBlock Text="Frequency Penalty" />
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Slider Width="180" Minimum="0" Maximum="2"
+                                                                    Value="{Binding Parameters.FrequencyPenalty, Mode=TwoWay}"
+                                                                    VerticalAlignment="Center" TickFrequency="0.1"
+                                                                    TickPlacement="BottomRight" />
+                                                            <NumericUpDown
+                                                                Value="{Binding Parameters.FrequencyPenalty, Mode=TwoWay}"
+                                                                Increment="0.1"
+                                                                ShowButtonSpinner="False"
+                                                                Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Expander>
+
+                                            <!-- settings of prompt formatting -->
+                                            <Expander Grid.Row="1" Header="Prompt Formatting">
+                                                <StackPanel Spacing="20">
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <TextBlock Text="System Prompt Prefix" />
+                                                        <TextBox
+                                                            Text="{Binding PromptFormat.SystemPrefix, Mode=TwoWay}" />
+                                                        <TextBlock Text="System Prompt Suffix" />
+                                                        <TextBox
+                                                            Text="{Binding PromptFormat.SystemSuffix, Mode=TwoWay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <TextBlock Text="System Prompt / Instructions" />
+                                                        <TextBlock
+                                                            Text="A system prompt sets the stage and guides an AI's behavior in conversations or tasks."
+                                                            TextWrapping="Wrap" FontSize="12"
+                                                            Foreground="LightSteelBlue" />
+                                                        <TextBox
+                                                            Text="{Binding PromptFormat.SystemPrompt, Mode=TwoWay}"
+                                                            AcceptsReturn="True" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <TextBlock Text="Prompt Stop Strings" />
+                                                        <TextBlock
+                                                            Text="character sequences that tell an LLM to stop generating text, like hitting 'enter' to end a line. separate multiple stop strings with a comma `,`"
+                                                            TextWrapping="Wrap" FontSize="12"
+                                                            Foreground="LightSteelBlue" />
+                                                        <TextBox
+                                                            Text="{Binding PromptFormat.BlackList, Converter={StaticResource CollectionStringConverter}, Mode=TwoWay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <TextBlock Text="User Prompt Prefix" />
+                                                        <TextBox
+                                                            Text="{Binding PromptFormat.PromptPrefix, Mode=TwoWay}" />
+                                                        <TextBlock Text="User Prompt Suffix" />
+                                                        <TextBox
+                                                            Text="{Binding PromptFormat.PromptSuffix, Mode=TwoWay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <TextBlock Text="Prompt Template" />
+                                                        <ComboBox HorizontalAlignment="Stretch">
+                                                            <TextBlock Text="Mistral AI" />
+                                                            <TextBlock Text="Llama 2 Chat" />
+                                                            <TextBlock Text="Llama 3 Chat" />
+                                                        </ComboBox>
+                                                        <TextBox Text="{Binding PromptFormat.TemplateName, Mode=TwoWay}" />
+                                                        <Button HorizontalAlignment="Stretch">
+                                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                                <icons:SymbolIcon Symbol="Save" />
+                                                                <TextBlock Text="Save Template" />
+                                                            </StackPanel>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Expander>
+
+                                            <!-- settings of model loader -->
+                                            <Expander Grid.Row="2" Header="Model Management">
+                                                <StackPanel Spacing="20">
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <Grid ColumnDefinitions="*,Auto">
+                                                            <TextBlock Text="Context Length" VerticalAlignment="Center" />
+                                                            <ToggleSwitch Grid.Column="1" x:Name="CtxLength"
+                                                                          OffContent="Manual" OnContent="Auto Detect"
+                                                                          IsChecked="{Binding ModelParameters.ContextLengthAuto}" />
+                                                        </Grid>
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    IsEnabled="{Binding !#CtxLength.IsChecked}">
+                                                            <Slider Width="180" Minimum="100" Maximum="128000"
+                                                                    Value="{Binding ModelParameters.ContextLength, Mode=TwoWay}"
+                                                                    TickFrequency="3200" TickPlacement="BottomRight"
+                                                                    VerticalAlignment="Center" />
+                                                            <NumericUpDown
+                                                                Value="{Binding ModelParameters.ContextLength, Mode=TwoWay}"
+                                                                ShowButtonSpinner="False"                                                                Increment="100"
+                                                                FormatString="0"
+                                                                Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <Grid ColumnDefinitions="*,Auto">
+                                                            <TextBlock Text="CPU Threads" VerticalAlignment="Center" />
+                                                            <ToggleSwitch Grid.Column="1" x:Name="CpuThreads"
+                                                                          OffContent="Manual" OnContent="Auto Detect"
+                                                                          IsChecked="{Binding ModelParameters.CpuThreadsAuto}" />
+                                                        </Grid>
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    IsEnabled="{Binding !#CpuThreads.IsChecked}">
+                                                            <Slider Width="180" Minimum="2" Maximum="96"
+                                                                    Value="{Binding ModelParameters.CpuThreads, Mode=TwoWay}"
+                                                                    TickFrequency="1" TickPlacement="BottomRight"
+                                                                    VerticalAlignment="Center" />
+                                                            <NumericUpDown
+                                                                Value="{Binding ModelParameters.CpuThreads, Mode=TwoWay}"
+                                                                ShowButtonSpinner="False"                                                                FormatString="0"
+                                                                Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <Grid ColumnDefinitions="*,Auto">
+                                                            <TextBlock Text="GPU Shared Layers"
+                                                                       VerticalAlignment="Center" />
+                                                            <ToggleSwitch Grid.Column="1" x:Name="GpuLayers"
+                                                                          OffContent="Manual" OnContent="Auto Detect"
+                                                                          IsChecked="{Binding ModelParameters.GpuSharedLayersAuto}" />
+                                                        </Grid>
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    IsEnabled="{Binding !#GpuLayers.IsChecked}">
+                                                            <Slider Width="180" Minimum="100" Maximum="32000"
+                                                                    Value="{Binding ModelParameters.GpuSharedLayers, Mode=TwoWay}"
+                                                                    TickFrequency="3200" TickPlacement="BottomRight"
+                                                                    VerticalAlignment="Center" />
+                                                            <NumericUpDown
+                                                                Value="{Binding ModelParameters.GpuSharedLayers, Mode=TwoWay}"
+                                                                ShowButtonSpinner="False"                                                                FormatString="0"
+                                                                Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <TextBlock Text="Memory Lock" />
+                                                        <TextBlock
+                                                            Text="Lock the model's memory to prevent OS optimizations that can slow down inference, but be aware of potential RAM increases if locking fails."
+                                                            TextWrapping="Wrap" FontSize="12"
+                                                            Foreground="LightSteelBlue" />
+                                                        <ToggleSwitch OffContent="Allow OS-Based Optimizations"
+                                                                      OnContent="Lock Model in Memory"
+                                                                      IsChecked="{Binding ModelParameters.MemoryLock}" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Expander>
+                                        </Grid>
+                                    </ScrollViewer>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </SplitView.Pane>
+                </SplitView>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

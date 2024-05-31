@@ -31,7 +31,7 @@ public partial class RoleplaySession : ObservableObject, INotifyPropertyChanged
         return messageInput;
     }
 
-    public List<RoleplayMessage> GetMissedMessages(RoleplayCharacter character)
+    public List<RoleplayMessage>? GetMissedMessages(RoleplayCharacter character)
     {
         var senderMessages = Messages.Where(m => m.Sender == character).ToList();
 
@@ -101,5 +101,5 @@ public partial class RoleplayCharacterEXT : ObservableObject
     [ObservableProperty]
     private RoleplayCharacter? _character;
     [JsonIgnore]
-    public StatefulExecutorBase Executor { get; set; }
+    public StatefulExecutorBase? Executor { get; set; }
 }

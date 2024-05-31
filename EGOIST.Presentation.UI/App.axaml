@@ -1,0 +1,22 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="EGOIST.Presentation.UI.App"
+             xmlns:local="using:EGOIST.Presentation.UI"
+             xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:u-Semi="https://irihi.tech/ursa/themes/semi"
+             xmlns:fluent="using:FluentAvalonia.Styling"
+             RequestedThemeVariant="Dark">
+    <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.DataTemplates>
+        <local:ViewLocator />
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <icons:MaterialIconStyles />
+        <fluent:FluentAvaloniaTheme />
+        <StyleInclude Source="Views/Controls/SessionsListControl.axaml" />
+        <StyleInclude Source="Views/Controls/SessionOptionsControl.axaml" />
+        <StyleInclude Source="Styles/ButtonTransparent.axaml" />
+    </Application.Styles>
+</Application>

@@ -1,25 +1,14 @@
-﻿<UserControl x:Class="EGOIST.Presentation.UI.Views.Controls.ChatListControl"
-             xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             >
-    <Border>
-    </Border>
-</UserControl>
-
-<!--
-<ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:controls="using:EGOIST.Presentation.UI.Views.Controls"
-                    xmlns:icons="using:FluentIcons.Avalonia"
-                    x:Class="EGOIST.Presentation.UI.Views.Controls.ChatListControl"
-                    x:DataType="controls:ChatListControl">
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:EGOIST.Presentation.UI.Views.Controls"
+        xmlns:icons="clr-namespace:FluentIcons.Avalonia;assembly=FluentIcons.Avalonia"
+        xmlns:models="using:EGOIST.Domain.Interfaces"
+        x:DataType="controls:SessionsListControl">
     <Design.PreviewWith>
-        <Border>
-            <controls:ChatListControl Title="Chats Data" />
-        </Border>
+        <controls:SessionsListControl Title="Chat List" />
     </Design.PreviewWith>
 
-    <ControlTheme x:Key="{x:Type controls:ChatListControl}" TargetType="controls:ChatListControl">
+    <Style Selector="controls|SessionsListControl">
         <Setter Property="Template">
             <ControlTemplate>
                 <SplitView
@@ -29,7 +18,11 @@
                     OpenPaneLength="400"
                     IsPaneOpen="{TemplateBinding IsOpen}"
                     PaneBackground="Transparent">
-
+                    <SplitView.PaneTemplate>
+                        <DataTemplate>
+                            <ContentPresenter Content="{Binding $parent[SplitView].Pane}" />
+                        </DataTemplate>
+                    </SplitView.PaneTemplate>
                     <SplitView.Pane>
                         <Border CornerRadius="16">
                             <Border.Background>
@@ -41,9 +34,13 @@
                             </Border.Background>
 
                             <Grid ColumnDefinitions="70,*" Margin="0,20,10,0">
-                                <Button Grid.Column="0" Command="{Binding TogglePaneCommand, Mode=TwoWay}" VerticalAlignment="Top"
+                                <Button Name="PART_TogglePaneBtn" 
+                                        Grid.Column="0"
+                                        VerticalAlignment="Top"
+                                        Classes="transparent"
                                         Height="50"
-                                        Width="50" Background="Transparent">
+                                        Width="50" 
+                                        Margin="10,0,0,0">
                                     <icons:SymbolIcon Symbol="Options" FontSize="26" />
                                 </Button>
                                 <TextBlock Grid.Column="0"
@@ -64,33 +61,41 @@
                                     </TextBlock.RenderTransform>
                                 </TextBlock>
 
-                                <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto">
+                                <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*,Auto">
                                     <Grid Grid.Row="0" Margin="10,0,10,0">
                                         <icons:SymbolIcon Symbol="Chat" FontSize="30" HorizontalAlignment="Left" />
                                         <Label Content="Sessions" FontSize="26" FontFamily="Cambria" FontWeight="Bold"
                                                Margin="35,5,0,0" />
-
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                            <Button Command="{TemplateBinding MainAction, Mode=TwoWay}" Margin="0,0,10,0">
-                                                <icons:SymbolIcon Symbol="{TemplateBinding MainActionIcon, Mode=TwoWay}"
-                                                                  FontSize="26" />
+                                            <Button Command="{TemplateBinding MainAction, Mode=TwoWay}"
+                                                    Margin="0,0,10,0">
+                                                <icons:SymbolIcon
+                                                    Symbol="{TemplateBinding MainActionIcon, Mode=TwoWay}"
+                                                    FontSize="26" />
                                             </Button>
-                                            <Button Command="{TemplateBinding SubAction, Mode=TwoWay}">
+                                            <Button Command="{TemplateBinding SubAction, Mode=TwoWay}"
+                                                    IsVisible="{Binding SelectedSession, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
                                                 <icons:SymbolIcon Symbol="{TemplateBinding SubActionIcon, Mode=TwoWay}"
                                                                   FontSize="26" />
                                             </Button>
                                         </StackPanel>
                                     </Grid>
+                                    <AutoCompleteBox Grid.Row="1" Margin="10,25,10,20" Watermark="Search for a session"
+                                                     ItemsSource="{Binding Sessions}" FilterMode="Contains">
+                                        <AutoCompleteBox.InnerLeftContent>
+                                            <icons:SymbolIcon Symbol="Search" FontSize="26" />
+                                        </AutoCompleteBox.InnerLeftContent>
+                                    </AutoCompleteBox>
 
-                                    <ListBox Grid.Row="1"
+                                    <ListBox Grid.Row="2"
                                              CornerRadius="16"
                                              ItemsSource="{TemplateBinding Sessions, Mode=TwoWay}"
                                              SelectedItem="{TemplateBinding SelectedSession, Mode=TwoWay}"
                                              Margin="10,25,10,100">
                                         <ListBox.ItemTemplate>
-                                            <DataTemplate>
+                                            <DataTemplate x:DataType="models:ISession">
                                                 <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="{TemplateBinding SessionName}" Margin="5" />
+                                                    <TextBlock Text="{Binding SessionName}" Margin="5" />
                                                 </StackPanel>
                                             </DataTemplate>
                                         </ListBox.ItemTemplate>
@@ -102,6 +107,5 @@
                 </SplitView>
             </ControlTemplate>
         </Setter>
-    </ControlTheme>
-</ResourceDictionary>
--->
+    </Style>
+</Styles>
