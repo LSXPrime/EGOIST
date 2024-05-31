@@ -13,7 +13,7 @@ namespace EGOIST.Presentation.UI.ViewModels.Pages;
 
 public partial class TextPageViewModel : ViewModelBase, INavigationAware
 {
-    public string Title => "Text";
+    public new string Title => "Text";
 
     public ObservableCollection<ModelInfo> Models { get; set; } = [];
     [ObservableProperty] 

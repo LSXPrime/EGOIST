@@ -1,10 +1,10 @@
-﻿namespace EGOIST.Infrastructure.Repositories;
-
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using EGOIST.Application.DTOs.Management.Models.HuggingFace;
 using EGOIST.Application.Utilities;
 using EGOIST.Domain.Entities;
 using EGOIST.Domain.Interfaces;
+
+namespace EGOIST.Infrastructure.Repositories;
 
 public class HuggingFaceModelsRepository : IModelsRepository
 {
@@ -14,7 +14,7 @@ public class HuggingFaceModelsRepository : IModelsRepository
     {
         var response = await _httpClient.GetAsync($"https://huggingface.co/api/models?search={query}&filter=gguf&sort=downloads&limit={modelsCount}\"");
         response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<IEnumerable<HuggingFaceModelDTO>>();
+        var result = await response.Content.ReadFromJsonAsync<IEnumerable<HuggingFaceModelDto>>();
         return result.Select(x => x.ToModelInfo());
     }
 
@@ -24,7 +24,7 @@ public class HuggingFaceModelsRepository : IModelsRepository
     {
         var response = await _httpClient.GetAsync($"https://huggingface.co/api/models/{repoId}");
         response.EnsureSuccessStatusCode();
-        var model = await response.Content.ReadFromJsonAsync<HuggingFaceModelDTO>();
+        var model = await response.Content.ReadFromJsonAsync<HuggingFaceModelDto>();
         return model.ToModelInfo();
     }
 }

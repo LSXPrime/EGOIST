@@ -6,7 +6,7 @@ namespace EGOIST.Application.Utilities;
 
 public static class RepositoryMapper
 {
-    public static ModelInfo ToModelInfo(this HuggingFaceModelDTO model) => new()
+    public static ModelInfo ToModelInfo(this HuggingFaceModelDto model) => new()
     {
         Name = model.Name,
         Backend = model.Tags.Contains("gguf") ? (model.PipelineTag.Equals("text-generation") || model.Tags.Any(t => t.Contains("text-generation")) ? "llama.cpp" : "whisper.cpp") : model.Library,

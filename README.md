@@ -56,8 +56,8 @@ A project that aims to simplify interaction with various AI models across differ
 **Image Generation and Editing**
 - Employs Stable Diffusion and DragGAN as backends
 - Features:
-    - [ ] Text to Image
-    - [ ] Image to Image
+    - [x] Text to Image
+    - [x] Image to Image
     - [ ] Image inpainting
     - [ ] Image manipulation
     - [ ] Face swapping
@@ -89,7 +89,7 @@ A project that aims to simplify interaction with various AI models across differ
 
 ## License
 
-[AGPT-3](LICENSE )
+[AGPLv3](LICENSE )
 
 ## Disclaimer
 

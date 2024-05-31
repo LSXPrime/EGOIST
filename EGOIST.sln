@@ -1,0 +1,35 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EGOIST.Domain", "EGOIST.Domain\EGOIST.Domain.csproj", "{5D6390E0-58DA-4AA8-A707-F0F20DD83885}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EGOIST.Application", "EGOIST.Application\EGOIST.Application.csproj", "{8FD24D02-1667-481B-A41F-C28FA97CB237}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EGOIST.Infrastructure", "EGOIST.Infrastructure\EGOIST.Infrastructure.csproj", "{68810FAC-691F-4605-BFBA-773FF518E2B3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EGOIST.Presentation.UI", "EGOIST.Presentation.UI\EGOIST.Presentation.UI.csproj", "{3D93FCB1-03F5-41AB-9FAB-C8AABB737EA0}"
+EndProject
+Global
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8FD24D02-1667-481B-A41F-C28FA97CB237}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FD24D02-1667-481B-A41F-C28FA97CB237}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FD24D02-1667-481B-A41F-C28FA97CB237}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FD24D02-1667-481B-A41F-C28FA97CB237}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D6390E0-58DA-4AA8-A707-F0F20DD83885}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D6390E0-58DA-4AA8-A707-F0F20DD83885}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D6390E0-58DA-4AA8-A707-F0F20DD83885}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D6390E0-58DA-4AA8-A707-F0F20DD83885}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68810FAC-691F-4605-BFBA-773FF518E2B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68810FAC-691F-4605-BFBA-773FF518E2B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68810FAC-691F-4605-BFBA-773FF518E2B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68810FAC-691F-4605-BFBA-773FF518E2B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D93FCB1-03F5-41AB-9FAB-C8AABB737EA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D93FCB1-03F5-41AB-9FAB-C8AABB737EA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D93FCB1-03F5-41AB-9FAB-C8AABB737EA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D93FCB1-03F5-41AB-9FAB-C8AABB737EA0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+	EndGlobalSection
+EndGlobal

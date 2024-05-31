@@ -3,7 +3,6 @@ using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using EGOIST.Presentation.UI.ViewModels;
 using EGOIST.Presentation.UI.Views;
-using HotAvalonia;
 using AvaloniaApp = Avalonia.Application;
 
 namespace EGOIST.Presentation.UI;
@@ -12,7 +11,6 @@ public partial class App : AvaloniaApp
 {
     public override void Initialize()
     {
-        this.EnableHotReload();
         AvaloniaXamlLoader.Load(this);
     }
 

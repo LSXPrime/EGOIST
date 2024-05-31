@@ -101,7 +101,7 @@ public static class Extensions
     #endregion
 
     #region SecurityMethods
-    public static string CalculateMD5Hash(this Stream stream)
+    public static string CalculateMD5Hash(this Stream? stream)
     {
         using var md5 = MD5.Create();
         byte[] hashBytes = md5.ComputeHash(stream);
