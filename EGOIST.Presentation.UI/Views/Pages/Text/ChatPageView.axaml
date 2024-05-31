@@ -21,15 +21,9 @@
     </Design.DataContext>
     
     <Grid Margin="0" ColumnDefinitions="Auto,*,Auto">
-        <!-- Chat Sessions List -->
-        <controls:SessionsListControl 
-            Title="Chat Sessions" 
-            Sessions="{Binding ChatSessions}" 
-            SelectedSession="{Binding SelectedChatSession}" 
-            MainActionIcon="Add" 
-            SubActionIcon="Delete" 
-            Margin="10,0,25,10" />
-        
+        <!-- Chat Sessions List 
+        <controls:SessionsListControl Title="Chat Sessions" Sessions="{Binding ChatSessions}" SelectedSession="{Binding SelectedChatSession}" MainActionIcon="Add" SubActionIcon="Delete" Margin="10,0,25,10"/>
+        -->
         <!-- Session Inference Options -->
         <controls:SessionOptionsControl 
             Grid.Column="2" 
