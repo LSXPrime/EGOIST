@@ -6,59 +6,99 @@
              xmlns:controls="using:EGOIST.Presentation.UI.Views.Controls"
              xmlns:vm="using:EGOIST.Presentation.UI.ViewModels.Pages.Text"
              xmlns:helpers="using:EGOIST.Presentation.UI.Helpers"
+             xmlns:services="using:EGOIST.Application.Services.Text"
              mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
              x:DataType="vm:ChatPageViewModel"
              x:Class="EGOIST.Presentation.UI.Views.Pages.Text.ChatPageView">
-	<UserControl.Resources>
-		<helpers:ConditionCheckConverter x:Key="ConditionCheckConverter" />
-	</UserControl.Resources>
+    <UserControl.Resources>
+        <helpers:ConditionCheckConverter x:Key="ConditionCheckConverter" />
+        <helpers:ConditionIconConverter x:Key="ConditionIconConverter" />
+    </UserControl.Resources>
     <Design.DataContext>
-        <vm:ChatPageViewModel >
+        <vm:ChatPageViewModel>
             <x:Arguments>
                 <x:Null />
             </x:Arguments>
         </vm:ChatPageViewModel>
     </Design.DataContext>
-    
+
     <Grid Margin="0" ColumnDefinitions="Auto,*,Auto">
-        <!-- Chat Sessions List 
-        <controls:SessionsListControl Title="Chat Sessions" Sessions="{Binding ChatSessions}" SelectedSession="{Binding SelectedChatSession}" MainActionIcon="Add" SubActionIcon="Delete" Margin="10,0,25,10"/>
-        -->
+        <!-- Chat Sessions List -->
+        <controls:SessionsListControl
+            Title="Chat Sessions"
+            Sessions="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).((services:ChatService)ChatService).ChatSessions, FallbackValue={x:Null}}"
+            SelectedSession="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).((services:ChatService)ChatService).SelectedChatSession, FallbackValue={x:Null}}"
+            MainActionIcon="Add"
+            SubActionIcon="Delete"
+            MainAction="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).ChatCreateCommand, FallbackValue={x:Null}}"
+            SubAction="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).ChatDeleteCommand, FallbackValue={x:Null}}" />
+
         <!-- Session Inference Options -->
-        <controls:SessionOptionsControl 
-            Grid.Column="2" 
-            Title="Inference Options" 
-            Parameters="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).GenerationParameters, FallbackValue={x:Null}}" 
-            PromptFormat="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).PromptParameters, FallbackValue={x:Null}}" 
-            ModelParameters="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).ModelParameters, FallbackValue={x:Null}}" />
-        
+        <controls:SessionOptionsControl
+            Grid.Column="2"
+            Title="Inference Options"
+            Parameters="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).GenerationParameters, FallbackValue={x:Null}}"
+            PromptFormat="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).PromptParameters, FallbackValue={x:Null}}"
+            ModelParameters="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).ModelParameters, FallbackValue={x:Null}}" 
+            PromptTemplates="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).((services:ChatService)ChatService).PromptTemplates, FallbackValue={x:Null}}"/>
+
         <!-- Chat UI -->
-        <Grid Grid.Column="1" RowDefinitions="Auto,*">
+        <Grid Grid.Column="1" RowDefinitions="93*,Auto">
             <!-- Chat Messages Container -->
-            <ScrollViewer x:Name="ChatContainerView" Grid.Row="0" Margin="20" VerticalScrollBarVisibility="Auto" MaxHeight="640" >
-                <ItemsControl ItemsSource="{Binding SelectedChatSession.Messages, FallbackValue={x:Null}}">
+            <ScrollViewer x:Name="ChatContainerView" Grid.Row="0" Margin="20" Padding="25,0" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding ((services:ChatService)ChatService).SelectedChatSession.Messages, FallbackValue={x:Null}}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Grid Margin="5" ColumnDefinitions="Auto,Auto">
-                                <Border Grid.Column="0" Background="DarkRed" CornerRadius="10" Padding="8">
-                                    <TextBox Text="{Binding Message}" IsReadOnly="True" IsEnabled="True" MaxWidth="900" TextWrapping="Wrap" />
+                            <Grid ColumnDefinitions="Auto,15,*" Margin="0,10" HorizontalAlignment="Stretch">
+                                <icons:SymbolIcon Grid.Column="0"
+                                    Symbol="{Binding Sender, Converter={StaticResource ConditionIconConverter}}"
+                                    HorizontalAlignment="Left" FontSize="36" />
+
+                                <Border Grid.Column="2" BorderThickness="1" CornerRadius="12" Padding="8" >
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="Transparent" Offset="0.0" />
+                                            <GradientStop Color="#44000000" Offset="0.5" />
+                                            <GradientStop Color="#22000000" Offset="1.0" />
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <Border.BoxShadow>
+                                        <BoxShadows>3 2 2 1 #2F000000</BoxShadows>
+                                    </Border.BoxShadow>
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="10" />
+                                    </Border.Effect>
+                                    <StackPanel Spacing="10">
+                                        <Border Background="DarkRed" HorizontalAlignment="Left" CornerRadius="16"
+                                                Padding="12,0">
+                                            <TextBlock Text="{Binding Sender}" TextWrapping="Wrap" />
+                                        </Border>
+                                        <TextBlock Text="{Binding Message}" IsEnabled="True" MaxWidth="900"
+                                                   TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" />
+                                    </StackPanel>
                                 </Border>
                             </Grid>
+
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-            </ScrollViewer> 
+            </ScrollViewer>
 
             <!-- Message Writing & Send Controls -->
             <Grid Grid.Row="1" VerticalAlignment="Bottom" ColumnDefinitions="*,Auto">
-                <TextBox CornerRadius="8" Margin="10" Text="{Binding ChatUserInput}" Watermark="Write your message here!" AcceptsReturn="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Height="50" MaxHeight="300">
+                <TextBox CornerRadius="8" Margin="10" Text="{Binding ChatUserInput}"
+                         Watermark="Write your message here!" AcceptsReturn="True" HorizontalAlignment="Stretch"
+                         VerticalAlignment="Stretch" Height="50" MaxHeight="300">
                     <TextBox.KeyBindings>
                         <KeyBinding Gesture="Enter" Command="{Binding MessageSendCommand}" />
                     </TextBox.KeyBindings>
                 </TextBox>
-                <Button Command="{Binding MessageSendCommand}" CornerRadius="8" Margin="10" Width="100"  Height="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="1">
-					<icons:SymbolIcon Symbol="{Binding State, Converter={StaticResource ConditionCheckConverter}, ConverterParameter=Started|Stop|Send}" FontSize="32" Foreground="White" />
-				</Button>
+                <Button Command="{Binding MessageSendCommand}" CornerRadius="8" Margin="10" Width="100" Height="50"
+                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="1">
+                    <icons:SymbolIcon
+                        Symbol="{Binding State, Converter={StaticResource ConditionCheckConverter}, ConverterParameter=Started|Stop|Send}"
+                        FontSize="32" Foreground="White" />
+                </Button>
             </Grid>
         </Grid>
     </Grid>

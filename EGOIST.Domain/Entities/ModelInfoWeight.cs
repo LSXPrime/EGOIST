@@ -3,7 +3,7 @@
 namespace EGOIST.Domain.Entities;
 
 
-public class ModelInfoWeight : BaseEntity
+public class ModelInfoWeight : EntityBase
 {
     private string _extension = string.Empty;
     private string _weight = string.Empty;

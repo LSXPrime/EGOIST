@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:EGOIST.Presentation.UI.Views.Controls"
         xmlns:helpers="using:EGOIST.Presentation.UI.Helpers"
+        xmlns:models="using:EGOIST.Domain.Entities"
         xmlns:icons="clr-namespace:FluentIcons.Avalonia;assembly=FluentIcons.Avalonia"
         x:DataType="controls:SessionOptionsControl">
     <Design.PreviewWith>
@@ -161,10 +162,10 @@
                                                     <StackPanel Margin="10" Spacing="10">
                                                         <TextBlock Text="System Prompt Prefix" />
                                                         <TextBox
-                                                            Text="{Binding PromptFormat.SystemPrefix, Mode=TwoWay}" />
+                                                            Text="{Binding PromptFormat.SystemPrefix, Mode=TwoWay}" AcceptsReturn="True" />
                                                         <TextBlock Text="System Prompt Suffix" />
                                                         <TextBox
-                                                            Text="{Binding PromptFormat.SystemSuffix, Mode=TwoWay}" />
+                                                            Text="{Binding PromptFormat.SystemSuffix, Mode=TwoWay}" AcceptsReturn="True" />
                                                     </StackPanel>
                                                     <StackPanel Margin="10" Spacing="10">
                                                         <TextBlock Text="System Prompt / Instructions" />
@@ -188,20 +189,22 @@
                                                     <StackPanel Margin="10" Spacing="10">
                                                         <TextBlock Text="User Prompt Prefix" />
                                                         <TextBox
-                                                            Text="{Binding PromptFormat.PromptPrefix, Mode=TwoWay}" />
+                                                            Text="{Binding PromptFormat.PromptPrefix, Mode=TwoWay}" AcceptsReturn="True" />
                                                         <TextBlock Text="User Prompt Suffix" />
                                                         <TextBox
-                                                            Text="{Binding PromptFormat.PromptSuffix, Mode=TwoWay}" />
+                                                            Text="{Binding PromptFormat.PromptSuffix, Mode=TwoWay}" AcceptsReturn="True" />
                                                     </StackPanel>
                                                     <StackPanel Margin="10" Spacing="10">
                                                         <TextBlock Text="Prompt Template" />
-                                                        <ComboBox HorizontalAlignment="Stretch">
-                                                            <TextBlock Text="Mistral AI" />
-                                                            <TextBlock Text="Llama 2 Chat" />
-                                                            <TextBlock Text="Llama 3 Chat" />
+                                                        <ComboBox HorizontalAlignment="Stretch" ItemsSource="{TemplateBinding PromptTemplates}" SelectedValue="{Binding PromptFormatBinding, Mode=TwoWay}">
+                                                            <ComboBox.ItemTemplate>
+                                                                <DataTemplate DataType="models:TextPromptParameters">
+                                                                    <TextBlock Text="{Binding Name}" />
+                                                                </DataTemplate>
+                                                            </ComboBox.ItemTemplate>
                                                         </ComboBox>
-                                                        <TextBox Text="{Binding PromptFormat.TemplateName, Mode=TwoWay}" />
-                                                        <Button HorizontalAlignment="Stretch">
+                                                        <TextBox Text="{Binding PromptFormat.Name, Mode=TwoWay}" />
+                                                        <Button HorizontalAlignment="Stretch" Command="{TemplateBinding SavePrompt}">
                                                             <StackPanel Orientation="Horizontal" Spacing="10">
                                                                 <icons:SymbolIcon Symbol="Save" />
                                                                 <TextBlock Text="Save Template" />

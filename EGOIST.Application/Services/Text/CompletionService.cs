@@ -46,7 +46,7 @@ public class CompletionService(ILogger<CompletionService> _logger) : ITextServic
         return Task.CompletedTask;
     }
 
-    public async Task Generate(string userInput)
+    public async Task Generate(string userInput, TextGenerationParameters? generationParameters = null, TextPromptParameters? promptParameters = null)
     {
         if (_generation.SelectedGenerationModel == null)
         {
@@ -66,10 +66,11 @@ public class CompletionService(ILogger<CompletionService> _logger) : ITextServic
             SelectedCompletionSession.Executor = new InferenceService(new StatelessExecutor(_generation.Model, _generation.ModelParameters));
 
         _generation.State = GenerationState.Started;
-        var Prompt = _generation.SelectedGenerationModel.TextConfig.Prompt(userInput, CompletionPrompt);
+        var prompt = promptParameters?.Prompt(userInput, CompletionPrompt);
 
         _generation.CancelToken = new();
-        var tokens = SelectedCompletionSession.Executor.InferenceConcurrent(Prompt, _generation.SelectedGenerationModel.TextConfig.BlackList, _generation.Parameters, _generation.CancelToken.Token);
+        var tokens = SelectedCompletionSession.Executor.InferenceConcurrent(prompt, promptParameters?.BlackList ?? [],
+            generationParameters ?? new TextGenerationParameters(true), _generation.CancelToken.Token);
         await foreach (var token in tokens)
         {
             if (token == "FILTERING MECHANISM TRIGGERED")

@@ -1,3 +1,5 @@
+using EGOIST.Domain.Entities;
+
 namespace EGOIST.Application.Interfaces.Text
 {
     /// <summary>
@@ -23,7 +25,9 @@ namespace EGOIST.Application.Interfaces.Text
         /// Generates text based on a given prompt.
         /// </summary>
         /// <param name="prompt">The prompt for text generation.</param>
+        /// <param name="generationParameters">The response generation parameters for text generation.</param>
+        /// <param name="promptParameters">The prompt formatting parameters for text generation.</param>
         /// <returns>A task that completes when the text is generated.</returns>
-        Task Generate(string prompt);
+        Task Generate(string prompt, TextGenerationParameters? generationParameters = null, TextPromptParameters? promptParameters = null);
     }
 }

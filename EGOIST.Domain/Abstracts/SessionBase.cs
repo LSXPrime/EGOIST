@@ -4,13 +4,13 @@ using EGOIST.Domain.Interfaces;
 
 namespace EGOIST.Domain.Abstracts;
 
-public abstract class SessionBase<TMessage>(string sessionName) : BaseEntity, ISession<TMessage>
-    where TMessage : BaseEntity, IMessage, new()
+public abstract class SessionBase<TMessage>(string sessionName) : EntityBase, ISession<TMessage>
+    where TMessage : EntityBase, IMessage, new()
 {
     public string SessionName
     {
         get => sessionName;
-        init => Notify(ref sessionName, value);
+        set => Notify(ref sessionName, value);
     }
 
     public ObservableCollection<TMessage> Messages { get; set; } = [];

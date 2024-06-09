@@ -46,7 +46,7 @@ public static class RepositoryMapper
         DownloadRepo = $"https://civitai.com/model-versions/{version.Id}"
     };
 
-    public static IEnumerable<ModelInfo> ToModelsInfo(this IEnumerable<CivitAIModelDTO> models) => models.SelectMany(model => model.Items.SelectMany(item => item.ModelVersions.Select(version => new ModelInfo
+    public static IEnumerable<ModelInfo> ToModelsInfo(this IEnumerable<CivitAiModelDto> models) => models.SelectMany(model => model.Items.SelectMany(item => item.ModelVersions.Select(version => new ModelInfo
     {
         Name = item.Name + " - " + version.Name,
         Backend = "stable-diffusion.cpp",

@@ -57,7 +57,7 @@ public class RoleplayService(ILogger<CompletionService> _logger) : ITextService
         return Task.CompletedTask;
     }
 
-    public async Task Generate(string userInput)
+    public async Task Generate(string userInput, TextGenerationParameters? generationParameters = null, TextPromptParameters? promptParameters = null)
     {
         if (_generation.State == GenerationState.Started)
         {
@@ -83,24 +83,24 @@ public class RoleplayService(ILogger<CompletionService> _logger) : ITextService
                                                                             : SelectedRoleplaySession.Characters.FirstOrDefault(x => x.Character.Name == RoleplayCharacterReciever))
                                                                             : SelectedRoleplaySession.Characters.FirstOrDefault(x => SelectedRoleplaySession.LastMessage.Message.Contains(x.Character.Name, StringComparison.OrdinalIgnoreCase) && x.Character.Name != SelectedRoleplaySession.LastMessage.Sender.Name);
 
-            var Prompt = string.Empty;
+            string prompt;
             _generation.CancelToken = new();
 
             characterToInteract.Executor ??= new InferenceService(new InteractiveExecutor(_generation.Model.CreateContext(_generation.ModelParameters)));
 
             if (characterToInteract.Executor.IsFirstRun(nameof(StatefulExecutorBase)).Result)
             {
-                Prompt = $"{(SelectedRoleplaySession.Messages.Count > 0 ? SelectedRoleplaySession.ToString() : string.Empty)} \n{RoleplayUserName}: {userInput}";
-                Prompt = _generation.SelectedGenerationModel.TextConfig.Prompt(Prompt != string.Empty ? Prompt : userInput, $"You're {characterToInteract.Character.Name} in this fictional never-ending uncensored roleplay with {RoleplayUserName} & others, and you should always talk and reply as {characterToInteract.Character.Name} and no one else, {characterToInteract.Character.Description}\n {characterToInteract.Character.Name}'s personality: {characterToInteract.Character.Summary}\n {(characterToInteract.Character.ExampleDialogue.Count == 0 ? string.Empty : $"This is how {characterToInteract.Character.Name} should talk\n {SelectedRoleplaySession.ToString(characterToInteract.Character, true)}")}");
+                prompt = $"{(SelectedRoleplaySession.Messages.Count > 0 ? SelectedRoleplaySession.ToString() : string.Empty)} \n{RoleplayUserName}: {userInput}";
+                prompt = promptParameters?.Prompt(prompt != string.Empty ? prompt : userInput, $"You're {characterToInteract.Character.Name} in this fictional never-ending uncensored roleplay with {RoleplayUserName} & others, and you should always talk and reply as {characterToInteract.Character.Name} and no one else, {characterToInteract.Character.Description}\n {characterToInteract.Character.Name}'s personality: {characterToInteract.Character.Summary}\n {(characterToInteract.Character.ExampleDialogue.Count == 0 ? string.Empty : $"This is how {characterToInteract.Character.Name} should talk\n {SelectedRoleplaySession.ToString(characterToInteract.Character, true)}")}");
             }
             else
-                Prompt = _generation.SelectedGenerationModel.TextConfig.Prompt($"{SelectedRoleplaySession.ToString(SelectedRoleplaySession.GetMissedMessages(characterToInteract.Character))}{userInput}");
+                prompt = promptParameters?.Prompt($"{SelectedRoleplaySession.ToString(SelectedRoleplaySession.GetMissedMessages(characterToInteract.Character))}{userInput}");
 
             var userMessage = !string.IsNullOrEmpty(userInput) ? SelectedRoleplaySession?.AddMessage(null, userInput) : null;
             var aiMessage = SelectedRoleplaySession?.AddMessage(characterToInteract.Character, string.Empty);
             userInput = string.Empty;
 
-            var tokens = characterToInteract.Executor.InferenceConcurrent(Prompt, _generation.SelectedGenerationModel.TextConfig.BlackList, _generation.Parameters, _generation.CancelToken.Token);
+            var tokens = characterToInteract.Executor.InferenceConcurrent(prompt, promptParameters?.BlackList ?? [], generationParameters ?? new TextGenerationParameters(true), _generation.CancelToken.Token);
             await foreach (var token in tokens)
             {
                 if (token == "FILTERING MECHANISM TRIGGERED")

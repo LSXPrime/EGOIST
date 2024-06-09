@@ -2,7 +2,7 @@
 
 namespace EGOIST.Domain.Abstracts;
 
-public abstract class MessageBase<TSender> : BaseEntity, IMessage<TSender>
+public abstract class MessageBase<TSender> : EntityBase, IMessage<TSender>
 {
     private TSender _sender;
     private string _message;

@@ -5,7 +5,7 @@ namespace EGOIST.Application.DTOs.Management.Models.CivitAI;
 /// <summary>
 /// Represents a CivitAI model response, containing metadata and a list of model items.
 /// </summary>
-public class CivitAIModelDTO
+public class CivitAiModelDto
 {
     /// <summary>
     /// A list of model items returned by the CivitAI API.

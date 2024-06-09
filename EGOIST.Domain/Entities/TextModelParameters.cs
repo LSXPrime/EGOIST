@@ -2,7 +2,7 @@
 
 namespace EGOIST.Domain.Entities;
 
-public class TextModelParameters : BaseEntity
+public class TextModelParameters : EntityBase
 {
     private bool _contextLengthAuto;
     private int _contextLength;

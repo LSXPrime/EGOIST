@@ -14,7 +14,7 @@ public class CivitAIModelsRepository : IModelsRepository
     {
         var response = await _httpClient.GetAsync($"https://civitai.com/api/v1/models?query={query}&limit={modelsCount}\"");
         response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<List<CivitAIModelDTO>>();
+        var result = await response.Content.ReadFromJsonAsync<List<CivitAiModelDto>>();
         return result.ToModelsInfo();
     }
 

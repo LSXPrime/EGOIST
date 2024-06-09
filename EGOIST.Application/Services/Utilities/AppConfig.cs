@@ -14,6 +14,7 @@ public class AppConfig
     public int ApiPort { get; set; } = 8000;
     public string DataSecretKey { get; set; } = "USER_SECRET_KEY_TO_DECRYPT_DATA";
     public string ModelsPath { get; set; } = @"C:\External\Models";// $@"{Directory.GetCurrentDirectory()}\Resources\Models\Checkpoints";
+    public string PromptsPath { get; set; } = @"C:\External\Prompts";// $@"{Directory.GetCurrentDirectory()}\Resources\Prompts";
     public string VoicesPath { get; set; } = $@"{Directory.GetCurrentDirectory()}\Resources\Voices";
     public string ResultsPath { get; set; } = $@"{Directory.GetCurrentDirectory()}\Resources\Results";
     public string CharactersPath { get; set; } = $@"{Directory.GetCurrentDirectory()}\Resources\Characters";
@@ -37,6 +38,7 @@ public class AppConfig
             ApiPort = config.ApiPort;
             DataSecretKey = config.DataSecretKey;
             ModelsPath = config.ModelsPath;
+            PromptsPath = config.PromptsPath;
             VoicesPath = config.VoicesPath;
             ResultsPath = config.ResultsPath;
             CharactersPath = config.CharactersPath;
@@ -150,6 +152,7 @@ start %APP_PATH%
         Process.Start(processInfo);
     }
 
-    private static AppConfig? _instance;
-    public static AppConfig Instance => _instance ??= new AppConfig();
+    private static Lazy<AppConfig> _instance = new(() => new AppConfig());
+
+    public static AppConfig Instance => _instance.Value;
 }

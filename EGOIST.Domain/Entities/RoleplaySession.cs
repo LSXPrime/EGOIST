@@ -50,7 +50,7 @@ public class RoleplaySession() : SessionBase<RoleplayMessage>($"Roleplay {DateTi
 
         var stringBuilder = new StringBuilder();
         foreach (var message in roleplayMessages)
-            stringBuilder.Append($"{message.Sender?.Name ?? UserRoleName}: {message.Message}\n");
+            stringBuilder.Append($"{message.Sender.Name ?? UserRoleName}: {message.Message}\n");
 
         stringBuilder.Append($"{UserRoleName}: ");
         return stringBuilder.ToString();

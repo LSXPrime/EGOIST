@@ -1,9 +1,12 @@
-﻿using EGOIST.Application.Services.Utilities;
+﻿using System.Diagnostics;
+using System.Globalization;
+using EGOIST.Application.Services.Utilities;
 using EGOIST.Application.Utilities;
 using EGOIST.Domain.Entities;
 using EGOIST.Domain.Enums;
 using LLama;
 using LLama.Common;
+using LLama.Native;
 using LLamaSharp.KernelMemory;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory;
@@ -18,7 +21,6 @@ public class GenerationService
 {
     public GenerationState State { get; set; } = GenerationState.None;
     public GenerationMode Mode { get; set; } = GenerationMode.Text;
-    public TextGenerationParameters Parameters { get; set; } = new();
     public ModelInfo? SelectedGenerationModel { get; set; }
     public ModelInfoWeight? SelectedGenerationWeight { get; set; }
 
@@ -28,14 +30,9 @@ public class GenerationService
     public IKernelMemory? Memory;
     public CancellationTokenSource? CancelToken;
 
-    private readonly ILogger<GenerationService> _logger;
+    private readonly ILogger<GenerationService> _logger = new LoggerFactory().CreateLogger<GenerationService>();
 
-    public GenerationService()
-    {
-        _logger = new LoggerFactory().CreateLogger<GenerationService>();
-    }
-
-    public void Switch(ModelInfo? model, ModelInfoWeight? weight)
+    public async Task Switch(ModelInfo? model, ModelInfoWeight? weight)
     {
         if (model == null || weight == null)
         {
@@ -46,44 +43,56 @@ public class GenerationService
         SelectedGenerationModel = model;
         SelectedGenerationWeight = weight;
 
-        new Thread(() =>
+        try
         {
-            try
+            if (SelectedGenerationModel == null)
             {
-                if (SelectedGenerationModel == null)
-                {
-                    _logger.LogWarning("No selected generation model.");
-                    return;
-                }
-
-                var modelPath = $"{AppConfig.Instance.ModelsPath}\\{SelectedGenerationModel.Type.RemoveSpaces()}\\{SelectedGenerationModel.Name.RemoveSpaces()}\\{SelectedGenerationWeight.Weight.RemoveSpaces()}.{SelectedGenerationWeight.Extension.ToLower().RemoveSpaces()}";
-                ModelParameters = new ModelParams(modelPath)
-                {
-                    ContextSize = 4096,
-                    Embeddings = Mode == GenerationMode.Embeddings,
-                    GpuLayerCount = AppConfig.Instance.Device == Device.GPU ? Extensions.TextModelLayersCount(SelectedGenerationModel.Parameters, SelectedGenerationWeight.Size.BytesToGB().ToString(), SystemInfoService.Instance?.systemInfo?.VRAMFree ?? 0) : 0
-                };
-                Model = LLamaWeights.LoadFromFile(ModelParameters);
-
-                if (Mode == GenerationMode.Embeddings)
-                {
-                    Embedder = new LLamaEmbedder(Model, ModelParameters);
-
-                    Memory = new KernelMemoryBuilder()
-                        .WithLLamaSharpTextEmbeddingGeneration(new LLamaSharpTextEmbeddingGenerator(Embedder))
-                        .WithLLamaSharpTextGeneration(new LlamaSharpTextGenerator(Model, Embedder.Context))
-                        .WithSearchClientConfig(new SearchClientConfig { MaxMatchesCount = 1, AnswerTokens = 100 })
-                        .With(new TextPartitioningOptions { MaxTokensPerParagraph = 300, MaxTokensPerLine = 100, OverlappingTokens = 30 })
-                        .WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Disk })
-                        .WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Disk })
-                        .Build<MemoryServerless>();
-                }
+                _logger.LogWarning("No selected generation model.");
+                return;
             }
-            catch (Exception ex)
+            
+            Debug.WriteLine($"Model: {SelectedGenerationModel.Name} Loading Started");
+            Debug.WriteLine($"Weight: {SelectedGenerationWeight.Weight} Loading Started");
+            NativeLibraryConfig.Instance.WithCuda(AppConfig.Instance.Device == Device.GPU).WithAutoFallback();
+
+            var modelPath =
+                $@"{AppConfig.Instance.ModelsPath}\{SelectedGenerationModel.Type.RemoveSpaces()}\{SelectedGenerationModel.Name.RemoveSpaces()}\{SelectedGenerationWeight.Weight.RemoveSpaces()}.{SelectedGenerationWeight.Extension.ToLower().RemoveSpaces()}";
+            ModelParameters = new ModelParams(modelPath)
             {
-                _logger.LogError(ex, "An error occurred while switching generation model.");
+                ContextSize = 4096,
+                Embeddings = Mode == GenerationMode.Embeddings,
+                GpuLayerCount = AppConfig.Instance.Device == Device.GPU
+                    ? Extensions.TextModelLayersCount(SelectedGenerationModel.Parameters,
+                        SelectedGenerationWeight.Size.BytesToGB().ToString(CultureInfo.InvariantCulture),
+                        SystemInfoService.Instance?.systemInfo?.VRAMFree ?? 0)
+                    : 0
+            };
+            Model = await LLamaWeights.LoadFromFileAsync(ModelParameters);
+
+            Debug.WriteLine($"Model: {SelectedGenerationModel.Name} Loading Finished");
+            Debug.WriteLine($"Weight: {SelectedGenerationWeight.Weight} Loading Finished");
+            /*
+            if (Mode == GenerationMode.Embeddings)
+            {
+                Embedder = new LLamaEmbedder(Model, ModelParameters);
+
+                Memory = new KernelMemoryBuilder()
+                    .WithLLamaSharpTextEmbeddingGeneration(new LLamaSharpTextEmbeddingGenerator(Embedder))
+                    .WithLLamaSharpTextGeneration(new LlamaSharpTextGenerator(Model, Embedder.Context))
+                    .WithSearchClientConfig(new SearchClientConfig { MaxMatchesCount = 1, AnswerTokens = 100 })
+                    .With(new TextPartitioningOptions { MaxTokensPerParagraph = 300, MaxTokensPerLine = 100, OverlappingTokens = 30 })
+                    .WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Disk })
+                    .WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Disk })
+                    .Build();
             }
-        }).Start();
+            */
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while switching generation model.");
+            Debug.WriteLine($"Model Loading Error: {ex.Message}");
+            Unload();
+        }
     }
 
     public void Unload()
@@ -96,7 +105,6 @@ public class GenerationService
         GC.Collect();
     }
 
-    private static GenerationService? instance;
-    public static GenerationService Instance => instance ??= new GenerationService();
-
+    private static GenerationService? _instance;
+    public static GenerationService Instance => _instance ??= new GenerationService();
 }

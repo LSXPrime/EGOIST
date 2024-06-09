@@ -10,4 +10,8 @@ public partial class ChatPageView : UserControl
         DataContext = viewModel;
         InitializeComponent();
     }
+    public ChatPageView()
+    {
+        InitializeComponent();
+    }
 }

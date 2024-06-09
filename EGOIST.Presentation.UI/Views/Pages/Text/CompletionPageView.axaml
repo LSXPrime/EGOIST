@@ -1,0 +1,75 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:icons="using:FluentIcons.Avalonia"
+             xmlns:controls="using:EGOIST.Presentation.UI.Views.Controls"
+             xmlns:vm="using:EGOIST.Presentation.UI.ViewModels.Pages.Text"
+             xmlns:helpers="using:EGOIST.Presentation.UI.Helpers"
+             xmlns:services="using:EGOIST.Application.Services.Text"
+             mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+             x:DataType="vm:CompletionPageViewModel"
+             x:Class="EGOIST.Presentation.UI.Views.Pages.Text.CompletionPageView">
+    <UserControl.Resources>
+        <helpers:ConditionCheckConverter x:Key="ConditionCheckConverter" />
+        <helpers:ConditionIconConverter x:Key="ConditionIconConverter" />
+    </UserControl.Resources>
+    <Design.DataContext>
+        <vm:CompletionPageViewModel>
+            <x:Arguments>
+                <x:Null />
+            </x:Arguments>
+        </vm:CompletionPageViewModel>
+    </Design.DataContext>
+
+    <Grid Margin="0" ColumnDefinitions="Auto,*,Auto">
+        <!-- Chat Sessions List -->
+        <controls:SessionsListControl
+            Title="Completion Sessions"
+            Sessions="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).((services:ChatService)ChatService).ChatSessions, FallbackValue={x:Null}}"
+            SelectedSession="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).((services:ChatService)ChatService).SelectedChatSession, FallbackValue={x:Null}}"
+            MainActionIcon="Add"
+            SubActionIcon="Delete"
+            MainAction="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).SessionCreateCommand, FallbackValue={x:Null}}"
+            SubAction="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).SessionDeleteCommand, FallbackValue={x:Null}}" />
+
+        <!-- Session Inference Options -->
+        <controls:SessionOptionsControl
+            Grid.Column="2"
+            Title="Inference Options"
+            Parameters="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).GenerationParameters, FallbackValue={x:Null}}"
+            PromptFormat="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).PromptParameters, FallbackValue={x:Null}}"
+            ModelParameters="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).ModelParameters, FallbackValue={x:Null}}"
+            PromptTemplates="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).((services:ChatService)ChatService).PromptTemplates, FallbackValue={x:Null}}" />
+
+        <!-- Chat UI -->
+        <Grid Grid.Column="1" RowDefinitions="5*,95*">
+            <!-- Completion UI -->
+            <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="25,10" Height="40" VerticalAlignment="Top" HorizontalAlignment="Right" >
+                <TextBlock Text="{Binding CompletionStatics}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" Margin="0,0,10,0" FontFamily="Old English Text MT" />
+                <Button Command="{Binding CompletionSearchCommand}" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                    <icons:SymbolIcon Symbol="Search" FontSize="24" />
+                </Button>
+            </StackPanel>
+            <!-- Prompt Writing & Send Controls -->
+            <Grid Grid.Row="1" Margin="25,25">
+                <!-- Completion Container -->
+                <TextBox x:Name="CompletionTextEditor"
+                         Text="{Binding UserInput, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                         KeyDown="CompletionTextEditor_SuggestionHandler" AcceptsReturn="True"
+                         Watermark="Write your Instruction here!" CornerRadius="8" TextWrapping="Wrap" />
+                <Button Command="{Binding GenerateCommand}" Margin="20" Width="75" Height="50"
+                        VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                    <icons:SymbolIcon
+                        Symbol="{Binding State, Converter={StaticResource ConditionCheckConverter}, ConverterParameter=Started|Stop|Send}"
+                        FontSize="32" Foreground="White" />
+                </Button>
+                <Popup x:Name="CompletionSuggestionPopup" Placement="Pointer" IsOpen="False">
+                    <ListBox x:Name="CompletionSuggestionList" Width="150" Height="100" Background="DarkRed" />
+                </Popup>
+            </Grid>
+
+        </Grid>
+    </Grid>
+
+</UserControl>

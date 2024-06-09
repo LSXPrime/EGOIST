@@ -40,8 +40,7 @@ public partial class MainWindowViewModel : ViewModelBase
             new NavigationItem(typeof(TextPageViewModel), NavigationItemType.Main, "Text", Symbol.Textbox.ToString()),
             [
                 new NavigationItem(typeof(ChatPageViewModel), NavigationItemType.Sub, "Chat", Symbol.Chat.ToString()),
-                new NavigationItem(typeof(ChatPageViewModel), NavigationItemType.Sub, "Chat", Symbol.Chat.ToString()),
-                new NavigationItem(typeof(ChatPageViewModel), NavigationItemType.Sub, "Chat", Symbol.Chat.ToString())
+                new NavigationItem(typeof(CompletionPageViewModel), NavigationItemType.Sub, "Completion", Symbol.Pen.ToString())
             ])
     ];
 
@@ -50,6 +49,7 @@ public partial class MainWindowViewModel : ViewModelBase
         { typeof(HomePageViewModel), (navType, parameters) => NavigationService.NavigateTo<HomePageViewModel>(parameters: parameters, type: navType) },
         { typeof(TextPageViewModel), (navType, parameters) => NavigationService.NavigateTo<TextPageViewModel>(parameters: parameters, type: navType) },
         { typeof(ChatPageViewModel), (navType, parameters) => NavigationService.NavigateTo<ChatPageViewModel>(parameters: parameters, type: navType) },
+        { typeof(CompletionPageViewModel), (navType, parameters) => NavigationService.NavigateTo<CompletionPageViewModel>(parameters: parameters, type: navType) },
     };
 
     partial void OnCurrentNavigationItemChanged(NavigationItem value)
@@ -58,24 +58,23 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void NavigateTo(NavigationItem item)
+    private void NavigateTo(NavigationItem? item)
     {
-        Debug.WriteLine($"Item: {item?.Title}");
 
-        if (item.NavType == NavigationItemType.Sub)
+        if (item?.NavType == NavigationItemType.Sub)
         {
             var mainItem = NavigationItems.First(x => x.Children.Contains(item)).Parent;
             Debug.WriteLine($"Parent: {mainItem?.Title}");
             if (mainItem != null && _navigationActions.TryGetValue(mainItem.ViewModel, out var main))
             {
                 main.Invoke(mainItem.NavType, null);
-                Debug.WriteLine($"Parent Navigated: {mainItem?.Title}");
+                Debug.WriteLine($"Parent Navigated: {mainItem.Title}");
             }
         }
 
-        if (!_navigationActions.TryGetValue(item.ViewModel, out var action)) return;
-        action.Invoke(item.NavType, null);
-        Debug.WriteLine($"Item Navigated: {item?.Title}");
+        if (!_navigationActions.TryGetValue(item?.ViewModel!, out var action)) return;
+        action.Invoke(item!.NavType, null);
+        Debug.WriteLine($"Item Navigated: {item.Title}");
     }
 
     [RelayCommand]

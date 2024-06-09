@@ -1,9 +1,8 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
 using CommunityToolkit.Mvvm.Input;
 using EGOIST.Domain.Interfaces;
 using FluentIcons.Common;
@@ -22,22 +21,27 @@ public class SessionsListControl : TemplatedControl
         set => SetValue(TitleProperty, value);
     }
     
-     public static readonly StyledProperty<ObservableCollection<ISession<IMessage>>> SessionsProperty =
-        AvaloniaProperty.Register<SessionsListControl, ObservableCollection<ISession<IMessage>>>(nameof(Sessions), []);
+     public static readonly StyledProperty<object> SessionsProperty =
+        AvaloniaProperty.Register<SessionsListControl, object>(nameof(Sessions));
 
-    public ObservableCollection<ISession<IMessage>> Sessions
+    public object Sessions
     {
         get => GetValue(SessionsProperty);
         set => SetValue(SessionsProperty, value);
     }
 
-    public static readonly StyledProperty<ISession<IMessage>> SelectedSessionProperty =
-        AvaloniaProperty.Register<SessionsListControl, ISession<IMessage>>(nameof(SelectedSession));
+    public static readonly StyledProperty<ISession> SelectedSessionProperty =
+        AvaloniaProperty.Register<SessionsListControl, ISession>(nameof(SelectedSession));
 
-    public ISession<IMessage> SelectedSession
+    public ISession SelectedSession
     {
         get => GetValue(SelectedSessionProperty);
-        set => SetValue(SelectedSessionProperty, value);
+        set
+        {
+            SetValue(SelectedSessionProperty, value);
+            Debug.WriteLine($"Selected Chat Changed: {((ISession)value)?.SessionName}");
+
+        }
     }
 
     public static readonly StyledProperty<RelayCommand> MainActionProperty =
@@ -92,12 +96,7 @@ public class SessionsListControl : TemplatedControl
         TogglePaneBtn = e.NameScope.Find<Button>("PART_TogglePaneBtn");
         if (TogglePaneBtn != null)
         {
-            TogglePaneBtn.Click += TogglePane;
+            TogglePaneBtn.Click += (_, _) => { IsOpen = !IsOpen; };
         }
-    }
-
-    private void TogglePane(object? sender, RoutedEventArgs e)
-    {
-        IsOpen = !IsOpen;
     }
 }

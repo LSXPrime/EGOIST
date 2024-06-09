@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -10,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EGOIST.Presentation.UI.ViewModels.Pages.Text;
 
-public partial class ChatPageViewModel([FromKeyedServices("ChatService")] ITextService chatService) : ViewModelBase, INavigationAware
+public partial class CompletionPageViewModel([FromKeyedServices("ChatService")] ITextService chatService) : ViewModelBase, INavigationAware
 {
     /*
     [ObservableProperty]
@@ -42,9 +43,11 @@ public partial class ChatPageViewModel([FromKeyedServices("ChatService")] ITextS
 
     public new string Title => "Chat";
     
-    #region ChatVariables
+    #region CompletionVariables
     [ObservableProperty]
-    private string _chatUserInput = string.Empty;
+    private string _userInput = string.Empty;
+    [ObservableProperty]
+    private string _completionStatics = "L: 00 || W: 00 || C: 00";
     #endregion
 
     #region GenerationVariables
@@ -71,30 +74,42 @@ public partial class ChatPageViewModel([FromKeyedServices("ChatService")] ITextS
     #endregion
     
     
-    #region ChatMethods
+    #region CompletionMethods
     
     
     [RelayCommand]
-    private void ChatCreate()
+    private void SessionCreate()
     {
         // Create a new chat session and add it to ChatSessions
         ChatService.Create();
     }
 
     [RelayCommand]
-    private void ChatDelete()
+    private void SessionDelete()
     {
         // Delete the selected chat session
         ChatService.Delete();
     }
 
     [RelayCommand]
-    private async Task MessageSend() 
+    private async Task Generate() 
     {
-        var userInput = ChatUserInput;
-        ChatUserInput = string.Empty;
+        var userInput = UserInput;
+        UserInput = string.Empty;
 
-        await Task.Run(async () => await ChatService.Generate(userInput, GenerationParameters, PromptParameters)); 
+        State = GenerationState.Started;
+        await Task.Run(async () => await ChatService.Generate(userInput, GenerationParameters, PromptParameters));
+        State = GenerationState.Finished;
+    }
+
+    #endregion
+
+    #region UIMethods
+
+    [RelayCommand]
+    private async Task CompletionSearch()
+    {
+        
     }
 
     #endregion

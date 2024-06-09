@@ -4,7 +4,7 @@ using EGOIST.Domain.Enums;
 
 namespace EGOIST.Domain.Entities;
 
-public class RoleplayCharacter : BaseEntity
+public class RoleplayCharacter : EntityBase
 {
     private string _name = string.Empty;
     private string _summary = string.Empty;

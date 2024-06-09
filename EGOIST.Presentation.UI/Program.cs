@@ -3,6 +3,7 @@ using Avalonia;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using EGOIST.Application.Interfaces.Text;
 using EGOIST.Application.Services.Text;
+using EGOIST.Domain.Entities;
 using EGOIST.Domain.Interfaces;
 using EGOIST.Infrastructure.Repositories;
 using EGOIST.Presentation.UI.ViewModels;
@@ -27,6 +28,8 @@ namespace EGOIST.Presentation.UI
             Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
                 .WriteTo.File("EGOIST_Handler.log", rollingInterval: RollingInterval.Month)
+                .WriteTo.Console()
+                .WriteTo.Debug()
                 .CreateLogger();
 
             var services = new ServiceCollection();
@@ -36,6 +39,7 @@ namespace EGOIST.Presentation.UI
                 .AddKeyedSingleton<IModelsRepository, LocalModelsRepository>("LocalModelsRepository")
                 .AddKeyedSingleton<IModelsRepository, HuggingFaceModelsRepository>("HuggingFaceModelsRepository")
                 .AddKeyedSingleton<IModelsRepository, CivitAIModelsRepository>("CivitAIModelsRepository")
+                .AddSingleton<IPromptRepository<TextPromptParameters>, LocalPromptRepository<TextPromptParameters>>()
                 .AddSingleton<MainWindowViewModel>()
                 .AddSingleton<MainWindow>()
                 .AddTransient<HomePageViewModel>()
@@ -44,6 +48,8 @@ namespace EGOIST.Presentation.UI
                 .AddTransient<TextPageView>()
                 .AddTransient<ChatPageViewModel>()
                 .AddTransient<ChatPageView>()
+                .AddTransient<CompletionPageViewModel>()
+                .AddTransient<CompletionPageView>()
                 .BuildServiceProvider();
             Ioc.Default.ConfigureServices(provider);
 

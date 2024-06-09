@@ -63,7 +63,7 @@ public class MemoryService(ILogger<CompletionService> _logger) : ITextService
         }
     }
 
-    public async Task Generate(string prompt)
+    public async Task Generate(string prompt, TextGenerationParameters? generationParameters = null, TextPromptParameters? promptParameters = null)
     {
         try
         {
@@ -95,7 +95,7 @@ public class MemoryService(ILogger<CompletionService> _logger) : ITextService
             _generation.CancelToken = new();
             prompt = string.Empty;
 
-            var answer = await _generation.Memory.AskAsync(userMessage.Message, filter: new MemoryFilter().ByDocument(SelectedMemory.Collection), cancellationToken: _generation.CancelToken.Token);
+            var answer = await _generation.Memory?.AskAsync(userMessage.Message, filter: new MemoryFilter().ByDocument(SelectedMemory.Collection), cancellationToken: _generation.CancelToken.Token)!;
             memoryMessage.Message = answer.Result;
             _generation.State = GenerationState.Finished;
             _generation.CancelToken.Dispose();

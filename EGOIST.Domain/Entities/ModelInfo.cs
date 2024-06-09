@@ -3,7 +3,7 @@ using EGOIST.Domain.Abstracts;
 
 namespace EGOIST.Domain.Entities;
 
-public class ModelInfo : BaseEntity
+public class ModelInfo : EntityBase
 {
     private string _name = string.Empty;
     private string _backend = string.Empty;

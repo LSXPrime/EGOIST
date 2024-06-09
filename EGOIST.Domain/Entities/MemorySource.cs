@@ -3,7 +3,7 @@ using EGOIST.Domain.Abstracts;
 
 namespace EGOIST.Domain.Entities;
 
-public class MemorySource : BaseEntity
+public class MemorySource : EntityBase
 {
     private string _collection = string.Empty;
     private bool _isLoaded;

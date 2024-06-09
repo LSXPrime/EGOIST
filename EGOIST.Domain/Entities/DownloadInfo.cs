@@ -3,7 +3,7 @@ using EGOIST.Domain.Enums;
 
 namespace EGOIST.Domain.Entities;
 
-public class DownloadInfo : BaseEntity
+public class DownloadInfo : EntityBase
 {
     private string _name = string.Empty;
     private string _localPath = string.Empty;

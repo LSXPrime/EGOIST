@@ -3,7 +3,7 @@ using EGOIST.Domain.Interfaces;
 
 namespace EGOIST.Domain.Entities;
 
-public class CompletionSession : BaseEntity
+public class CompletionSession : EntityBase
 {
     private string _sessionName = $"Completion {DateTime.Now}";
     private string _content = string.Empty;

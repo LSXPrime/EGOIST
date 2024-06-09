@@ -3,7 +3,7 @@ using EGOIST.Domain.Interfaces;
 
 namespace EGOIST.Domain.Entities;
 
-public class RoleplayCharacterEXT : BaseEntity
+public class RoleplayCharacterEXT : EntityBase
 {
     private RoleplayCharacter? _character;
 

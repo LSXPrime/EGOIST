@@ -2,7 +2,7 @@
 
 namespace EGOIST.Domain.Entities;
 
-public class SystemInfo : BaseEntity
+public class SystemInfo : EntityBase
 {
     private int _cpu;
     private int _ram;

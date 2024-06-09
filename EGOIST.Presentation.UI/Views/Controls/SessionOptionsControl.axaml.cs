@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using CommunityToolkit.Mvvm.Input;
 using EGOIST.Domain.Entities;
 
 namespace EGOIST.Presentation.UI.Views.Controls;
@@ -44,6 +45,26 @@ public class SessionOptionsControl : TemplatedControl
         get => GetValue(PromptFormatProperty);
         set => SetValue(PromptFormatProperty, value);
     }
+    
+    public TextPromptParameters? PromptFormatBinding
+    {
+        get => PromptFormat;
+        set
+        {
+            if (value == null)
+                return;
+            
+            PromptFormat.Name = value.Name;
+            PromptFormat.Content = value.Content;
+            PromptFormat.PromptPrefix = value.PromptPrefix;
+            PromptFormat.PromptSuffix = value.PromptSuffix;
+            PromptFormat.SystemPrefix = value.SystemPrefix;
+            PromptFormat.SystemSuffix = value.SystemSuffix;
+            PromptFormat.SystemPrompt = value.SystemPrompt;
+            PromptFormat.BlackList = value.BlackList;
+        }
+    }
+
 
     public static readonly StyledProperty<TextModelParameters> ModelParametersProperty =
         AvaloniaProperty.Register<SessionOptionsControl, TextModelParameters>(nameof(ModelParameters));
@@ -52,6 +73,24 @@ public class SessionOptionsControl : TemplatedControl
     {
         get => GetValue(ModelParametersProperty);
         set => SetValue(ModelParametersProperty, value);
+    }
+    
+    public static readonly StyledProperty<object> PromptTemplatesProperty =
+        AvaloniaProperty.Register<SessionsListControl, object>(nameof(PromptTemplates));
+
+    public object PromptTemplates
+    {
+        get => GetValue(PromptTemplatesProperty);
+        set => SetValue(PromptTemplatesProperty, value);
+    }
+    
+    public static readonly StyledProperty<RelayCommand> SavePromptProperty =
+        AvaloniaProperty.Register<SessionsListControl, RelayCommand>(nameof(SavePrompt));
+
+    public RelayCommand SavePrompt
+    {
+        get => GetValue(SavePromptProperty);
+        set => SetValue(SavePromptProperty, value);
     }
 
     private Button? TogglePaneBtn { get; set; }
@@ -63,7 +102,7 @@ public class SessionOptionsControl : TemplatedControl
         TogglePaneBtn = e.NameScope.Find<Button>("PART_TogglePaneBtn");
         if (TogglePaneBtn != null)
         {
-            TogglePaneBtn.Click += (sender, args) => { IsOpen = !IsOpen; };
+            TogglePaneBtn.Click += (_, _) => { IsOpen = !IsOpen; };
         }
     }
     
