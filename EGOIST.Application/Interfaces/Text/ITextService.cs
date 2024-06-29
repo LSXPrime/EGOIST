@@ -28,6 +28,6 @@ namespace EGOIST.Application.Interfaces.Text
         /// <param name="generationParameters">The response generation parameters for text generation.</param>
         /// <param name="promptParameters">The prompt formatting parameters for text generation.</param>
         /// <returns>A task that completes when the text is generated.</returns>
-        Task Generate(string prompt, TextGenerationParameters? generationParameters = null, TextPromptParameters? promptParameters = null);
+        Task<T?> Generate<T>(string prompt, TextGenerationParameters? generationParameters = null, TextPromptParameters? promptParameters = null) where T : class;
     }
 }

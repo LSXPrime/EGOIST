@@ -1,0 +1,47 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:dialogs="clr-namespace:EGOIST.Presentation.UI.ViewModels.Dialogs"
+             xmlns:avalonia="clr-namespace:FluentIcons.Avalonia;assembly=FluentIcons.Avalonia"
+             mc:Ignorable="d"
+             x:DataType="dialogs:TextMemoryCreateViewModel"
+             x:Class="EGOIST.Presentation.UI.Views.Dialogs.TextMemoryCreateView">
+    <Design.DataContext>
+        <dialogs:TextMemoryCreateViewModel>
+            <x:Arguments>
+                <x:Null />
+            </x:Arguments>
+        </dialogs:TextMemoryCreateViewModel>
+    </Design.DataContext>
+    
+    
+    <StackPanel Width="400" Margin="50">
+        <TextBlock Text="Import Document" FontWeight="Bold" FontSize="32" HorizontalAlignment="Center" Margin="0,0,0,50"/>
+
+        <ComboBox ItemsSource="{Binding MemoriesPaths}"
+                  SelectedItem="{Binding SelectedCollection}"
+                  HorizontalAlignment="Stretch"
+                  Margin="0,0,0,20"/>
+        
+        <AutoCompleteBox
+            ItemsSource="{Binding MemoriesPaths}"
+            SelectedItem="{Binding SelectedCollection}"
+            Watermark="Collection name..."
+            HorizontalAlignment="Stretch"
+            Margin="0,0,0,20" />
+
+        <TextBox Text="{Binding DocumentPath}"
+                 Watermark="Document path..."
+                 HorizontalAlignment="Stretch"
+                 Margin="0,0,0,20"/>
+
+        <Button HorizontalAlignment="Stretch"
+                Command="{Binding OpenFileDialogCommand}">
+            <StackPanel Orientation="Horizontal">
+                <avalonia:SymbolIcon Symbol="DocumentAdd"/>
+                <TextBlock Text="Browse" Margin="5,0,0,0"/>
+            </StackPanel>
+        </Button>
+    </StackPanel>
+</UserControl>

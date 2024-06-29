@@ -39,15 +39,15 @@ public class SessionsListControl : TemplatedControl
         set
         {
             SetValue(SelectedSessionProperty, value);
-            Debug.WriteLine($"Selected Chat Changed: {((ISession)value)?.SessionName}");
+            Debug.WriteLine($"Selected Chat Changed: {((ISession)value)?.Name}");
 
         }
     }
 
-    public static readonly StyledProperty<RelayCommand> MainActionProperty =
-        AvaloniaProperty.Register<SessionsListControl, RelayCommand>(nameof(MainAction));
+    public static readonly StyledProperty<IAsyncRelayCommand> MainActionProperty =
+        AvaloniaProperty.Register<SessionsListControl, IAsyncRelayCommand>(nameof(MainAction));
 
-    public RelayCommand MainAction
+    public IAsyncRelayCommand MainAction
     {
         get => GetValue(MainActionProperty);
         set => SetValue(MainActionProperty, value);

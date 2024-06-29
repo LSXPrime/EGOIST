@@ -7,7 +7,7 @@ namespace EGOIST.Domain.Abstracts;
 public abstract class SessionBase<TMessage>(string sessionName) : EntityBase, ISession<TMessage>
     where TMessage : EntityBase, IMessage, new()
 {
-    public string SessionName
+    public string Name
     {
         get => sessionName;
         set => Notify(ref sessionName, value);

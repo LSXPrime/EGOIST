@@ -9,10 +9,10 @@
              xmlns:services="using:EGOIST.Application.Services.Text"
              mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
              x:DataType="vm:CompletionPageViewModel"
-             x:Class="EGOIST.Presentation.UI.Views.Pages.Text.CompletionPageView">
+             x:Class="EGOIST.Presentation.UI.Views.Pages.Text.CompletionPageView"
+             Name="CompletionPage">
     <UserControl.Resources>
         <helpers:ConditionCheckConverter x:Key="ConditionCheckConverter" />
-        <helpers:ConditionIconConverter x:Key="ConditionIconConverter" />
     </UserControl.Resources>
     <Design.DataContext>
         <vm:CompletionPageViewModel>
@@ -26,8 +26,8 @@
         <!-- Chat Sessions List -->
         <controls:SessionsListControl
             Title="Completion Sessions"
-            Sessions="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).((services:ChatService)ChatService).ChatSessions, FallbackValue={x:Null}}"
-            SelectedSession="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).((services:ChatService)ChatService).SelectedChatSession, FallbackValue={x:Null}}"
+            Sessions="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).((services:CompletionService)Service).CompletionSessions, FallbackValue={x:Null}}"
+            SelectedSession="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).((services:CompletionService)Service).SelectedCompletionSession, FallbackValue={x:Null}}"
             MainActionIcon="Add"
             SubActionIcon="Delete"
             MainAction="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).SessionCreateCommand, FallbackValue={x:Null}}"
@@ -40,22 +40,41 @@
             Parameters="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).GenerationParameters, FallbackValue={x:Null}}"
             PromptFormat="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).PromptParameters, FallbackValue={x:Null}}"
             ModelParameters="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).ModelParameters, FallbackValue={x:Null}}"
-            PromptTemplates="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).((services:ChatService)ChatService).PromptTemplates, FallbackValue={x:Null}}" />
+            PromptTemplates="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).((services:CompletionService)Service).PromptTemplates, FallbackValue={x:Null}}" />
 
         <!-- Chat UI -->
         <Grid Grid.Column="1" RowDefinitions="5*,95*">
             <!-- Completion UI -->
-            <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="25,10" Height="40" VerticalAlignment="Top" HorizontalAlignment="Right" >
+            <StackPanel Grid.Row="0" Spacing="15" Orientation="Horizontal"  Margin="25,10" Height="40" VerticalAlignment="Top" HorizontalAlignment="Right" >
                 <TextBlock Text="{Binding CompletionStatics}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" Margin="0,0,10,0" FontFamily="Old English Text MT" />
-                <Button Command="{Binding CompletionSearchCommand}" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                <StackPanel Orientation="Horizontal"  Spacing="5" IsVisible="{Binding #SearchToggle.IsChecked}">
+                    <TextBox Width="200" Text="{Binding #CompletionPage.SearchText}">
+                        <TextBox.InnerLeftContent>
+                            <icons:SymbolIcon Symbol="Search" FontSize="24" Margin="10,0" />
+                        </TextBox.InnerLeftContent>
+                    </TextBox>
+                    <TextBox Width="200">
+                        <TextBox.InnerLeftContent>
+                            <icons:SymbolIcon Symbol="ArrowsBidirectional" FontSize="24" Margin="10,0" />
+                        </TextBox.InnerLeftContent>
+                    </TextBox>
+                    <Button Click="Search" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="10,0,0,0">
+                        <icons:SymbolIcon Symbol="Search" FontSize="24" />
+                    </Button>
+                    <Button VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                        <icons:SymbolIcon Symbol="ArrowsBidirectional" FontSize="24" />
+                    </Button>
+                </StackPanel>
+
+                <ToggleButton Name="SearchToggle" VerticalAlignment="Bottom" HorizontalAlignment="Right">
                     <icons:SymbolIcon Symbol="Search" FontSize="24" />
-                </Button>
+                </ToggleButton>
             </StackPanel>
             <!-- Prompt Writing & Send Controls -->
             <Grid Grid.Row="1" Margin="25,25">
                 <!-- Completion Container -->
                 <TextBox x:Name="CompletionTextEditor"
-                         Text="{Binding UserInput, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                         Text="{Binding ((services:CompletionService)Service).SelectedCompletionSession.Content, FallbackValue={x:Null}}"
                          KeyDown="CompletionTextEditor_SuggestionHandler" AcceptsReturn="True"
                          Watermark="Write your Instruction here!" CornerRadius="8" TextWrapping="Wrap" />
                 <Button Command="{Binding GenerateCommand}" Margin="20" Width="75" Height="50"

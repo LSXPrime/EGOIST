@@ -1,21 +1,16 @@
 using EGOIST.Application.DTOs.Voice;
+using EGOIST.Application.Interfaces.Core;
 using EGOIST.Application.Interfaces.Voice;
-using EGOIST.Domain.Enums;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NAudio.Wave;
 
 namespace EGOIST.Application.Services.Voice
 {
-    public class TranscribeService : IVoiceService
+    public class TranscribeService(ILogger<TranscribeService> logger, [FromKeyedServices("VoiceModelCoreService")] IModelCoreService modelCore)
+        : IVoiceService
     {
-        private readonly ILogger<TranscribeService> _logger;
-        private readonly GenerationService _generation;
-
-        public TranscribeService(ILogger<TranscribeService> logger)
-        {
-            _logger = logger;
-            _generation = GenerationService.Instance;
-        }
+        private readonly VoiceModelCoreService? _modelCore = modelCore as VoiceModelCoreService;
 
         /// <summary>
         /// Transcribes audio using Whisper.net.
@@ -29,7 +24,7 @@ namespace EGOIST.Application.Services.Voice
             await using var audioReader = new WaveFileReader(new MemoryStream(dto.File));
 
             // get Whisper transcriber
-            var transcriber = _generation.TranscribeProcessor;
+            var transcriber = _modelCore?.TranscribeProcessor;
             // Set the language
             transcriber?.ChangeLanguage(dto.Language);
 

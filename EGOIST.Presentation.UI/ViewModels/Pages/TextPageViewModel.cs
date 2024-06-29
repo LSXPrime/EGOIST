@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using EGOIST.Application.Interfaces.Core;
 using EGOIST.Application.Services.Text;
 using EGOIST.Domain.Entities;
 using EGOIST.Domain.Interfaces;
@@ -13,20 +14,21 @@ namespace EGOIST.Presentation.UI.ViewModels.Pages;
 
 public partial class TextPageViewModel : ViewModelBase, INavigationAware
 {
-    public new string Title => "Text";
+    public override string Title => "Text";
 
     public ObservableCollection<ModelInfo> Models { get; set; } = [];
     [ObservableProperty] 
     private ModelInfo? _selectedGenerationModel;
     [ObservableProperty]
     private ModelInfoWeight? _selectedGenerationWeight;
-    private GenerationService GenerationService { get; } = GenerationService.Instance;
+    private TextModelCoreService? ModelCoreService { get; }
     private readonly IModelsRepository _localRepository;
     
 
-    public TextPageViewModel([FromKeyedServices("LocalModelsRepository")] IModelsRepository localRepository)
+    public TextPageViewModel([FromKeyedServices("LocalModelsRepository")] IModelsRepository localRepository, [FromKeyedServices("TextModelCoreService")] IModelCoreService modelCoreService)
     {
         _localRepository = localRepository;
+        ModelCoreService = modelCoreService as TextModelCoreService;
         RefreshModels().Wait();
     }
 
@@ -40,8 +42,8 @@ public partial class TextPageViewModel : ViewModelBase, INavigationAware
     private async Task RefreshModels() => Models = new ObservableCollection<ModelInfo>(await _localRepository.GetAllModels(new Dictionary<string, string>() { { "Type", "Text" } }));
 
     [RelayCommand]
-    private void SwitchModel() => GenerationService.Switch(SelectedGenerationModel, SelectedGenerationWeight);
+    private void SwitchModel() => ModelCoreService.Switch(SelectedGenerationModel, SelectedGenerationWeight);
 
     [RelayCommand]
-    private void UnloadModel() => GenerationService.Unload();
+    private void UnloadModel() => ModelCoreService.Unload();
 }

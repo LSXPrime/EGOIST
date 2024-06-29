@@ -1,13 +1,15 @@
+using EGOIST.Application.Interfaces.Core;
 using EGOIST.Application.Interfaces.Image;
 using EGOIST.Domain.Enums;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StableDiffusion.NET;
 
 namespace EGOIST.Application.Services.Image
 {
-    public class TransformService(ILogger<TransformService> logger) : IImageService
+    public class TransformService(ILogger<ImagineService> logger, [FromKeyedServices("ImageModelCoreService")] IModelCoreService modelCore) : IImageService
     {
-        private readonly GenerationService _generation = GenerationService.Instance;
+        private readonly ImageModelCoreService? _imageModelCore = modelCore as ImageModelCoreService;
 
         public Task<byte[]> Imagine(string prompt, string negative)
         {
@@ -28,19 +30,19 @@ namespace EGOIST.Application.Services.Image
         /// <returns>A task that completes with the transformed image data.</returns>
         public async Task<byte[]> Transform(string prompt, string negative, byte[] source)
         {
-            if (_generation.SelectedGenerationModel == null)
+            if (_imageModelCore?.SelectedGenerationModel == null)
             {
                 logger.LogWarning("Text Generation Model isn't loaded yet.");
                 return [];
             }
 
-            _generation.State = GenerationState.Started;
+            _imageModelCore.State = GenerationState.Started;
 
             try
             {
                 var stableDiffusionImage = await Task.Run(() =>
                 {
-                    if (_generation.Model != null)
+                    if (_imageModelCore.Model != null)
                     {
                         var parameters = new StableDiffusionParameter
                         {
@@ -53,7 +55,7 @@ namespace EGOIST.Application.Services.Image
                             SampleMethod = Sampler.Euler_A
                         };
 
-                        return _generation.Model.ImageToImage(prompt, source, parameters);
+                        return _imageModelCore.Model.ImageToImage(prompt, source, parameters);
                     }
                     else
                     {
@@ -61,14 +63,14 @@ namespace EGOIST.Application.Services.Image
                     }
                 });
 
-                _generation.State = GenerationState.Finished;
+                _imageModelCore.State = GenerationState.Finished;
 
                 return stableDiffusionImage != null ? stableDiffusionImage.Data.ToArray() : [];
             }
             finally
             {
-                _generation.State = GenerationState.None;
-                _generation.Model?.Dispose();
+                _imageModelCore.State = GenerationState.None;
+                _imageModelCore.Model?.Dispose();
             }
         }
     }

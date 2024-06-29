@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
+using EGOIST.Application.Interfaces.Core;
 using EGOIST.Application.Services.Utilities;
 using EGOIST.Application.Utilities;
 using EGOIST.Domain.Entities;
@@ -7,17 +8,11 @@ using EGOIST.Domain.Enums;
 using LLama;
 using LLama.Common;
 using LLama.Native;
-using LLamaSharp.KernelMemory;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.Configuration;
-using Microsoft.KernelMemory.ContentStorage.DevTools;
-using Microsoft.KernelMemory.FileSystem.DevTools;
-using Microsoft.KernelMemory.MemoryStorage.DevTools;
 
 namespace EGOIST.Application.Services.Text;
 
-public class GenerationService
+public class TextModelCoreService(ILogger<TextModelCoreService> logger) : IModelCoreService
 {
     public GenerationState State { get; set; } = GenerationState.None;
     public GenerationMode Mode { get; set; } = GenerationMode.Text;
@@ -25,18 +20,14 @@ public class GenerationService
     public ModelInfoWeight? SelectedGenerationWeight { get; set; }
 
     public LLamaWeights? Model;
-    public LLamaEmbedder? Embedder;
     public ModelParams? ModelParameters;
-    public IKernelMemory? Memory;
-    public CancellationTokenSource? CancelToken;
-
-    private readonly ILogger<GenerationService> _logger = new LoggerFactory().CreateLogger<GenerationService>();
+    public CancellationTokenSource? CancelToken { get; set; }
 
     public async Task Switch(ModelInfo? model, ModelInfoWeight? weight)
     {
         if (model == null || weight == null)
         {
-            Unload();
+            await Unload();
             return;
         }
 
@@ -47,7 +38,7 @@ public class GenerationService
         {
             if (SelectedGenerationModel == null)
             {
-                _logger.LogWarning("No selected generation model.");
+                logger.LogWarning("No selected generation model.");
                 return;
             }
             
@@ -64,47 +55,34 @@ public class GenerationService
                 GpuLayerCount = AppConfig.Instance.Device == Device.GPU
                     ? Extensions.TextModelLayersCount(SelectedGenerationModel.Parameters,
                         SelectedGenerationWeight.Size.BytesToGB().ToString(CultureInfo.InvariantCulture),
-                        SystemInfoService.Instance?.systemInfo?.VRAMFree ?? 0)
+                        SystemInfoService.Instance.systemInfo.VRAMFree)
                     : 0
             };
             Model = await LLamaWeights.LoadFromFileAsync(ModelParameters);
 
-            Debug.WriteLine($"Model: {SelectedGenerationModel.Name} Loading Finished");
-            Debug.WriteLine($"Weight: {SelectedGenerationWeight.Weight} Loading Finished");
-            /*
-            if (Mode == GenerationMode.Embeddings)
-            {
-                Embedder = new LLamaEmbedder(Model, ModelParameters);
+            await OnSwitch?.Invoke([this])!;
 
-                Memory = new KernelMemoryBuilder()
-                    .WithLLamaSharpTextEmbeddingGeneration(new LLamaSharpTextEmbeddingGenerator(Embedder))
-                    .WithLLamaSharpTextGeneration(new LlamaSharpTextGenerator(Model, Embedder.Context))
-                    .WithSearchClientConfig(new SearchClientConfig { MaxMatchesCount = 1, AnswerTokens = 100 })
-                    .With(new TextPartitioningOptions { MaxTokensPerParagraph = 300, MaxTokensPerLine = 100, OverlappingTokens = 30 })
-                    .WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Disk })
-                    .WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Disk })
-                    .Build();
-            }
-            */
+            Debug.WriteLine($"Model: {SelectedGenerationModel.Name} Loading Finished");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while switching generation model.");
+            logger.LogError(ex, "An error occurred while switching generation model.");
             Debug.WriteLine($"Model Loading Error: {ex.Message}");
-            Unload();
+            await Unload();
         }
     }
 
-    public void Unload()
+    public async Task Unload()
     {
         Model?.Dispose();
         Model = null;
-        Memory = null;
         SelectedGenerationModel = null;
         State = GenerationState.None;
+        await OnUnload?.Invoke([this])!;
         GC.Collect();
+        
     }
 
-    private static GenerationService? _instance;
-    public static GenerationService Instance => _instance ??= new GenerationService();
+    public event IModelCoreService.SwitchHandler? OnSwitch;
+    public event IModelCoreService.UnloadHandler? OnUnload;
 }

@@ -4,8 +4,8 @@ namespace EGOIST.Domain.Interfaces;
 
 public interface ISession
 {
-    string SessionName { get; set; }
-    string ToString();
+    string Name { get; set; }
+    string? ToString();
 }
 
 public interface ISession<TMessage> : ISession where TMessage : IMessage

@@ -5,7 +5,7 @@ namespace EGOIST.Presentation.UI.ViewModels.Pages;
 
 public class HomePageViewModel : ViewModelBase, INavigationAware
 {
-    public new string Title => "Home";
+    public override string Title => "Home";
 
     public void Initialize(Dictionary<string, object>? parameters) { }
 

@@ -6,11 +6,14 @@ using EGOIST.Application.Interfaces.Text;
 using EGOIST.Domain.Entities;
 using EGOIST.Domain.Enums;
 using EGOIST.Presentation.UI.Interfaces.Navigation;
+using EGOIST.Presentation.UI.Services;
+using EGOIST.Presentation.UI.ViewModels.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EGOIST.Presentation.UI.ViewModels.Pages.Text;
 
-public partial class ChatPageViewModel([FromKeyedServices("ChatService")] ITextService chatService) : ViewModelBase, INavigationAware
+public partial class MemoryPageViewModel([FromKeyedServices("MemoryService")] ITextService memoryService)
+    : ViewModelBase, INavigationAware
 {
     /*
     [ObservableProperty]
@@ -34,67 +37,73 @@ public partial class ChatPageViewModel([FromKeyedServices("ChatService")] ITextS
         new ChatMessage { Sender = "Assistant", Message = "It was nice chatting with you too! Have a great day." }
     ];
     */
-    
-    [ObservableProperty]
-    private GenerationState _state = GenerationState.None;
-    
-    
+
+    [ObservableProperty] private GenerationState _state = GenerationState.None;
+
 
     public override string Title => "Chat";
-    
+
     #region ChatVariables
-    [ObservableProperty]
-    private string _chatUserInput = string.Empty;
+
+    [ObservableProperty] private string _userInput = string.Empty;
+
     #endregion
 
     #region GenerationVariables
 
-    [ObservableProperty]
-    private TextGenerationParameters _generationParameters = new();
-    [ObservableProperty]
-    private TextPromptParameters _promptParameters = new();
-    [ObservableProperty]
-    private TextModelParameters _modelParameters = new();
+    [ObservableProperty] private TextGenerationParameters _generationParameters = new();
+    [ObservableProperty] private TextPromptParameters _promptParameters = new();
+    [ObservableProperty] private TextModelParameters _modelParameters = new();
 
-    public ITextService ChatService { get; } = chatService;
+    public ITextService Service { get; } = memoryService;
 
     #endregion
 
     #region Navigation
 
-    public void Initialize(Dictionary<string, object>? parameters) { }
+    public void Initialize(Dictionary<string, object>? parameters)
+    {
+    }
 
-    public void OnNavigatedFrom() { }
+    public void OnNavigatedFrom()
+    {
+    }
 
-    public void OnNavigatedTo() { }
+    public void OnNavigatedTo()
+    {
+    }
 
     #endregion
-    
-    
+
+
     #region ChatMethods
-    
-    
+
     [RelayCommand]
-    private void ChatCreate()
+    private async Task ChatCreate()
     {
-        // Create a new chat session and add it to ChatSessions
-        ChatService.Create();
+        var result = await DialogService.CreateDialogAsync<TextMemoryCreateViewModel>();
+        if (result == null)
+            return;
+
+        var path = $"{result.SelectedCollection!}:{result.DocumentPath}";
+        await Service.Create(path);
     }
 
     [RelayCommand]
     private void ChatDelete()
     {
-        // Delete the selected chat session
-        ChatService.Delete();
+        Service.Delete();
     }
 
     [RelayCommand]
-    private async Task MessageSend() 
+    private async Task MessageSend()
     {
-        var userInput = ChatUserInput;
-        ChatUserInput = string.Empty;
+        var userInput = UserInput;
+        UserInput = string.Empty;
 
-        await Task.Run(async () => await ChatService.Generate<ChatMessage>(userInput, GenerationParameters, PromptParameters)).ConfigureAwait(false); 
+        await Task.Run(async () =>
+                await Service.Generate<ChatMessage>(userInput, GenerationParameters, PromptParameters))
+            .ConfigureAwait(false);
     }
 
     #endregion

@@ -89,7 +89,7 @@
                                         </AutoCompleteBox.InnerLeftContent>
                                         <AutoCompleteBox.ItemTemplate>
                                             <DataTemplate DataType="models:ISession">
-                                                <TextBlock Text="{Binding SessionName}" />
+                                                <TextBlock Text="{Binding Name}" />
                                             </DataTemplate>
                                         </AutoCompleteBox.ItemTemplate>
                                     </AutoCompleteBox>
@@ -104,7 +104,7 @@
                                             <DataTemplate>
                                                 <StackPanel Orientation="Horizontal">
                                                     <icons:SymbolIcon Symbol="DesktopSignal" />
-                                                    <TextBlock x:DataType="models:ISession" Text="{Binding SessionName}" Margin="5" />
+                                                    <TextBlock x:DataType="models:ISession" Text="{Binding Name}" Margin="5" />
                                                 </StackPanel>
                                             </DataTemplate>
                                         </ListBox.ItemTemplate>

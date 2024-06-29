@@ -1,24 +1,28 @@
-![](Screenshots/BG.png)
+> The main project has been migrated to the legacy-codebase branch. This was necessary due to the initial architecture, which was messy and difficult to maintain. The main branch is currently being rebuilt with a clean architecture to support the project's growth and improve code organisation.
+ 
+
 <h1 align="center">EGOIST - AI Hub</h1>
+
+![](https://raw.githubusercontent.com/LSXPrime/EGOIST/legacy-codebase/Screenshots/BG.png)
 
 ---
 
 ## Overview
 A project that aims to simplify interaction with various AI models across different types such as voice, text, and image generation for the end user. It seeks to combine the majority of these features into a single tool, thereby saving storage and reducing the complexity involved in setting up separate tools for each task, achieved through automation.
-[![MIT License](https://img.shields.io/badge/License-AGPL3-green.svg)](https://choosealicense.com/licenses/mit/) ![GitHub release (by tag)](https://img.shields.io/github/downloads/LSXPrime/EGOIST/latest/total)
+
+[![AGPLv3 License](https://img.shields.io/badge/License-AGPL3-green.svg)](https://choosealicense.com/licenses/agpl-3.0/) ![GitHub release (by tag)](https://img.shields.io/github/downloads/LSXPrime/EGOIST/latest/total)
 
 ## Features
-- Optimized for both CPU and Nvidia GPU operations.
+- Optimized for both CPU and GPU operations.
 - Automatic installation of dependencies, requiring only a lightweight executable.
 - User-friendly interaction interface designed in accordance with the Fluent UI style.
-- Dark and Light theme options for interface customization.
 - Automated updates to ensure the latest functionalities.
 - Support various tasks
 	- **Text Generation**
 		- **Chat:** Engage in diverse conversations with AI, covering everyday chit-chat to expert advice.
 		- **Text Completion:** Craft rich narratives with varied characters, settings, and themes, all powered by AI.
 		- **Documents Memory:** Seamlessly integrate with documents, supported by semantic memory.
-		- **Roleplay:** Dive into otaku fantasies with your favourite Waifu through AI-driven interactions, in single-turn or multi-turn group roleplays.
+		- **Roleplay:** Dive into weeb fantasies with your favourite Waifu through AI-driven interactions, in single-turn or multi-turn group roleplays.
 	- **Voice Generation**
 		- **Voice Clone with Emotions:** Create synthetic voices with diverse emotions. 
 		- **Audio Transcription:** Automatically transcribe audio recordings to text or subtitles.
@@ -41,6 +45,7 @@ A project that aims to simplify interaction with various AI models across differ
 - ***Please check [EGOIST-Models-Catalog](https://github.com/LSXPrime/EGOIST-Models-Catalog) for details***
 
 ## Roadmap
+> This roadmap reflects `legacy-codebase` branch
 
 **Text Generation**
 - Utilizing llama.cpp and Transformers as backends
@@ -79,11 +84,11 @@ A project that aims to simplify interaction with various AI models across differ
 
 **3D Art Generation**
 - Features:
-    - [ ] Creation of 3D models using Shape-E or DreamFusion
-    - [ ] 3D human animations using MotionDiffusion
+    - [ ] Creation of 3D models
+    - [ ] 3D human animations
 
 **Cross-Platform Support**
-- [ ] Replace WPF UI Framework (Avalonia / Uno)
+- [ ] Replace WPF Framework with Avalonia - In Progress
 - [ ] Release Linux Binaries
 - [ ] Release MacOS Binaries
 
@@ -101,18 +106,20 @@ A project that aims to simplify interaction with various AI models across differ
 
 ## Screenshots
 
-![](Screenshots/Screenshot_01.jpg)
-![](Screenshots/Screenshot_02.jpg)
-![](Screenshots/Screenshot_03.jpg)
-![](Screenshots/Screenshot_04.jpg)
-![](Screenshots/Screenshot_05.jpg)
-![](Screenshots/Screenshot_06.jpg)
-![](Screenshots/Screenshot_07.jpg)
-![](Screenshots/Screenshot_08.jpg)
-![](Screenshots/Screenshot_09.jpg)
-![](Screenshots/Screenshot_10.jpg)
-![](Screenshots/Screenshot_11.jpg)
-![](Screenshots/Screenshot_12.jpg)
-![](Screenshots/Screenshot_13.jpg)
-![](Screenshots/Screenshot_14.jpg)
+> This screenshots reflects `legacy-codebase` branch and release v1.1.1
+
+![](https://raw.githubusercontent.com/LSXPrime/EGOIST/legacy-codebase/Screenshots/Screenshot_01.jpg)
+![](https://raw.githubusercontent.com/LSXPrime/EGOIST/legacy-codebase/Screenshots/Screenshot_02.jpg)
+![](https://raw.githubusercontent.com/LSXPrime/EGOIST/legacy-codebase/Screenshots/Screenshot_03.jpg)
+![](https://raw.githubusercontent.com/LSXPrime/EGOIST/legacy-codebase/Screenshots/Screenshot_04.jpg)
+![](https://raw.githubusercontent.com/LSXPrime/EGOIST/legacy-codebase/Screenshots/Screenshot_05.jpg)
+![](https://raw.githubusercontent.com/LSXPrime/EGOIST/legacy-codebase/Screenshots/Screenshot_06.jpg)
+![](https://raw.githubusercontent.com/LSXPrime/EGOIST/legacy-codebase/Screenshots/Screenshot_07.jpg)
+![](https://raw.githubusercontent.com/LSXPrime/EGOIST/legacy-codebase/Screenshots/Screenshot_08.jpg)
+![](https://raw.githubusercontent.com/LSXPrime/EGOIST/legacy-codebase/Screenshots/Screenshot_09.jpg)
+![](https://raw.githubusercontent.com/LSXPrime/EGOIST/legacy-codebase/Screenshots/Screenshot_10.jpg)
+![](https://raw.githubusercontent.com/LSXPrime/EGOIST/legacy-codebase/Screenshots/Screenshot_11.jpg)
+![](https://raw.githubusercontent.com/LSXPrime/EGOIST/legacy-codebase/Screenshots/Screenshot_12.jpg)
+![](https://raw.githubusercontent.com/LSXPrime/EGOIST/legacy-codebase/Screenshots/Screenshot_13.jpg)
+![](https://raw.githubusercontent.com/LSXPrime/EGOIST/legacy-codebase/Screenshots/Screenshot_14.jpg)
 

@@ -12,13 +12,10 @@
 		<PackageReference Include="LLamaSharp.Backend.Cpu" Version="0.12.0" />
 		<PackageReference Include="LLamaSharp.Backend.Cuda11" Version="0.12.0" />
 		<PackageReference Include="LLamaSharp.Backend.OpenCL" Version="0.12.0" />
-		<PackageReference Include="LLamaSharp.kernel-memory" Version="0.12.0" />
+		
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
 
-		<PackageReference Include="MetadataExtractor" Version="2.8.1" />
 
-		<PackageReference Include="Microsoft.KernelMemory.AI.LlamaSharp" Version="0.50.240504.7" />
-
-		<PackageReference Include="Microsoft.KernelMemory.Core" Version="0.35.240321.1" />
 
 		<PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
 

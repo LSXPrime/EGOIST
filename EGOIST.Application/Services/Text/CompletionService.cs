@@ -1,34 +1,50 @@
 ﻿using System.Collections.ObjectModel;
-using System.Threading.Tasks.Dataflow;
 using EGOIST.Application.Inference.Text;
+using EGOIST.Application.Interfaces.Core;
 using EGOIST.Application.Interfaces.Text;
+using EGOIST.Domain.Abstracts;
 using EGOIST.Domain.Entities;
 using EGOIST.Domain.Enums;
+using EGOIST.Domain.Interfaces;
 using LLama;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace EGOIST.Application.Services.Text;
 
-public class CompletionService(ILogger<CompletionService> _logger) : ITextService
+public class CompletionService(
+    ILogger<CompletionService> logger,
+    IPromptRepository<TextPromptParameters> promptRepository,
+    [FromKeyedServices("TextModelCoreService")] IModelCoreService modelCore) : EntityBase, ITextService
 {
-    public ObservableCollection<CompletionSession> CompletionSessions { get; } = [];
-    public CompletionSession? SelectedCompletionSession { get; set; }
-    public TextPromptParameters CompletionPrompt { get; set; } = new() { SystemPrompt = "I want you to act as a storyteller. You will come up with entertaining stories that are engaging, imaginative and captivating for the audience." };
+    public ObservableCollection<TextPromptParameters> PromptTemplates { get; set; } =
+        new(promptRepository.GetAllTemplates(null).Result);
 
-    private readonly GenerationService _generation = GenerationService.Instance;
+    public ObservableCollection<CompletionSession> CompletionSessions { get; } = [];
+
+    public CompletionSession? SelectedCompletionSession
+    {
+        get => _selectedCompletionSession;
+        set => Notify(ref _selectedCompletionSession, value);
+    }
+
+
+    private readonly TextModelCoreService? _modelCore = modelCore as TextModelCoreService;
+    private CompletionSession? _selectedCompletionSession;
 
     public Task Create(string sessionName)
     {
-        if (_generation.SelectedGenerationModel == null)
+        if (_modelCore?.SelectedGenerationModel == null || _modelCore.ModelParameters == null ||
+            _modelCore.Model == null || _modelCore.State == GenerationState.Started)
         {
-            _logger.LogWarning("Text Generation Model isn't loaded yet.");
+            logger.LogWarning("Text Generation Model isn't loaded yet.");
             return Task.CompletedTask;
         }
 
         var newSession = new CompletionSession
         {
-            SessionName = sessionName,
-            Executor = new InferenceService(new StatelessExecutor(_generation.Model, _generation.ModelParameters)),
+            Name = string.IsNullOrEmpty(sessionName) ? $"Completion {DateTime.Now}" : sessionName,
+            Executor = new InferenceService(new StatelessExecutor(_modelCore.Model!, _modelCore.ModelParameters!)),
         };
         CompletionSessions.Add(newSession);
         SelectedCompletionSession = newSession;
@@ -37,40 +53,58 @@ public class CompletionService(ILogger<CompletionService> _logger) : ITextServic
 
     public Task Delete(string parameter)
     {
-        _logger.LogInformation($"Session {SelectedCompletionSession.SessionName} Deleted");
+        if (!string.IsNullOrEmpty(parameter))
+        {
+            var session = CompletionSessions.First(x => x.Name == parameter);
+            if (session == SelectedCompletionSession)
+            {
+                _modelCore?.CancelToken?.Cancel();
+                SelectedCompletionSession = null;
+            }
+            session.Executor?.Dispose();
+            CompletionSessions.Remove(session);
+            return Task.CompletedTask;
+        }
 
-        SelectedCompletionSession.Executor?.Dispose();
+        logger.LogInformation($"Session {SelectedCompletionSession!.Name} Deleted");
+
+        _modelCore?.CancelToken?.Cancel();
         CompletionSessions.Remove(SelectedCompletionSession);
         SelectedCompletionSession = null;
 
         return Task.CompletedTask;
     }
 
-    public async Task Generate(string userInput, TextGenerationParameters? generationParameters = null, TextPromptParameters? promptParameters = null)
+    public async Task<T?> Generate<T>(string prompt, TextGenerationParameters? generationParameters = null, TextPromptParameters? promptParameters = null) where T : class
     {
-        if (_generation.SelectedGenerationModel == null)
+        if (_modelCore?.SelectedGenerationModel == null)
         {
-            _logger.LogWarning("Text Generation Model isn't loaded yet.");
-            return;
+            logger.LogWarning("Text Generation Model isn't loaded yet.");
+            return null;
         }
-        if (_generation.State == GenerationState.Started)
+
+        if (_modelCore.State == GenerationState.Started)
         {
-            _generation.CancelToken.Cancel();
-            return;
+            await _modelCore.CancelToken?.CancelAsync()!;
+            return null;
         }
+
         if (SelectedCompletionSession == null)
             await Create($"Completion {DateTime.Now}");
 
-        SelectedCompletionSession.Content = userInput;
-        if (SelectedCompletionSession?.Executor == null)
-            SelectedCompletionSession.Executor = new InferenceService(new StatelessExecutor(_generation.Model, _generation.ModelParameters));
 
-        _generation.State = GenerationState.Started;
-        var prompt = promptParameters?.Prompt(userInput, CompletionPrompt);
+        if (string.IsNullOrEmpty(prompt))
+            prompt = SelectedCompletionSession!.Content;
+        
+        SelectedCompletionSession!.Content = prompt;
+        SelectedCompletionSession.Executor ??= new InferenceService(new StatelessExecutor(_modelCore.Model!, _modelCore.ModelParameters!));
 
-        _generation.CancelToken = new();
-        var tokens = SelectedCompletionSession.Executor.InferenceConcurrent(prompt, promptParameters?.BlackList ?? [],
-            generationParameters ?? new TextGenerationParameters(true), _generation.CancelToken.Token);
+        _modelCore.State = GenerationState.Started;
+        prompt = promptParameters?.Prompt(prompt, true)!;
+
+        _modelCore.CancelToken = new CancellationTokenSource();
+        var tokens = SelectedCompletionSession.Executor.Inference(prompt, promptParameters?.BlackList ?? [],
+            generationParameters ?? new TextGenerationParameters(true), _modelCore.CancelToken.Token);
         await foreach (var token in tokens)
         {
             if (token == "FILTERING MECHANISM TRIGGERED")
@@ -78,10 +112,13 @@ public class CompletionService(ILogger<CompletionService> _logger) : ITextServic
                 SelectedCompletionSession.Content = token;
                 break;
             }
-            SelectedCompletionSession.Content += token + " ";
+
+            SelectedCompletionSession.Content += token;
         }
 
-        _generation.State = GenerationState.Finished;
-        _generation.CancelToken.Dispose();
+        _modelCore.State = GenerationState.Finished;
+        _modelCore.CancelToken.Dispose();
+        
+        return SelectedCompletionSession.Content as T ?? null;
     }
 }

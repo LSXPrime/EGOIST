@@ -2,10 +2,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:EGOIST.Presentation.UI.ViewModels"
         xmlns:services="using:EGOIST.Presentation.UI.Services"
-        xmlns:helpers="using:EGOIST.Presentation.UI.Helpers"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:icons="using:FluentIcons.Avalonia"
+        xmlns:icons="using:FluentIcons.Avalonia.Fluent"
         xmlns:ui="using:FluentAvalonia.UI.Controls"
         mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
         x:Class="EGOIST.Presentation.UI.Views.MainWindow"
@@ -15,11 +14,8 @@
         TransparencyLevelHint="AcrylicBlur"
         Background="Transparent"
         ExtendClientAreaToDecorationsHint="True">
-    <Window.Resources>
-        <helpers:EqualBoolConverter x:Key="EqualBoolConverter" />
-    </Window.Resources>
     <Design.DataContext>
-        <vm:MainWindowViewModel/>
+        <vm:MainWindowViewModel />
     </Design.DataContext>
 
     <Panel>
@@ -32,95 +28,53 @@
                     MaterialOpacity="0.65" />
             </ExperimentalAcrylicBorder.Material>
 
-            <!--
-            <ui:NavigationView x:Name="NavView" PaneDisplayMode="Auto" >
+
+            <ui:NavigationView x:Name="NavView" PaneDisplayMode="LeftCompact"
+                               SelectionChanged="NavView_OnSelectionChanged">
+                <ui:NavigationView.Content>
+                    <TransitioningContentControl Margin="15,50,30,15"
+                                                 Content="{Binding Source={x:Static services:NavigationService.Current}, Path=Main}" />
+                </ui:NavigationView.Content>
+
                 <ui:NavigationView.MenuItems>
-                    <ui:NavigationViewItem Content="Home" Tag="Home" IconSource="Home" />
-                    <ui:NavigationViewItem Content="Text" IconSource="Document" SelectsOnInvoked="False">
+                    <ui:NavigationViewItem Content="Home" Tag="HomePageViewModel" IconSource="Home" />
+                    <ui:NavigationViewItem Content="Text" SelectsOnInvoked="False">
+                        <ui:NavigationViewItem.IconSource>
+                            <icons:SymbolIconSource Symbol="Textbox" />
+                        </ui:NavigationViewItem.IconSource>
+
                         <ui:NavigationViewItem.MenuItems>
-                            <ui:NavigationViewItem Content="Chat" Tag="Text.ChatPage" IconSource="Mail" />
-                            <ui:NavigationViewItem Content="Completion" Tag="Text.CompletionPage" IconSource="Calendar" />
+                            <ui:NavigationViewItem Content="Chat" Tag="Text.ChatPageViewModel">
+                                <ui:NavigationViewItem.IconSource>
+                                    <icons:SymbolIconSource Symbol="Chat" />
+                                </ui:NavigationViewItem.IconSource>
+                            </ui:NavigationViewItem>
+                            <ui:NavigationViewItem Content="Completion" Tag="Text.CompletionPageViewModel">
+                                <ui:NavigationViewItem.IconSource>
+                                    <icons:SymbolIconSource Symbol="Pen" />
+                                </ui:NavigationViewItem.IconSource>
+                            </ui:NavigationViewItem>
+                            <ui:NavigationViewItem Content="Memory" Tag="Text.MemoryPageViewModel">
+                                <ui:NavigationViewItem.IconSource>
+                                    <icons:SymbolIconSource Symbol="Record" />
+                                </ui:NavigationViewItem.IconSource>
+                            </ui:NavigationViewItem>
                         </ui:NavigationViewItem.MenuItems>
                     </ui:NavigationViewItem>
-                    <ui:NavigationViewItem Content="Voice" IconSource="Document" SelectsOnInvoked="False">
+                    <ui:NavigationViewItem Content="Voice" SelectsOnInvoked="False">
+                        <ui:NavigationViewItem.IconSource>
+                            <icons:SymbolIconSource Symbol="Headphones" />
+                        </ui:NavigationViewItem.IconSource>
                         <ui:NavigationViewItem.MenuItems>
-                            <ui:NavigationViewItem Content="Create new" IconSource="New" Tag="SamplePage5" />
-                            <ui:NavigationViewItem Content="Upload file" IconSource="Upload" Tag="SamplePage6" />
+                            <ui:NavigationViewItem Content="Transcribe" Tag="Voice.TranscribePageViewModel">
+                                <ui:NavigationViewItem.IconSource>
+                                    <icons:SymbolIconSource Symbol="Voicemail" />
+                                </ui:NavigationViewItem.IconSource>
+                            </ui:NavigationViewItem>
                         </ui:NavigationViewItem.MenuItems>
                     </ui:NavigationViewItem>
                 </ui:NavigationView.MenuItems>
             </ui:NavigationView>
-            -->
-            
-            
-            <SplitView IsPaneOpen="{Binding IsPaneOpen}"
-                       CompactPaneLength="50"
-                       DisplayMode="CompactInline"
-                       OpenPaneLength="200"
-                       PaneBackground="Transparent">
-                <SplitView.Pane>
-                    <Panel>
-
-
-                        <StackPanel Orientation="Vertical"
-                                    Spacing="5"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Top">
-                            <Button HorizontalAlignment="Left"
-                                    Height="32"
-                                    Width="50"
-                                    Margin="0,10"
-                                    Classes="transparent"
-                                    Command="{Binding TriggerPaneCommand}">
-                                <icons:SymbolIcon Symbol="ListBar"  />
-                            </Button>
-
-                            <ItemsControl ItemsSource="{Binding NavigationItems}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid RowDefinitions="*,*,*" Margin="15,0,0,0">
-											<StackPanel IsVisible="{Binding Parent, Converter={StaticResource EqualBoolConverter}, ConverterParameter=!}" IsEnabled="{Binding Parent, Converter={StaticResource EqualBoolConverter}, ConverterParameter=!}">
-												<StackPanel Spacing="25" Margin="0,0,0,0"  Orientation="Horizontal">
-													<icons:SymbolIcon Symbol="{Binding Parent.Icon, FallbackValue='Home'}" FontSize="24" />
-													<TextBlock Text="{Binding Parent.Title, FallbackValue='Home'}" FontSize="24" />
-												</StackPanel>
-												<Separator Height="1" Background="White" />
-											</StackPanel>
-
-											<ListBox Grid.Row="1" ItemsSource="{Binding Children}" SelectedValue="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).CurrentNavigationItem}" HorizontalAlignment="Left" Margin="0,0,0,0">
-                                                <ListBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <StackPanel HorizontalAlignment="Stretch" Spacing="25" Orientation="Horizontal" Margin="10,5,0,0">
-                                                            <icons:SymbolIcon Symbol="{Binding Icon}" FontSize="24" />
-                                                            <TextBlock Text="{Binding Title}" FontSize="24" />
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </ListBox.ItemTemplate>
-                                            </ListBox>
-											<Separator Grid.Row="2" Height="1" Background="White" Margin="0,10" />
-										</Grid>
-
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </Panel>
-                </SplitView.Pane>
-
-                <SplitView.Content>
-                    <Border CornerRadius="26,0,0,0" Margin="15,0,0,0"  >
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                <GradientStop Color="Transparent" Offset="0.0" />
-                                <GradientStop Color="#44000000" Offset="0.5" />
-                                <GradientStop Color="#22000000" Offset="1.0" />
-                            </LinearGradientBrush>
-                        </Border.Background>
-                        <TransitioningContentControl Margin="15,50,30,15" Content="{Binding Source={x:Static services:NavigationService.Current}, Path=Main}"/>
-                    </Border>
-                </SplitView.Content>
-            </SplitView>
-            
         </ExperimentalAcrylicBorder>
     </Panel>
 

@@ -1,21 +1,27 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using EGOIST.Application.Inference.Text;
+using EGOIST.Application.Interfaces.Core;
 using EGOIST.Application.Interfaces.Text;
 using EGOIST.Domain.Abstracts;
 using EGOIST.Domain.Entities;
 using EGOIST.Domain.Enums;
 using EGOIST.Domain.Interfaces;
 using LLama;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ChatSession = EGOIST.Domain.Entities.ChatSession;
 
 namespace EGOIST.Application.Services.Text;
 
-public class ChatService(ILogger<ChatService> logger, IPromptRepository<TextPromptParameters> promptRepository)
+public class ChatService(
+    ILogger<ChatService> logger,
+    IPromptRepository<TextPromptParameters> promptRepository,
+    [FromKeyedServices("TextModelCoreService")] IModelCoreService modelCore)
     : EntityBase, ITextService
 {
-    public ObservableCollection<TextPromptParameters> PromptTemplates { get; set; } = new(promptRepository.GetAllTemplates(null).Result);
+    public ObservableCollection<TextPromptParameters> PromptTemplates { get; set; } =
+        new(promptRepository.GetAllTemplates(null).Result);
 
     public ObservableCollection<ChatSession> ChatSessions { get; } = [];
 
@@ -25,13 +31,13 @@ public class ChatService(ILogger<ChatService> logger, IPromptRepository<TextProm
         set => Notify(ref _selectedChatSession, value);
     }
 
-    private readonly GenerationService _generation = GenerationService.Instance;
+    private readonly TextModelCoreService? _modelCore = modelCore as TextModelCoreService;
     private ChatSession? _selectedChatSession;
 
     public Task Create(string sessionName = "")
     {
-        if (_generation.SelectedGenerationModel == null || _generation.ModelParameters == null ||
-            _generation.Model == null)
+        if (_modelCore?.SelectedGenerationModel == null || _modelCore.ModelParameters == null ||
+            _modelCore.Model == null)
         {
             logger.LogWarning("Text Generation Model isn't loaded yet.");
             return Task.CompletedTask;
@@ -42,9 +48,9 @@ public class ChatService(ILogger<ChatService> logger, IPromptRepository<TextProm
         // Create a new chat session and add it to ChatSessions
         var newSession = new ChatSession
         {
-            SessionName = string.IsNullOrEmpty(sessionName) ? $"Chat {DateTime.Now}" : sessionName,
+            Name = string.IsNullOrEmpty(sessionName) ? $"Chat {DateTime.Now}" : sessionName,
             Executor = new InferenceService(
-                new InteractiveExecutor(_generation.Model.CreateContext(_generation.ModelParameters)))
+                new InteractiveExecutor(_modelCore.Model.CreateContext(_modelCore.ModelParameters)))
         };
         ChatSessions.Add(newSession);
         SelectedChatSession = newSession;
@@ -57,13 +63,13 @@ public class ChatService(ILogger<ChatService> logger, IPromptRepository<TextProm
     {
         if (!string.IsNullOrEmpty(parameter))
         {
-            var session = ChatSessions.First(x => x.SessionName == parameter);
+            var session = ChatSessions.First(x => x.Name == parameter);
             session.Executor?.Dispose();
             ChatSessions.Remove(session);
             return Task.CompletedTask;
         }
 
-        logger.LogInformation($"Chat {SelectedChatSession!.SessionName} Deleted");
+        logger.LogInformation($"Chat {SelectedChatSession!.Name} Deleted");
 
         SelectedChatSession.Messages.Clear();
         ChatSessions.Remove(SelectedChatSession);
@@ -73,35 +79,35 @@ public class ChatService(ILogger<ChatService> logger, IPromptRepository<TextProm
     }
 
 
-    public async Task Generate(string userInput, TextGenerationParameters? generationParameters = null,
-        TextPromptParameters? promptParameters = null)
+    public async Task<T?> Generate<T>(string userInput, TextGenerationParameters? generationParameters = null,
+        TextPromptParameters? promptParameters = null) where T : class
     {
-        if (_generation.State == GenerationState.Started)
+        if (_modelCore?.State == GenerationState.Started)
         {
-            await _generation.CancelToken?.CancelAsync()!;
-            return;
+            await _modelCore.CancelToken?.CancelAsync()!;
+            return null;
         }
 
         if (string.IsNullOrEmpty(userInput))
         {
             logger.LogWarning("ChatUserInput is empty.");
-            return;
+            return null;
         }
 
-        if (_generation.SelectedGenerationModel == null)
+        if (_modelCore?.SelectedGenerationModel == null)
         {
             logger.LogWarning("Text Generation Model isn't loaded yet.");
-            return;
+            return null;
         }
 
         if (SelectedChatSession == null)
             await Create($"Chat {DateTime.Now}");
 
 
-        _generation.State = GenerationState.Started;
+        _modelCore.State = GenerationState.Started;
 
         string prompt;
-        _generation.CancelToken = new CancellationTokenSource();
+        _modelCore.CancelToken = new CancellationTokenSource();
 
         if (SelectedChatSession?.Executor == null ||
             await SelectedChatSession.Executor.IsFirstRun(nameof(StatefulExecutorBase)))
@@ -109,7 +115,7 @@ public class ChatService(ILogger<ChatService> logger, IPromptRepository<TextProm
             if (SelectedChatSession?.Executor == null)
                 SelectedChatSession!.Executor =
                     new InferenceService(
-                        new InteractiveExecutor(_generation.Model!.CreateContext(_generation.ModelParameters!)));
+                        new InteractiveExecutor(_modelCore.Model!.CreateContext(_modelCore.ModelParameters!)));
 
             prompt =
                 $"{(SelectedChatSession.Messages.Count > 0 ? SelectedChatSession.ToString() : string.Empty)} \nUser: {userInput}";
@@ -119,20 +125,20 @@ public class ChatService(ILogger<ChatService> logger, IPromptRepository<TextProm
         {
             prompt = promptParameters?.Prompt(userInput)!;
         }
-        
+
         Debug.WriteLine($"User Prompt: {prompt}");
 
         SelectedChatSession?.AddMessage("User", userInput);
         var aiMessage = SelectedChatSession?.AddMessage("Assistant", string.Empty);
 
         var tokens = SelectedChatSession?.Executor.Inference(prompt, promptParameters?.BlackList ?? [],
-            generationParameters ?? new TextGenerationParameters(true), _generation.CancelToken.Token);
+            generationParameters ?? new TextGenerationParameters(true), _modelCore.CancelToken.Token);
 
         /*
         var engine = ((InferenceService)SelectedChatSession.Executor)._inference;
-        var tokens = engine.InferAsync(prompt, token: _generation.CancelToken.Token);
+        var tokens = engine.InferAsync(prompt, token: _modelCore.CancelToken.Token);
         */
-        await foreach (var token in tokens!.WithCancellation(_generation.CancelToken.Token))
+        await foreach (var token in tokens!.WithCancellation(_modelCore.CancelToken.Token))
         {
             Debug.WriteLine($"RECEIVED TOKEN: {token}");
 
@@ -145,7 +151,8 @@ public class ChatService(ILogger<ChatService> logger, IPromptRepository<TextProm
             aiMessage!.Message += token;
         }
 
-        _generation.CancelToken?.Dispose();
-        _generation.State = GenerationState.Finished;
+        _modelCore.CancelToken?.Dispose();
+        _modelCore.State = GenerationState.Finished;
+        return aiMessage as T;
     }
 }
