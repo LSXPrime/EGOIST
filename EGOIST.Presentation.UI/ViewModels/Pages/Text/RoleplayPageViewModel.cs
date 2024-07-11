@@ -1,17 +1,25 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EGOIST.Application.Interfaces.Text;
+using EGOIST.Application.Services.Management;
 using EGOIST.Domain.Entities;
 using EGOIST.Domain.Enums;
 using EGOIST.Presentation.UI.Interfaces.Navigation;
+using EGOIST.Presentation.UI.Services;
+using EGOIST.Presentation.UI.ViewModels.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EGOIST.Presentation.UI.ViewModels.Pages.Text;
 
-public partial class ChatPageViewModel([FromKeyedServices("ChatService")] ITextService chatService) : ViewModelBase, INavigationAware
+public partial class RoleplayPageViewModel(
+    [FromKeyedServices("RoleplayService")] ITextService service,
+    CharacterService characterService) : ViewModelBase, INavigationAware
 {
+    public override string Title => "Roleplay";
+
     /*
     [ObservableProperty]
     private ObservableCollection<ChatMessage> _messages =
@@ -34,67 +42,89 @@ public partial class ChatPageViewModel([FromKeyedServices("ChatService")] ITextS
         new ChatMessage { Sender = "Assistant", Message = "It was nice chatting with you too! Have a great day." }
     ];
     */
-    
-    [ObservableProperty]
-    private GenerationState _state = GenerationState.None;
-    
-    
 
-    public override string Title => "Chat";
-    
+    [ObservableProperty] private GenerationState _state = GenerationState.None;
+
+
     #region ChatVariables
-    [ObservableProperty]
-    private string _chatUserInput = string.Empty;
+
+    [ObservableProperty] private string _userInput = string.Empty;
+
+    [ObservableProperty] private string[] _characterReceivers = ["Auto"];
+
+    [ObservableProperty] private RoleplayWorld? _selectedWorld;
     #endregion
 
     #region GenerationVariables
 
-    [ObservableProperty]
-    private TextGenerationParameters _generationParameters = new();
-    [ObservableProperty]
-    private TextPromptParameters _promptParameters = new();
-    [ObservableProperty]
-    private TextModelParameters _modelParameters = new();
+    [ObservableProperty] private TextGenerationParameters _generationParameters = new();
+    [ObservableProperty] private TextPromptParameters _promptParameters = new();
+    [ObservableProperty] private TextModelParameters _modelParameters = new();
 
-    public ITextService ChatService { get; } = chatService;
+    public ITextService Service { get; } = service;
+    public CharacterService CharacterService { get; } = characterService;
 
     #endregion
 
     #region Navigation
 
     public Task Initialize(Dictionary<string, object>? parameters) => Task.CompletedTask;
+    
 
     public Task OnNavigatedFrom() => Task.CompletedTask;
 
     public Task OnNavigatedTo() => Task.CompletedTask;
 
     #endregion
-    
-    
+
+
     #region ChatMethods
-    
-    
+
     [RelayCommand]
-    private void ChatCreate()
+    private async Task Create()
     {
-        // Create a new chat session and add it to ChatSessions
-        ChatService.Create();
+        var result = await DialogService.CreateDialogAsync<TextRoleplayCreateViewModel>();
+        if (result == null)
+            return;
+
+        var parameters = new Dictionary<string, object>
+        {
+            { "Name", result.SessionName! },
+            { "UserRoleName", result.UserCharacterName! },
+            { "Characters", result.SelectedCharacters },
+            { "PersonalityApproach", result.PersonalityApproach },
+            { "WorldMemory", SelectedWorld! }
+        };
+
+        if (await Service.Create(parameters))
+            CharacterReceivers = result.SelectedCharacters.Select(x => x.Name).Prepend("Auto").ToArray();
     }
 
     [RelayCommand]
     private void ChatDelete()
     {
-        // Delete the selected chat session
-        ChatService.Delete();
+        Service.Delete();
     }
 
     [RelayCommand]
-    private async Task MessageSend() 
+    private async Task MessageSend()
     {
-        var userInput = ChatUserInput;
-        ChatUserInput = string.Empty;
+        var userInput = UserInput;
+        UserInput = string.Empty;
 
-        await Task.Run(async () => await ChatService.Generate<ChatMessage>(userInput, GenerationParameters, PromptParameters)).ConfigureAwait(false); 
+        await Task.Run(async () =>
+                await Service.Generate<RoleplayMessage>(userInput, GenerationParameters, PromptParameters))
+            .ConfigureAwait(false);
+    }
+
+    [RelayCommand]
+    private async Task WorldManage()
+    {
+        var result = await DialogService.CreateDialogAsync<TextRoleplayWorldMemoryViewModel>(primaryButtonText: "Close", cancelButtonText: "");
+        if (result == null)
+            return;
+
+        SelectedWorld = result.SelectedWorld;
     }
 
     #endregion

@@ -4,10 +4,10 @@ namespace EGOIST.Domain.Abstracts;
 
 public abstract class MessageBase<TSender> : EntityBase, IMessage<TSender>
 {
-    private TSender _sender;
+    private TSender? _sender;
     private string _message;
 
-    public TSender Sender
+    public TSender? Sender
     {
         get => _sender;
         set => Notify(ref _sender, value);

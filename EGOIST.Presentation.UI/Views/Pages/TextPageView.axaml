@@ -25,7 +25,7 @@
 		<TransitioningContentControl Grid.Row="0" Margin="0,0,0,20" Content="{Binding Source={x:Static services:NavigationService.Current}, Path=Sub}"/>
 		
 		<!-- Model Selection & System Info -->
-		<Grid Grid.Row="1"  ColumnDefinitions="50*,50*,Auto">
+		<Grid Grid.Row="1"  ColumnDefinitions="50*,50*,Auto" VerticalAlignment="Stretch">
 			<Grid.Background>
 				<LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
 					<GradientStop Color="Transparent" Offset="0.0" />
@@ -33,36 +33,10 @@
 					<GradientStop Color="#22000000" Offset="1.0" />
 				</LinearGradientBrush>
 			</Grid.Background>
-
-			<!-- System Info -->
-			<StackPanel Grid.Column="0" Margin="25,20,10,0" HorizontalAlignment="Stretch" VerticalAlignment="Top">
-				<Label Content="System Info" Margin="0,0,0,5" FontFamily="Cambria" FontWeight="Bold" />
-				<Border Height="45" Background="{DynamicResource ComboBoxBackground}" CornerRadius="6">
-					<Viewbox Stretch="Uniform" StretchDirection="Both" Margin="15,0,25,0">
-						<StackPanel Orientation="Horizontal" Spacing="25" VerticalAlignment="Center" >
-							<StackPanel Orientation="Horizontal" >
-								<TextBlock Text="- CPU Usage: %" FontFamily="Cambria" FontSize="20"  />
-								<TextBlock Text="00" FontFamily="Cambria" FontSize="20" />
-							</StackPanel>
-							<StackPanel Orientation="Horizontal" >
-								<TextBlock Text="- RAM Usage: %" FontFamily="Cambria" FontSize="20" />
-								<TextBlock Text="00" FontFamily="Cambria" FontSize="20" />
-							</StackPanel>
-							<StackPanel Orientation="Horizontal" >
-								<TextBlock Text="- GPU Usage: %" FontFamily="Cambria" FontSize="20" />
-								<TextBlock Text="00" FontFamily="Cambria" FontSize="20" />
-							</StackPanel>
-							<StackPanel Orientation="Horizontal" >
-								<TextBlock Text="- GPU Memory Usage: %" FontFamily="Cambria" FontSize="20" />
-								<TextBlock Text="00" FontFamily="Cambria" FontSize="20" />
-							</StackPanel>
-						</StackPanel>
-					</Viewbox>
-				</Border>
-			</StackPanel>
 			
 			<!-- Model Selection & Unloading -->
-			<Grid Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" ColumnDefinitions="*,150" Margin="0,20,0,0">
+			<Grid Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" ColumnDefinitions="*,150"
+			      Margin="0,20,0,0">
 				<StackPanel Grid.Column="0" Margin="10,0" >
 					<Label Content="Model" FontFamily="Cambria" FontWeight="Bold" Margin="0,0,0,5"  />
 					<ComboBox ItemsSource="{Binding Models}" SelectedItem="{Binding SelectedGenerationModel}" DisplayMemberBinding="{Binding Name}" FontSize="24" HorizontalAlignment="Stretch" />
@@ -79,6 +53,7 @@
 				</StackPanel>
 			</Grid>
 			<StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" Margin="10,45,10,0" HorizontalAlignment="Left" VerticalAlignment="Top">
+				<icons:SymbolIcon Symbol="Circle" Width="50" Height="45" FontSize="32" IsVisible="{Binding ModelCoreService.State, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Started}" ToolTip.Tip="{Binding SelectedGenerationModel.Name, FallbackValue='Loading Model' , StringFormat='Loading Model: {0}'}" />
 				<Button Width="50" Height="45" Command="{Binding UnloadModelCommand}" ToolTip.Tip="{Binding SelectedGenerationModel.Name, FallbackValue='Unload Current Model: Already Unloaded' , StringFormat='Unload Current Model: {0}'}" >
 					<icons:SymbolIcon Symbol="ArrowReset" FontSize="24" />
 				</Button>

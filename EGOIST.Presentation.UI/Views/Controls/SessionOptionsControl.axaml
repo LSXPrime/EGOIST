@@ -31,13 +31,6 @@
                     VerticalAlignment="Stretch">
                     <SplitView.Pane>
                         <Border CornerRadius="16">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                    <GradientStop Color="Transparent" Offset="0.0" />
-                                    <GradientStop Color="#44000000" Offset="0.5" />
-                                    <GradientStop Color="#22000000" Offset="1.0" />
-                                </LinearGradientBrush>
-                            </Border.Background>
 
                             <Grid ColumnDefinitions="70,*" Margin="0,20,10,0">
                                 <Button Name="PART_TogglePaneBtn" 
@@ -171,11 +164,11 @@
                                                         <TextBlock Text="System Prompt / Instructions" />
                                                         <TextBlock
                                                             Text="A system prompt sets the stage and guides an AI's behavior in conversations or tasks."
-                                                            TextWrapping="Wrap" FontSize="12"
+                                                            TextWrapping="Wrap" FontSize="12" 
                                                             Foreground="LightSteelBlue" />
                                                         <TextBox
                                                             Text="{Binding PromptFormat.SystemPrompt, Mode=TwoWay}"
-                                                            AcceptsReturn="True" />
+                                                            AcceptsReturn="True" MinHeight="70" />
                                                     </StackPanel>
                                                     <StackPanel Margin="10" Spacing="10">
                                                         <TextBlock Text="Prompt Stop Strings" />

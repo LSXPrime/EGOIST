@@ -6,7 +6,7 @@ using EGOIST.Domain.Interfaces;
 
 namespace EGOIST.Infrastructure.Repositories;
 
-public class CivitAIModelsRepository : IModelsRepository
+public class CivitAiModelsRepository : IModelsRepository
 {
     private readonly HttpClient _httpClient = new();
 
@@ -15,7 +15,7 @@ public class CivitAIModelsRepository : IModelsRepository
         var response = await _httpClient.GetAsync($"https://civitai.com/api/v1/models?query={query}&limit={modelsCount}\"");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<List<CivitAiModelDto>>();
-        return result.ToModelsInfo();
+        return result?.ToModelsInfo()!;
     }
 
     public Task<IEnumerable<ModelInfo>> GetAllModels(Dictionary<string, string>? parameters) => throw new NotImplementedException();
@@ -25,6 +25,6 @@ public class CivitAIModelsRepository : IModelsRepository
         var response = await _httpClient.GetAsync($"https://civitai.com/api/v1/model-versions/{modelVersionId}");
         response.EnsureSuccessStatusCode();
         var model = await response.Content.ReadFromJsonAsync<ModelVersion>();
-        return model.ToModelInfo();
+        return model?.ToModelInfo();
     }
 }

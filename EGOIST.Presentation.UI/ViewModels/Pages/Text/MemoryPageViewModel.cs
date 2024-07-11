@@ -41,7 +41,7 @@ public partial class MemoryPageViewModel([FromKeyedServices("MemoryService")] IT
     [ObservableProperty] private GenerationState _state = GenerationState.None;
 
 
-    public override string Title => "Chat";
+    public override string Title => "Memory";
 
     #region ChatVariables
 
@@ -61,17 +61,11 @@ public partial class MemoryPageViewModel([FromKeyedServices("MemoryService")] IT
 
     #region Navigation
 
-    public void Initialize(Dictionary<string, object>? parameters)
-    {
-    }
+    public Task Initialize(Dictionary<string, object>? parameters) => Task.CompletedTask;
+    
+    public Task OnNavigatedFrom() => Task.CompletedTask;
 
-    public void OnNavigatedFrom()
-    {
-    }
-
-    public void OnNavigatedTo()
-    {
-    }
+    public Task OnNavigatedTo() => Task.CompletedTask;
 
     #endregion
 
@@ -85,8 +79,13 @@ public partial class MemoryPageViewModel([FromKeyedServices("MemoryService")] IT
         if (result == null)
             return;
 
-        var path = $"{result.SelectedCollection!}:{result.DocumentPath}";
-        await Service.Create(path);
+        var parameters = new Dictionary<string, object>
+        {
+            { "Name", result.SelectedCollection! },
+            { "Path", result.DocumentPath! }
+        };
+
+        await Service.Create(parameters);
     }
 
     [RelayCommand]

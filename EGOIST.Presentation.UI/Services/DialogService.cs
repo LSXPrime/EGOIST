@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.DependencyInjection;
+using EGOIST.Presentation.UI.Interfaces.Navigation;
 using EGOIST.Presentation.UI.ViewModels;
 using FluentAvalonia.UI.Controls;
 
@@ -23,7 +24,7 @@ public static class DialogService
     public static async Task<ContentDialogResult?> CreateDialogAsync(string? title = null, string content = "",
         string primaryButtonText = "Create", string cancelButtonText = "Cancel")
     {
-        var dialog = new ContentDialog()
+        var dialog = new ContentDialog
         {
             Title = title,
             Content = content,
@@ -39,19 +40,33 @@ public static class DialogService
         string cancelButtonText = "Cancel") where T : ViewModelBase
     {
         if (Locator == null)
-            return null;
-        
-        var vm = Ioc.Default.GetRequiredService<T>();
-        var dialog = new ContentDialog()
+            throw new InvalidOperationException("Locator is not initialized."); 
+
+        var vm = Ioc.Default.GetRequiredService<T>(); 
+        var isNavigationAware = vm is INavigationAware;
+        var navAware = vm as INavigationAware;
+
+        if (isNavigationAware && navAware != null)
+            await navAware.Initialize(null); 
+
+        var dialog = new ContentDialog
         {
             Title = title ?? vm.Title,
-            Content = new ViewLocator().Build(vm),
+            Content = Locator.Build(vm),
             DataContext = vm,
             PrimaryButtonText = primaryButtonText,
-            CloseButtonText = cancelButtonText
+            CloseButtonText = cancelButtonText,
         };
 
-        return await dialog.ShowAsync() == ContentDialogResult.Primary ? vm : null;
+        if (isNavigationAware && navAware != null)
+            await navAware.OnNavigatedTo();
+
+        var result = await dialog.ShowAsync();
+
+        if (isNavigationAware && navAware != null)
+            await navAware.OnNavigatedFrom();
+
+        return result == ContentDialogResult.Primary ? vm : null;
     }
 
     private static Window GetMainWindow()

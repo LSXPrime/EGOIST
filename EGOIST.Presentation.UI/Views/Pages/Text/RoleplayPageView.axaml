@@ -1,0 +1,280 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:icons="using:FluentIcons.Avalonia"
+             xmlns:controls="using:EGOIST.Presentation.UI.Views.Controls"
+             xmlns:vm="using:EGOIST.Presentation.UI.ViewModels.Pages.Text"
+             xmlns:helpers="using:EGOIST.Presentation.UI.Helpers"
+             xmlns:services="using:EGOIST.Application.Services.Text"
+             xmlns:models="using:EGOIST.Domain.Interfaces"
+             xmlns:ui="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+             mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+             x:DataType="vm:RoleplayPageViewModel"
+             x:Class="EGOIST.Presentation.UI.Views.Pages.Text.RoleplayPageView">
+    <UserControl.Resources>
+        <helpers:ConditionCheckConverter x:Key="ConditionCheckConverter" />
+        <helpers:ConditionIconConverter x:Key="ConditionIconConverter" />
+        <helpers:CharacterAvatarPathConverter x:Key="CharacterAvatarPathConverter" />
+    </UserControl.Resources>
+    <Design.DataContext>
+        <vm:RoleplayPageViewModel>
+            <x:Arguments>
+                <x:Null />
+                <x:Null />
+            </x:Arguments>
+        </vm:RoleplayPageViewModel>
+    </Design.DataContext>
+
+    <Grid Margin="0" ColumnDefinitions="Auto,*,Auto">
+        <Border CornerRadius="16" Padding="16">
+            <SplitView
+                Name="SplitView"
+                CornerRadius="16"
+                CompactPaneLength="70"
+                DisplayMode="CompactInline"
+                OpenPaneLength="480"
+                PaneBackground="Transparent">
+                <SplitView.Pane>
+                    <Grid ColumnDefinitions="70,*" Margin="0,0,10,0">
+                        <Button Grid.Column="0"
+                                VerticalAlignment="Top"
+                                Classes="transparent"
+                                Height="50"
+                                Width="50"
+                                Margin="10,0,0,0"
+                                Click="SplitViewPaneToggle_OnClick">
+                            <icons:SymbolIcon Symbol="Options" FontSize="26" />
+                        </Button>
+                        <TextBlock Grid.Column="0"
+                                   Text="Roleplay Options"
+                                   FontSize="24"
+                                   VerticalAlignment="Top"
+                                   TextAlignment="Left"
+                                   TextWrapping="Wrap"
+                                   Width="300"
+                                   Margin="0,200,0,0">
+                            <TextBlock.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform />
+                                    <SkewTransform />
+                                    <RotateTransform Angle="90" />
+                                    <TranslateTransform X="0" />
+                                </TransformGroup>
+                            </TextBlock.RenderTransform>
+                        </TextBlock>
+
+                        <ui:TabView Grid.Column="1" Height="{Binding $parent.Bounds.Height}"
+                                    TabWidthMode="SizeToContent"
+                                    CloseButtonOverlayMode="Auto"
+                                    IsAddTabButtonVisible="False">
+                            <ui:TabViewItem Header="Sessions">
+                                <Grid RowDefinitions="Auto,Auto, Auto,*,Auto" Margin="16">
+                                    <Grid Grid.Row="0" Margin="10,0,10,0">
+                                        <icons:SymbolIcon Symbol="Chat" FontSize="30" HorizontalAlignment="Left" />
+                                        <Label Content="Sessions" FontSize="26" FontFamily="Cambria" FontWeight="Bold"
+                                               Margin="35,5,0,0" />
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <Button Command="{Binding CreateCommand}"
+                                                    Margin="0,0,10,0">
+                                                <icons:SymbolIcon
+                                                    Symbol="Add"
+                                                    FontSize="26" />
+                                            </Button>
+                                            <Button Command="{Binding ChatDeleteCommand}"
+                                                    IsVisible="{Binding ((services:RoleplayService)Service).SelectedSession, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                <icons:SymbolIcon Symbol="Delete" FontSize="26" />
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+                                    
+                                    <Button Grid.Row="1" Command="{Binding WorldManageCommand}"
+                                            Margin="10,15">
+                                        <Grid ColumnDefinitions="*,Auto,Auto,*" HorizontalAlignment="Stretch" Width="350">
+                                            <icons:SymbolIcon Grid.Column="1"
+                                                Symbol="Table"
+                                                FontSize="26"
+                                                HorizontalAlignment="Center"
+                                                Margin="10,0" />
+                                            <TextBlock Grid.Column="2" HorizontalAlignment="Center" Text="{Binding SelectedWorld.Name, FallbackValue='World Memory'}" FontSize="16" />
+                                        </Grid>
+                                    </Button>
+                                    
+                                    <AutoCompleteBox Grid.Row="2" Margin="10,5,10,20" Watermark="Search for a session"
+                                                     ItemsSource="{Binding ((services:RoleplayService)Service).Sessions}"
+                                                     SelectedItem="{Binding ((services:RoleplayService)Service).SelectedSession}"
+                                                     FilterMode="Contains">
+                                        <AutoCompleteBox.InnerLeftContent>
+                                            <icons:SymbolIcon Symbol="Search" FontSize="26" />
+                                        </AutoCompleteBox.InnerLeftContent>
+                                        <AutoCompleteBox.ItemTemplate>
+                                            <DataTemplate DataType="models:ISession">
+                                                <TextBlock Text="{Binding Name}" />
+                                            </DataTemplate>
+                                        </AutoCompleteBox.ItemTemplate>
+                                    </AutoCompleteBox>
+
+                                    <ListBox Grid.Row="3"
+                                             ItemsSource="{Binding ((services:RoleplayService)Service).Sessions, FallbackValue={x:Null}}"
+                                             SelectedValue="{Binding ((services:RoleplayService)Service).SelectedSession, FallbackValue={x:Null}, Mode=TwoWay}"
+                                             SelectionMode="Single"
+                                             Margin="10,25,10,100">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel>
+                                                    <TextBlock x:DataType="models:ISession" Text="{Binding Name}"
+                                                               Margin="5" />
+                                                    <Expander Header="Characters" HorizontalAlignment="Stretch">
+                                                        <ItemsControl ItemsSource="{Binding Characters}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="5" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Image
+                                                                        Source="{Binding ., Converter={StaticResource CharacterAvatarPathConverter}, FallbackValue={x:Null}}"
+                                                                        ToolTip.Tip="{Binding Name, FallbackValue='Character'}"
+                                                                        Width="50" Height="75" Stretch="Fill"
+                                                                        Margin="5,0,0,0" />
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </Expander>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Grid>
+                            </ui:TabViewItem>
+                            <ui:TabViewItem Header="Characters">
+                                <ScrollViewer Margin="16"
+                                              VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl ItemsSource="{Binding CharacterService.Characters}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Spacing="5" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Padding="8" CornerRadius="8">
+                                                    <Border.Background>
+                                                        <SolidColorBrush Color="#22000000" />
+                                                    </Border.Background>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Image
+                                                            Source="{Binding ., Converter={StaticResource CharacterAvatarPathConverter}}"
+                                                            Width="75" Height="100" Stretch="Fill"
+                                                            Margin="5" />
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding Name}" FontSize="26"
+                                                                       FontWeight="Bold"
+                                                                       Margin="5" />
+                                                            <TextBlock
+                                                                Text="{Binding Summary}"
+                                                                TextWrapping="Wrap" Margin="5"
+                                                                MaxWidth="250"
+                                                                MaxHeight="70" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </ui:TabViewItem>
+                        </ui:TabView>
+                    </Grid>
+                </SplitView.Pane>
+            </SplitView>
+        </Border>
+
+        <!-- Session Inference Options -->
+        <controls:SessionOptionsControl
+            Grid.Column="2"
+            Title="Inference Options"
+            Parameters="{Binding $parent[UserControl].((vm:RoleplayPageViewModel)DataContext).GenerationParameters, FallbackValue={x:Null}}"
+            PromptFormat="{Binding $parent[UserControl].((vm:RoleplayPageViewModel)DataContext).PromptParameters, FallbackValue={x:Null}}"
+            ModelParameters="{Binding $parent[UserControl].((vm:RoleplayPageViewModel)DataContext).ModelParameters, FallbackValue={x:Null}}"
+            PromptTemplates="{Binding $parent[UserControl].((vm:RoleplayPageViewModel)DataContext).((services:RoleplayService)Service).PromptTemplates, FallbackValue={x:Null}}" />
+
+        <!-- Chat UI -->
+        <Grid Grid.Column="1" RowDefinitions="93*,Auto">
+            <!-- Chat Messages Container -->
+            <ScrollViewer x:Name="ChatContainerView" Grid.Row="0" Margin="20" Padding="25,0"
+                          VerticalScrollBarVisibility="Auto">
+                <ItemsControl
+                    ItemsSource="{Binding ((services:RoleplayService)Service).SelectedSession.Messages, FallbackValue={x:Null}}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="Auto,15,*" Margin="0,10" HorizontalAlignment="Stretch">
+                                <Image Grid.Column="0"
+                                       Width="75" Height="100" Margin="10,0,0,0"
+                                       Source="{Binding Sender, Converter={StaticResource CharacterAvatarPathConverter}}"
+                                       HorizontalAlignment="Left" VerticalAlignment="Top" />
+
+                                <Border Grid.Column="2" BorderThickness="1" CornerRadius="12" Padding="8">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="Transparent" Offset="0.0" />
+                                            <GradientStop Color="#44000000" Offset="0.5" />
+                                            <GradientStop Color="#22000000" Offset="1.0" />
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <Border.BoxShadow>
+                                        <BoxShadows>3 2 2 1 #2F000000</BoxShadows>
+                                    </Border.BoxShadow>
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="10" />
+                                    </Border.Effect>
+                                    <StackPanel Spacing="10">
+                                        <Border Background="DarkRed" HorizontalAlignment="Left" CornerRadius="16"
+                                                Padding="12,0">
+                                            <TextBlock Text="{Binding Sender.Name, FallbackValue=''}"
+                                                       TextWrapping="Wrap" />
+                                        </Border>
+                                        <TextBlock Text="{Binding Message}" IsEnabled="True" MaxWidth="900"
+                                                   TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- Message Writing & Send Controls -->
+            <Grid Grid.Row="1" VerticalAlignment="Bottom" ColumnDefinitions="*,Auto,Auto">
+                <TextBox CornerRadius="8" Margin="10" Text="{Binding UserInput}"
+                         Watermark="Write your message here!" AcceptsReturn="True" HorizontalAlignment="Stretch"
+                         VerticalAlignment="Stretch" Height="70" MaxHeight="300">
+                    <TextBox.KeyBindings>
+                        <KeyBinding Gesture="Enter" Command="{Binding MessageSendCommand}" />
+                    </TextBox.KeyBindings>
+                </TextBox>
+                <StackPanel Grid.Column="1" Margin="10,0" MinWidth="100" Height="70">
+                    <ComboBox
+                        SelectedValue="{Binding ((services:RoleplayService)Service).CharacterTurn, FallbackValue='Single-Turn'}"
+                        HorizontalAlignment="Stretch" Margin="0,0,0,5"
+                        SelectedValueBinding="{Binding x:DataType=ComboBoxItem, Path=Content}">
+
+                        <ComboBoxItem Content="Single-Turn" />
+                        <ComboBoxItem Content="Multi-Turn" />
+                    </ComboBox>
+                    <ComboBox ItemsSource="{Binding CharacterReceivers}"
+                              SelectedItem="{Binding ((services:RoleplayService)Service).CharacterReceiver}"
+                              HorizontalAlignment="Stretch" Margin="0,0,0,5" />
+                </StackPanel>
+                <Button Grid.Column="2" Command="{Binding MessageSendCommand}" CornerRadius="8" Margin="10" Width="100"
+                        Height="70"
+                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                    <icons:SymbolIcon
+                        Symbol="{Binding State, Converter={StaticResource ConditionCheckConverter}, ConverterParameter=Started|Stop|Send}"
+                        FontSize="32" Foreground="White" />
+                </Button>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

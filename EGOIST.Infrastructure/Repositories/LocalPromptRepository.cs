@@ -140,7 +140,6 @@ public class LocalPromptRepository<TPromptTemplate>(ILogger<LocalPromptRepositor
                 //     return null;
             }
 
-            Debug.WriteLine($"Template {template?.Name} loaded from {configPath}");
             return template;
         }
         catch (Exception ex)

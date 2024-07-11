@@ -7,7 +7,7 @@ namespace EGOIST.Application.Services.Utilities;
 
 public class AppConfig
 {
-    public readonly string AppVersion = "1.1.1";
+    public readonly string AppVersion = "1.2.0";
     public string ApiUrl => $"{ApiHost}/{ApiPort}";
 
     public string ApiHost { get; set; } = "http://127.0.0.1";
@@ -17,12 +17,11 @@ public class AppConfig
     public string PromptsPath { get; set; } = @"C:\External\Prompts";// $@"{Directory.GetCurrentDirectory()}\Resources\Prompts";
     public string VoicesPath { get; set; } = $@"{Directory.GetCurrentDirectory()}\Resources\Voices";
     public string ResultsPath { get; set; } = $@"{Directory.GetCurrentDirectory()}\Resources\Results";
-    public string CharactersPath { get; set; } = $@"{Directory.GetCurrentDirectory()}\Resources\Characters";
+    public string CharactersPath { get; set; } = @"C:\External\Characters"; // $@"{Directory.GetCurrentDirectory()}\Resources\Characters";
+    public string WorldMemoriesPath { get; set; } = @"C:\External\WorldMemories"; // $@"{Directory.GetCurrentDirectory()}\Resources\WorldMemories";
     public string BackgroundsPath { get; set; } = $@"{Directory.GetCurrentDirectory()}\Resources\Backgrounds";
     public Device Device { get; set; } = Device.CPU;
-
-    public IEnumerable DeviceValues => Enum.GetValues(typeof(Device));
-
+    
     private readonly string _configFilePath = $"{Directory.GetCurrentDirectory()}\\Config.json";
 
     private AppConfig() { }
@@ -42,6 +41,7 @@ public class AppConfig
             VoicesPath = config.VoicesPath;
             ResultsPath = config.ResultsPath;
             CharactersPath = config.CharactersPath;
+            WorldMemoriesPath = config.WorldMemoriesPath;
             BackgroundsPath = config.BackgroundsPath;
             Device = config.Device;
         }
@@ -56,6 +56,7 @@ public class AppConfig
         Directory.CreateDirectory(VoicesPath);
         Directory.CreateDirectory(ResultsPath);
         Directory.CreateDirectory(CharactersPath);
+        Directory.CreateDirectory(WorldMemoriesPath);
         Directory.CreateDirectory(BackgroundsPath);
     }
 
@@ -63,7 +64,6 @@ public class AppConfig
     {
         var json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(_configFilePath, json);
-        ExportToBackend();
         CheckPaths();
     }
 
@@ -74,22 +74,7 @@ public class AppConfig
 
         Load();
     }
-
-    public void ExportToBackend()
-    {
-        var backendPath = Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\Backend");
-        using var file = new StreamWriter($"{backendPath}\\.env");
-
-        file.WriteLine($"HOST_IP={new Uri(ApiHost).Host}");
-        file.WriteLine($"HOST_PORT={ApiPort}");
-        file.WriteLine($"DEVICE={Device}");
-        file.WriteLine($"MODELS_PATH={ModelsPath}");
-        file.WriteLine($"VOICES_PATH={VoicesPath}");
-        file.WriteLine($"RESULTS_PATH={ResultsPath}");
-        file.WriteLine($"CHARACTER_PATH={CharactersPath}");
-        file.WriteLine($"BACKGROUNDS_PATH={BackgroundsPath}");
-    }
-
+    
     public async Task<string?> CheckForUpdate()
     {
         using var client = new HttpClient();

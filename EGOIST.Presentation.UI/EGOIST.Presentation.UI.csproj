@@ -44,6 +44,7 @@
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.1.0-beta2" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="Notification.Avalonia" Version="2.1.0" />
 
 	<PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
 	<PackageReference Include="Serilog.Sinks.Console" Version="5.0.0" />
@@ -82,6 +83,18 @@
     </Compile>
     <Compile Update="Views\Pages\Text\MemoryPageView.axaml.cs">
       <DependentUpon>MemoryPageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Pages\Text\RoleplayPageView.axaml.cs">
+      <DependentUpon>RoleplayPageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Dialogs\TextRoleplayCreateView.axaml.cs">
+      <DependentUpon>TextRoleplayCreateView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Dialogs\TextRoleplayWorldMemoryView.axaml.cs">
+      <DependentUpon>TextRoleplayWorldMemoryView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

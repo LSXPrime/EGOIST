@@ -4,12 +4,16 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 using EGOIST.Application.Interfaces.Core;
 using EGOIST.Application.Interfaces.Text;
 using EGOIST.Application.Services.Image;
+using EGOIST.Application.Services.Management;
 using EGOIST.Application.Services.Text;
+using EGOIST.Application.Services.Text.Roleplay;
 using EGOIST.Application.Services.Voice;
 using EGOIST.Domain.Entities;
 using EGOIST.Domain.Interfaces;
 using EGOIST.Infrastructure.Repositories;
+using EGOIST.Infrastructure.Services.FileTypes;
 using EGOIST.Infrastructure.Services.RAG;
+using EGOIST.Infrastructure.Services.Storage;
 using EGOIST.Presentation.UI.ViewModels;
 using EGOIST.Presentation.UI.ViewModels.Dialogs;
 using EGOIST.Presentation.UI.ViewModels.Pages;
@@ -50,8 +54,14 @@ internal static class Program
             .AddKeyedSingleton<ITextService, MemoryService>("MemoryService")
             .AddKeyedSingleton<IModelsRepository, LocalModelsRepository>("LocalModelsRepository")
             .AddKeyedSingleton<IModelsRepository, HuggingFaceModelsRepository>("HuggingFaceModelsRepository")
-            .AddKeyedSingleton<IModelsRepository, CivitAIModelsRepository>("CivitAIModelsRepository")
+            .AddKeyedSingleton<IModelsRepository, CivitAiModelsRepository>("CivitAIModelsRepository")
+            .AddSingleton<IImageMetadataService, ImageMetadataService>()
+            .AddSingleton<IFileSystemService, FileSystemService>()
             .AddSingleton<IPromptRepository<TextPromptParameters>, LocalPromptRepository<TextPromptParameters>>()
+            .AddSingleton<ICharacterRepository, LocalCharacterRepository>()
+            .AddSingleton<IWorldMemoryRepository, LocalWorldMemoryRepository>()
+            .AddSingleton<WorldMemoryService>()
+            .AddSingleton<CharacterService>()
             .AddSingleton<IRagMemory, KernelRagMemory>()
             .AddSingleton<MainWindowViewModel>()
             .AddSingleton<MainWindow>()
@@ -65,8 +75,14 @@ internal static class Program
             .AddTransient<CompletionPageView>()
             .AddTransient<MemoryPageViewModel>()
             .AddTransient<MemoryPageView>()
+            .AddTransient<RoleplayPageViewModel>()
+            .AddTransient<RoleplayPageView>()
             .AddTransient<TextMemoryCreateViewModel>()
             .AddTransient<TextMemoryCreateView>()
+            .AddTransient<TextRoleplayCreateViewModel>()
+            .AddTransient<TextRoleplayCreateView>()
+            .AddTransient<TextRoleplayWorldMemoryViewModel>()
+            .AddTransient<TextRoleplayWorldMemoryView>()
             .BuildServiceProvider();
         Ioc.Default.ConfigureServices(provider);
         Services.DialogService.Initialize(new ViewLocator());

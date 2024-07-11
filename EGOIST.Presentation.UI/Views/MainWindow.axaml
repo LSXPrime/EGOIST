@@ -32,9 +32,44 @@
             <ui:NavigationView x:Name="NavView" PaneDisplayMode="LeftCompact"
                                SelectionChanged="NavView_OnSelectionChanged">
                 <ui:NavigationView.Content>
-                    <TransitioningContentControl Margin="15,50,30,15"
+                    <TransitioningContentControl Margin="55,10,30,15"
                                                  Content="{Binding Source={x:Static services:NavigationService.Current}, Path=Main}" />
                 </ui:NavigationView.Content>
+
+                <ui:NavigationView.Header>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="{Binding NavigationPath}" FontSize="24" />
+
+                        <!-- System Info -->
+                        <StackPanel Grid.Column="1" Margin="50,0" Orientation="Horizontal" Spacing="25"
+                                    VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="- CPU Usage: %" FontFamily="Cambria" FontSize="20"
+                                           FontWeight="Normal" />
+                                <TextBlock Text="{Binding SystemInfo.CPU, FallbackValue=00}" FontFamily="Cambria"
+                                           FontSize="20" FontWeight="Normal" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="- RAM Usage: %" FontFamily="Cambria" FontSize="20"
+                                           FontWeight="Normal" />
+                                <TextBlock Text="{Binding SystemInfo.RAM, FallbackValue=00}" FontFamily="Cambria"
+                                           FontSize="20" FontWeight="Normal" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="- GPU Usage: %" FontFamily="Cambria" FontSize="20"
+                                           FontWeight="Normal" />
+                                <TextBlock Text="{Binding SystemInfo.GPU, FallbackValue=00}" FontFamily="Cambria"
+                                           FontSize="20" FontWeight="Normal" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="- GPU Memory Usage: %" FontFamily="Cambria" FontSize="20"
+                                           FontWeight="Normal" />
+                                <TextBlock Text="{Binding SystemInfo.VRAM, FallbackValue=00}" FontFamily="Cambria"
+                                           FontSize="20" FontWeight="Normal" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </ui:NavigationView.Header>
 
                 <ui:NavigationView.MenuItems>
                     <ui:NavigationViewItem Content="Home" Tag="HomePageViewModel" IconSource="Home" />
@@ -57,6 +92,11 @@
                             <ui:NavigationViewItem Content="Memory" Tag="Text.MemoryPageViewModel">
                                 <ui:NavigationViewItem.IconSource>
                                     <icons:SymbolIconSource Symbol="Record" />
+                                </ui:NavigationViewItem.IconSource>
+                            </ui:NavigationViewItem>
+                            <ui:NavigationViewItem Content="Roleplay" Tag="Text.RoleplayPageViewModel">
+                                <ui:NavigationViewItem.IconSource>
+                                    <icons:SymbolIconSource Symbol="Person" />
                                 </ui:NavigationViewItem.IconSource>
                             </ui:NavigationViewItem>
                         </ui:NavigationViewItem.MenuItems>

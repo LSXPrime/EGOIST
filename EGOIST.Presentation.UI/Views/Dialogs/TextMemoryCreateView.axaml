@@ -18,11 +18,6 @@
     
     <StackPanel Width="400" Margin="50">
         <TextBlock Text="Import Document" FontWeight="Bold" FontSize="32" HorizontalAlignment="Center" Margin="0,0,0,50"/>
-
-        <ComboBox ItemsSource="{Binding MemoriesPaths}"
-                  SelectedItem="{Binding SelectedCollection}"
-                  HorizontalAlignment="Stretch"
-                  Margin="0,0,0,20"/>
         
         <AutoCompleteBox
             ItemsSource="{Binding MemoriesPaths}"

@@ -52,6 +52,22 @@ public interface IFileSystemService
     /// <param name="filePath">The path to the file.</param>
     /// <returns>The size of the file in bytes.</returns>
     long GetFileSize(string filePath);
+    
+    FileStream? Open(string path, FileMode mode = FileMode.Open, FileAccess access = FileAccess.Read, FileShare share = FileShare.ReadWrite);
+    
+    /// <summary>
+    /// Reads the entire contents of a text file.
+    /// </summary>
+    /// <param name="path">The path to the text file.</param>
+    /// <returns>The contents of the file as a string.</returns>
+    string ReadAllText(string path);
+    
+    /// <summary>
+    /// Writes text to a file.
+    /// </summary>
+    /// <param name="path">The path to the file to write to.</param>
+    /// <param name="content">The text content to write to the file.</param>
+    void WriteAllText(string path, string content);
 
     /// <summary>
     /// Reads the entire contents of a text file asynchronously.

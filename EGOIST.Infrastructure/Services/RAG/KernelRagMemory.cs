@@ -26,7 +26,7 @@ public class KernelRagMemory(ILogger<KernelRagMemory> logger) : IRagMemory
             return Task.CompletedTask;
         }
         
-        Embedder = new LLamaEmbedder(generation.Model!, generation.ModelParameters!);
+        Embedder = new LLamaEmbedder(generation.Model!, generation.ModelParameters! with { Embeddings = true});
 
         Memory = new KernelMemoryBuilder()
             .WithLLamaSharpTextEmbeddingGeneration(new LLamaSharpTextEmbeddingGenerator(Embedder))

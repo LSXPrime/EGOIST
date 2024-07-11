@@ -7,8 +7,6 @@ using EGOIST.Domain.Entities;
 using EGOIST.Domain.Interfaces;
 using NetFabric.Hyperlinq;
 
-// ReSharper disable PossibleMultipleEnumeration
-
 namespace EGOIST.Infrastructure.Repositories;
 
 public class LocalModelsRepository : IModelsRepository
@@ -22,7 +20,7 @@ public class LocalModelsRepository : IModelsRepository
             return Task.FromResult(cachedModels);
 
         var modelsPath = Path.Combine(AppConfig.Instance.ModelsPath , parameters?["Type"] ?? string.Empty);
-        var models = (IEnumerable<ModelInfo>)Directory
+        var models = Directory
             .EnumerateDirectories(modelsPath, "*", SearchOption.AllDirectories)
             .AsValueEnumerable()
             .Select(directoryPath =>
@@ -38,11 +36,11 @@ public class LocalModelsRepository : IModelsRepository
                 var matchesTask = !parameters.ContainsKey("Task") || model.Task == parameters["Task"];
 
                 return matchesType && matchesTask;
-            });
+            }).ToArray();
 
     //    models = WithExistWeightsOnly(models);
         _modelsCache[cacheKey] = models;
-        return Task.FromResult(models);
+        return Task.FromResult(models.AsEnumerable());
     }
 
     public Task<IEnumerable<ModelInfo>> GetAllModels(string query = "", int modelsCount = 10)
@@ -52,7 +50,7 @@ public class LocalModelsRepository : IModelsRepository
             return Task.FromResult(cachedModels);
 
         var modelsPath = AppConfig.Instance.ModelsPath;
-        var models = (IEnumerable<ModelInfo>)Directory
+        var models = Directory
             .EnumerateDirectories(modelsPath, "*", SearchOption.AllDirectories)
             .AsValueEnumerable()
             .Select(folder =>
@@ -67,11 +65,11 @@ public class LocalModelsRepository : IModelsRepository
                 model.Type.Contains(query) ||
                 model.Task.Contains(query)
             )
-            .Take(modelsCount);
+            .Take(modelsCount).ToArray();
 
    //     models = WithExistWeightsOnly(models);
         _modelsCache[cacheKey] = models;
-        return Task.FromResult(models);
+        return Task.FromResult(models.AsEnumerable());
     }
 
 
@@ -127,7 +125,7 @@ public class LocalModelsRepository : IModelsRepository
         {
             var weight = new ModelInfoWeight
             {
-                Extension = Path.GetExtension(weightFile),
+                Extension = Path.GetExtension(weightFile)[1..],
                 Weight = Path.GetFileNameWithoutExtension(weightFile),
                 Link = weightFile,
                 Size = new FileInfo(weightFile).Length

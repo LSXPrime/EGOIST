@@ -3,11 +3,16 @@
              x:Class="EGOIST.Presentation.UI.App"
              xmlns:local="using:EGOIST.Presentation.UI"
              xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-             xmlns:u-Semi="https://irihi.tech/ursa/themes/semi"
              xmlns:fluent="using:FluentAvalonia.Styling"
+             xmlns:helpers="clr-namespace:EGOIST.Presentation.UI.Helpers"
              RequestedThemeVariant="Dark">
     <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
+    <Application.Resources>
+        <helpers:CharacterAvatarPathConverter x:Key="CharacterAvatarPathConverter" />
+        <helpers:EnumToBoolConverter x:Key="EnumToBoolConverter" />
+        <helpers:EnumValuesConverter x:Key="EnumValuesConverter" />
+    </Application.Resources>
     <Application.DataTemplates>
         <local:ViewLocator />
     </Application.DataTemplates>

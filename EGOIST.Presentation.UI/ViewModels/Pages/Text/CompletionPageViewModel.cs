@@ -19,7 +19,7 @@ public partial class CompletionPageViewModel([FromKeyedServices("CompletionServi
     private GenerationState _state = GenerationState.None;
     
     
-    public override string Title => "Chat";
+    public override string Title => "Completion";
     
     #region CompletionVariables
     [ObservableProperty]
@@ -43,11 +43,11 @@ public partial class CompletionPageViewModel([FromKeyedServices("CompletionServi
 
     #region Navigation
 
-    public void Initialize(Dictionary<string, object>? parameters) { }
+    public Task Initialize(Dictionary<string, object>? parameters) => Task.CompletedTask;
 
-    public void OnNavigatedFrom() { }
+    public Task OnNavigatedFrom() => Task.CompletedTask;
 
-    public void OnNavigatedTo() { }
+    public Task OnNavigatedTo() => Task.CompletedTask;
 
     #endregion
     

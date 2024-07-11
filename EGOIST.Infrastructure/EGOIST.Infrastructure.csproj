@@ -8,16 +8,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\EGOIST.Application\EGOIST.Application.csproj"/>
-        <ProjectReference Include="..\EGOIST.Domain\EGOIST.Domain.csproj"/>
+        <ProjectReference Include="..\EGOIST.Application\EGOIST.Application.csproj" />
+        <ProjectReference Include="..\EGOIST.Domain\EGOIST.Domain.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="MetadataExtractor" Version="2.8.1"/>
-        <PackageReference Include="LLamaSharp.kernel-memory" Version="0.12.0"/>
-        <PackageReference Include="Microsoft.KernelMemory.AI.LlamaSharp" Version="0.50.240504.7"/>
+        <PackageReference Include="MetadataExtractor" Version="2.8.1" />
+        <PackageReference Include="LLamaSharp.kernel-memory" Version="0.12.0" />
+        <PackageReference Include="Microsoft.KernelMemory.AI.LlamaSharp" Version="0.50.240504.7" />
 
-        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.35.240321.1"/>
+        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.35.240321.1" />
+
+        <PackageReference Include="ShippingRates" Version="2.1.0" />
+
+        <PackageReference Include="Shippo" Version="5.0.0-beta.2" />
     </ItemGroup>
 
 </Project>

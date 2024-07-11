@@ -32,26 +32,26 @@ public class CompletionService(
     private readonly TextModelCoreService? _modelCore = modelCore as TextModelCoreService;
     private CompletionSession? _selectedCompletionSession;
 
-    public Task Create(string sessionName)
+    public Task<bool> Create(Dictionary<string, object>? parameter = null)
     {
         if (_modelCore?.SelectedGenerationModel == null || _modelCore.ModelParameters == null ||
             _modelCore.Model == null || _modelCore.State == GenerationState.Started)
         {
             logger.LogWarning("Text Generation Model isn't loaded yet.");
-            return Task.CompletedTask;
+            return Task.FromResult(false);
         }
 
         var newSession = new CompletionSession
         {
-            Name = string.IsNullOrEmpty(sessionName) ? $"Completion {DateTime.Now}" : sessionName,
+            Name =  parameter?["Name"].ToString() ?? $"Completion {DateTime.Now}",
             Executor = new InferenceService(new StatelessExecutor(_modelCore.Model!, _modelCore.ModelParameters!)),
         };
         CompletionSessions.Add(newSession);
         SelectedCompletionSession = newSession;
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
-    public Task Delete(string parameter)
+    public Task<bool> Delete(string parameter = "")
     {
         if (!string.IsNullOrEmpty(parameter))
         {
@@ -63,7 +63,7 @@ public class CompletionService(
             }
             session.Executor?.Dispose();
             CompletionSessions.Remove(session);
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
 
         logger.LogInformation($"Session {SelectedCompletionSession!.Name} Deleted");
@@ -72,7 +72,7 @@ public class CompletionService(
         CompletionSessions.Remove(SelectedCompletionSession);
         SelectedCompletionSession = null;
 
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
     public async Task<T?> Generate<T>(string prompt, TextGenerationParameters? generationParameters = null, TextPromptParameters? promptParameters = null) where T : class
@@ -90,7 +90,10 @@ public class CompletionService(
         }
 
         if (SelectedCompletionSession == null)
-            await Create($"Completion {DateTime.Now}");
+        {
+            logger.LogWarning("Session isn't selected yet.");
+            return null;
+        }
 
 
         if (string.IsNullOrEmpty(prompt))

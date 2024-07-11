@@ -18,20 +18,9 @@
                     OpenPaneLength="400"
                     IsPaneOpen="{TemplateBinding IsOpen}"
                     PaneBackground="Transparent">
-                    <SplitView.PaneTemplate>
-                        <DataTemplate>
-                            <ContentPresenter Content="{Binding $parent[SplitView].Pane}" />
-                        </DataTemplate>
-                    </SplitView.PaneTemplate>
                     <SplitView.Pane>
                         <Border CornerRadius="16">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                    <GradientStop Color="Transparent" Offset="0.0" />
-                                    <GradientStop Color="#44000000" Offset="0.5" />
-                                    <GradientStop Color="#22000000" Offset="1.0" />
-                                </LinearGradientBrush>
-                            </Border.Background>
+        
 
                             <Grid ColumnDefinitions="70,*" Margin="0,20,10,0">
                                 <Button Name="PART_TogglePaneBtn"

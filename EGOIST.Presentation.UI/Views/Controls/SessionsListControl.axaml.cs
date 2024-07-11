@@ -44,10 +44,10 @@ public class SessionsListControl : TemplatedControl
         }
     }
 
-    public static readonly StyledProperty<IAsyncRelayCommand> MainActionProperty =
-        AvaloniaProperty.Register<SessionsListControl, IAsyncRelayCommand>(nameof(MainAction));
+    public static readonly StyledProperty<IRelayCommand> MainActionProperty =
+        AvaloniaProperty.Register<SessionsListControl, IRelayCommand>(nameof(MainAction));
 
-    public IAsyncRelayCommand MainAction
+    public IRelayCommand MainAction
     {
         get => GetValue(MainActionProperty);
         set => SetValue(MainActionProperty, value);

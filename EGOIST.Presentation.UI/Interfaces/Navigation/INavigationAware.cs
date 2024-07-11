@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace EGOIST.Presentation.UI.Interfaces.Navigation;
 
 public interface INavigationAware
 {
-    void Initialize(Dictionary<string, object>? parameters);
-    void OnNavigatedFrom();
-    void OnNavigatedTo();
+    Task Initialize(Dictionary<string, object>? parameters);
+    Task OnNavigatedFrom();
+    Task OnNavigatedTo();
 }

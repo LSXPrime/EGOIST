@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -20,7 +19,17 @@ public partial class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel()
     {
         CurrentNavigationItem = NavigationItems.First(vm => vm.Children.Any(c => c.ViewModel == typeof(HomePageViewModel))).Children.First(c => c.ViewModel == typeof(HomePageViewModel));
-        SystemInfoService.Instance.SetSystemInfo(ref _systemInfo);
+        NavigateTo(CurrentNavigationItem.ViewModel);
+        
+        SystemInfoService.Instance.OnUpdate += (_, info) => SystemInfo = info;
+        NavigationService.OnNavigation += _ =>
+        {
+            NavigationPath = string.Join(" - ", new[] {
+                NavigationService.Current.Main.Title, 
+                NavigationService.Current.Sub?.Title, 
+                NavigationService.Current.Nested?.Peek().Title 
+            }.Where(s => !string.IsNullOrEmpty(s)));
+        };
     }
 
     [ObservableProperty]
@@ -41,58 +50,45 @@ public partial class MainWindowViewModel : ViewModelBase
             [
                 new NavigationItem(typeof(ChatPageViewModel), NavigationItemType.Sub, "Chat", Symbol.Chat.ToString()),
                 new NavigationItem(typeof(CompletionPageViewModel), NavigationItemType.Sub, "Completion", Symbol.Pen.ToString()),
-                new NavigationItem(typeof(MemoryPageViewModel), NavigationItemType.Sub, "Memory", Symbol.Record.ToString())
+                new NavigationItem(typeof(MemoryPageViewModel), NavigationItemType.Sub, "Memory", Symbol.Record.ToString()),
+                new NavigationItem(typeof(RoleplayPageViewModel), NavigationItemType.Sub, "Roleplay", Symbol.Person.ToString())
             ])
     ];
-
-    private readonly Dictionary<Type, Action<NavigationItemType, Dictionary<string, object>?>> _navigationActions = new()
+    
+    private readonly Dictionary<Type, (NavigationItemType NavType, Action<NavigationItemType, Dictionary<string, object>?> Action)> _navigationActions = new()
     {
-        { typeof(HomePageViewModel), (navType, parameters) => NavigationService.NavigateTo<HomePageViewModel>(parameters: parameters, type: navType) },
-        { typeof(TextPageViewModel), (navType, parameters) => NavigationService.NavigateTo<TextPageViewModel>(parameters: parameters, type: navType) },
-        { typeof(ChatPageViewModel), (navType, parameters) => NavigationService.NavigateTo<ChatPageViewModel>(parameters: parameters, type: navType) },
-        { typeof(CompletionPageViewModel), (navType, parameters) => NavigationService.NavigateTo<CompletionPageViewModel>(parameters: parameters, type: navType) },
-        { typeof(MemoryPageViewModel), (navType, parameters) => NavigationService.NavigateTo<MemoryPageViewModel>(parameters: parameters, type: navType) },
+        { typeof(HomePageViewModel), (NavigationItemType.Main, (navType, parameters) => NavigationService.NavigateTo<HomePageViewModel>(parameters: parameters, type: navType)) },
+        { typeof(TextPageViewModel), (NavigationItemType.Main, (navType, parameters) => NavigationService.NavigateTo<TextPageViewModel>(parameters: parameters, type: navType)) },
+        { typeof(ChatPageViewModel), (NavigationItemType.Sub, (navType, parameters) => NavigationService.NavigateTo<ChatPageViewModel>(parameters: parameters, type: navType)) },
+        { typeof(CompletionPageViewModel), (NavigationItemType.Sub, (navType, parameters) => NavigationService.NavigateTo<CompletionPageViewModel>(parameters: parameters, type: navType)) },
+        { typeof(MemoryPageViewModel), (NavigationItemType.Sub, (navType, parameters) => NavigationService.NavigateTo<MemoryPageViewModel>(parameters: parameters, type: navType)) },
+        { typeof(RoleplayPageViewModel), (NavigationItemType.Sub, (navType, parameters) => NavigationService.NavigateTo<RoleplayPageViewModel>(parameters: parameters, type: navType)) }
     };
-
-    partial void OnCurrentNavigationItemChanged(NavigationItem value)
-    {
-        NavigateTo(value);
-    }
-
-    [RelayCommand]
-    private void NavigateTo(NavigationItem? item)
-    {
-
-        if (item?.NavType == NavigationItemType.Sub)
-        {
-            var mainItem = NavigationItems.First(x => x.Children.Contains(item)).Parent;
-            if (mainItem != null && _navigationActions.TryGetValue(mainItem.ViewModel, out var main))
-            {
-                main.Invoke(mainItem.NavType, null);
-            }
-        }
-
-        if (!_navigationActions.TryGetValue(item?.ViewModel!, out var action)) return;
-        action.Invoke(item!.NavType, null);
-    }
     
     public void NavigateTo(Type? navType)
     {
-        var item = NavigationItems
-            .SelectMany(x => x.Children)
-            .FirstOrDefault(x => x.ViewModel == navType);
+        if (navType == null || !_navigationActions.TryGetValue(navType, out var navData)) 
+            return;
         
-        if (item?.NavType == NavigationItemType.Sub)
+        var (navItemType, action) = navData; 
+
+        var targetItem = NavigationItems
+            .SelectMany(group => group.Children)
+            .FirstOrDefault(item => item.ViewModel == navType);
+
+        if (targetItem?.NavType == NavigationItemType.Sub)
         {
-            var mainItem = NavigationItems.First(x => x.Children.Contains(item)).Parent;
-            if (mainItem != null && _navigationActions.TryGetValue(mainItem.ViewModel, out var main))
+            var parentItem = NavigationItems
+                .FirstOrDefault(group => group.Children.Contains(targetItem))?
+                .Parent;
+
+            if (parentItem != null && _navigationActions.TryGetValue(parentItem.ViewModel, out var parentNavData))
             {
-                main.Invoke(mainItem.NavType, null);
+                parentNavData.Action.Invoke(parentNavData.NavType, null);
             }
         }
 
-        if (!_navigationActions.TryGetValue(item?.ViewModel!, out var action)) return;
-        action.Invoke(item!.NavType, null);
+        action.Invoke(navItemType, null);
     }
 
     [RelayCommand]
@@ -102,7 +98,10 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [ObservableProperty]
-    private SystemInfo _systemInfo = new();
+    private SystemInfo? _systemInfo;
 
-    public override string Title { get; } = "EGOIST";
+    [ObservableProperty] 
+    private string _navigationPath = "Home";
+
+    public override string Title => "EGOIST";
 }

@@ -14,6 +14,10 @@ namespace EGOIST.Presentation.UI.Services;
 public static class NavigationService
 {
     public static readonly CurrentPage Current = new();
+    
+    public delegate void NavigationEventHandler(object? sender);
+    public static event NavigationEventHandler? OnNavigation;
+    
 
     public static void NavigateTo<TViewModel>(Dictionary<string, object>? parameters = null, NavigationItemType type = NavigationItemType.Main) where TViewModel : ViewModelBase
     {
@@ -29,22 +33,19 @@ public static class NavigationService
             {
                 case NavigationItemType.Main:
                     Current.Main = vm;
-                    Debug.WriteLine($"Main: {vm}");
-
                     break;
                 case NavigationItemType.Sub:
                     Current.Sub = vm;
-                    Debug.WriteLine($"Sub: {vm}");
-
                     break;
                 case NavigationItemType.Nested:
-                    Current.Nested ??= new();
+                    Current.Nested ??= new Stack<ViewModelBase>();
                     Current.Nested.Push(vm);
                     break;
             }
         else
             throw new ArgumentException($"No navigation item found for ViewModel type {typeof(TViewModel)}");
-
+        
+        OnNavigation?.Invoke(viewModel);
     }
 }
 

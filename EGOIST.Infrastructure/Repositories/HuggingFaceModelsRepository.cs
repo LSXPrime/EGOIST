@@ -15,7 +15,7 @@ public class HuggingFaceModelsRepository : IModelsRepository
         var response = await _httpClient.GetAsync($"https://huggingface.co/api/models?search={query}&filter=gguf&sort=downloads&limit={modelsCount}\"");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<IEnumerable<HuggingFaceModelDto>>();
-        return result.Select(x => x.ToModelInfo());
+        return result?.Select(x => x.ToModelInfo())!;
     }
 
     public Task<IEnumerable<ModelInfo>> GetAllModels(Dictionary<string, string>? parameters) => throw new NotImplementedException();
@@ -25,6 +25,6 @@ public class HuggingFaceModelsRepository : IModelsRepository
         var response = await _httpClient.GetAsync($"https://huggingface.co/api/models/{repoId}");
         response.EnsureSuccessStatusCode();
         var model = await response.Content.ReadFromJsonAsync<HuggingFaceModelDto>();
-        return model.ToModelInfo();
+        return model?.ToModelInfo();
     }
 }

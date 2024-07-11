@@ -1,15 +1,18 @@
 ﻿using System.Collections.ObjectModel;
 using System.Text;
 using EGOIST.Domain.Abstracts;
+using EGOIST.Domain.Enums;
+using EGOIST.Domain.Interfaces;
 
 namespace EGOIST.Domain.Entities;
 
 public class RoleplaySession() : SessionBase<RoleplayMessage>($"Roleplay {DateTime.Now}")
 {
-    private string _userRoleName = "User";
+    private string? _userRoleName = "User";
     private RoleplayMessage? _lastMessage;
+    private RpCharacterInferenceApproach _personalityApproach = RpCharacterInferenceApproach.SummarizedOnce;
 
-    public string UserRoleName
+    public string? UserRoleName
     {
         get => _userRoleName;
         set => Notify(ref _userRoleName, value);
@@ -20,12 +23,26 @@ public class RoleplaySession() : SessionBase<RoleplayMessage>($"Roleplay {DateTi
         get => _lastMessage;
         private set => Notify(ref _lastMessage, value);
     }
-
-    public ObservableCollection<RoleplayCharacterEXT> Characters { get; init; } = [];
-
-    public RoleplayMessage AddMessage(RoleplayCharacter user, string message)
+    
+    public RpCharacterInferenceApproach PersonalityApproach
     {
-        var messageInput = new RoleplayMessage { Sender = user, Message = message };
+        get => _personalityApproach;
+        set => Notify(ref _personalityApproach, value);
+    }
+
+    public ObservableCollection<RoleplayCharacter> Characters { get; init; } = [];
+    public Dictionary<RoleplayCharacter, IInference> CharacterInferences { get; set; } = new();
+    public RoleplayWorld? World { get; set; }
+    
+    [NonSerialized]
+    public IInference? Executor;
+    [NonSerialized]
+    private readonly RoleplayCharacter _user = new() { Name = "User" };
+
+
+    public RoleplayMessage AddMessage(RoleplayCharacter? user, string message)
+    {
+        var messageInput = new RoleplayMessage { Sender = user ?? _user, Message = message };
         LastMessage = messageInput;
         Messages.Add(messageInput);
 
@@ -50,7 +67,7 @@ public class RoleplaySession() : SessionBase<RoleplayMessage>($"Roleplay {DateTi
 
         var stringBuilder = new StringBuilder();
         foreach (var message in roleplayMessages)
-            stringBuilder.Append($"{message.Sender.Name ?? UserRoleName}: {message.Message}\n");
+            stringBuilder.Append($"{message.Sender?.Name ?? UserRoleName}: {message.Message}\n");
 
         stringBuilder.Append($"{UserRoleName}: ");
         return stringBuilder.ToString();

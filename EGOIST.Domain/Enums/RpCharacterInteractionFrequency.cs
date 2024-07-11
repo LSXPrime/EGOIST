@@ -3,7 +3,7 @@ namespace EGOIST.Domain.Enums;
 /// <summary>
 /// Represents the frequency of interaction a roleplay character has with others.
 /// </summary>
-public enum RPCharacterInteractionFrequancy : short
+public enum RpCharacterInteractionFrequency : short
 {
     /// <summary>
     /// The character is shy and interacts infrequently.

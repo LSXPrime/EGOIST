@@ -8,13 +8,6 @@ namespace EGOIST.Infrastructure.Services.Storage;
 public class FileSystemService : IFileSystemService
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="FileSystemService"/> class.
-    /// </summary>
-    public FileSystemService()
-    {
-    }
-
-    /// <summary>
     /// Copies a file from one location to another.
     /// </summary>
     /// <param name="sourcePath">The path to the source file.</param>
@@ -41,7 +34,8 @@ public class FileSystemService : IFileSystemService
     /// <param name="recursive">Indicates whether to delete subdirectories recursively.</param>
     public void DeleteDirectory(string path, bool recursive)
     {
-        Directory.Delete(path, recursive);
+        if (Directory.Exists(path))
+            Directory.Delete(path, recursive);
     }
 
     /// <summary>
@@ -50,7 +44,8 @@ public class FileSystemService : IFileSystemService
     /// <param name="path">The path to the file to delete.</param>
     public void DeleteFile(string path)
     {
-        File.Delete(path);
+        if (File.Exists(path))
+            File.Delete(path);
     }
 
     /// <summary>
@@ -83,6 +78,32 @@ public class FileSystemService : IFileSystemService
         return File.Exists(filePath) ? new FileInfo(filePath).Length : 0;
     }
 
+    public FileStream? Open(string path, FileMode mode = FileMode.Open, FileAccess access = FileAccess.Read,
+        FileShare share = FileShare.ReadWrite)
+    {
+        return FileExists(path) ? new FileStream(path, mode, access, share) : null;
+    }
+
+    /// <summary>
+    /// Reads the entire contents of a text file.
+    /// </summary>
+    /// <param name="path">The path to the text file.</param>
+    /// <returns>The contents of the file as a string.</returns>
+    public string ReadAllText(string path)
+    {
+        return FileExists(path) ? File.ReadAllText(path) : string.Empty;
+    }
+
+    /// <summary>
+    /// Writes text to a file.
+    /// </summary>
+    /// <param name="path">The path to the file to write to.</param>
+    /// <param name="content">The text content to write to the file.</param>
+    public void WriteAllText(string path, string content)
+    {
+        File.WriteAllText(path, content);
+    }
+
     /// <summary>
     /// Reads the entire contents of a text file asynchronously.
     /// </summary>
@@ -90,7 +111,7 @@ public class FileSystemService : IFileSystemService
     /// <returns>A task that completes with the contents of the file.</returns>
     public async Task<string> ReadAllTextAsync(string path)
     {
-        return await File.ReadAllTextAsync(path, CancellationToken.None);
+        return FileExists(path) ? await File.ReadAllTextAsync(path, CancellationToken.None) : string.Empty;
     }
 
     /// <summary>

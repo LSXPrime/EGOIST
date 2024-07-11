@@ -3,15 +3,15 @@ using EGOIST.Presentation.UI.ViewModels.Dialogs;
 
 namespace EGOIST.Presentation.UI.Views.Dialogs;
 
-public partial class TextMemoryCreateView : UserControl
+public partial class TextRoleplayCreateView : UserControl
 {
-    public TextMemoryCreateView(TextMemoryCreateViewModel viewModel)
+    public TextRoleplayCreateView(TextRoleplayCreateViewModel viewModel)
     {
         DataContext = viewModel;
         InitializeComponent();
     }
     
-    public TextMemoryCreateView()
+    public TextRoleplayCreateView()
     {
         InitializeComponent();
     }

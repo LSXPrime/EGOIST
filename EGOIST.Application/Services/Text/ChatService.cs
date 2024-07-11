@@ -34,13 +34,13 @@ public class ChatService(
     private readonly TextModelCoreService? _modelCore = modelCore as TextModelCoreService;
     private ChatSession? _selectedChatSession;
 
-    public Task Create(string sessionName = "")
+    public Task<bool> Create(Dictionary<string, object>? parameter = null)
     {
         if (_modelCore?.SelectedGenerationModel == null || _modelCore.ModelParameters == null ||
             _modelCore.Model == null)
         {
             logger.LogWarning("Text Generation Model isn't loaded yet.");
-            return Task.CompletedTask;
+            return Task.FromResult(false);
         }
 
         // TODO: Support Function Calling
@@ -48,25 +48,25 @@ public class ChatService(
         // Create a new chat session and add it to ChatSessions
         var newSession = new ChatSession
         {
-            Name = string.IsNullOrEmpty(sessionName) ? $"Chat {DateTime.Now}" : sessionName,
+            Name =  parameter?["Name"].ToString() ?? $"Chat {DateTime.Now}",
             Executor = new InferenceService(
                 new InteractiveExecutor(_modelCore.Model.CreateContext(_modelCore.ModelParameters)))
         };
         ChatSessions.Add(newSession);
         SelectedChatSession = newSession;
 
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
 
-    public Task Delete(string parameter = "")
+    public Task<bool> Delete(string parameter = "")
     {
         if (!string.IsNullOrEmpty(parameter))
         {
             var session = ChatSessions.First(x => x.Name == parameter);
             session.Executor?.Dispose();
             ChatSessions.Remove(session);
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
 
         logger.LogInformation($"Chat {SelectedChatSession!.Name} Deleted");
@@ -75,7 +75,7 @@ public class ChatService(
         ChatSessions.Remove(SelectedChatSession);
         SelectedChatSession = null;
 
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 
 
@@ -90,7 +90,7 @@ public class ChatService(
 
         if (string.IsNullOrEmpty(userInput))
         {
-            logger.LogWarning("ChatUserInput is empty.");
+            logger.LogWarning("User Input is empty.");
             return null;
         }
 
@@ -101,7 +101,10 @@ public class ChatService(
         }
 
         if (SelectedChatSession == null)
-            await Create($"Chat {DateTime.Now}");
+        {
+            logger.LogWarning("Session isn't selected yet.");
+            return null;
+        }
 
 
         _modelCore.State = GenerationState.Started;
@@ -125,9 +128,7 @@ public class ChatService(
         {
             prompt = promptParameters?.Prompt(userInput)!;
         }
-
-        Debug.WriteLine($"User Prompt: {prompt}");
-
+        
         SelectedChatSession?.AddMessage("User", userInput);
         var aiMessage = SelectedChatSession?.AddMessage("Assistant", string.Empty);
 
@@ -140,8 +141,6 @@ public class ChatService(
         */
         await foreach (var token in tokens!.WithCancellation(_modelCore.CancelToken.Token))
         {
-            Debug.WriteLine($"RECEIVED TOKEN: {token}");
-
             if (token == "FILTERING MECHANISM TRIGGERED")
             {
                 aiMessage!.Message = token;

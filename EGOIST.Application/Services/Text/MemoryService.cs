@@ -33,66 +33,66 @@ public class MemoryService : ITextService
     }
 
 
-    public async Task Create(string collectionPath)
+    public async Task<bool> Create(Dictionary<string, object>? parameter = null)
     {
         if (_modelCore?.SelectedGenerationModel == null)
         {
             _logger.LogWarning("Text Generation Model isn't loaded yet.");
-            return;
+            return false;
         }
         
-        var separatedText = collectionPath.Split(":");
-        if (separatedText.Length != 2)
-            throw new Exception("Collection or path is empty or null");
-
-        var collectionName = separatedText[0];
-        var pathName = separatedText[1];
+        var collectionName = parameter?["Name"].ToString() ?? "New Collection";
+        var pathName = parameter?["Path"].ToString();
         var docName = Path.GetFileName(pathName);
         var memorySource = MemoriesPaths.FirstOrDefault(item => item.Name == collectionName);
         if (memorySource != null)
-            memorySource.Documents.Add(docName);
+            memorySource.Documents.Add(docName!);
         else
         {
             memorySource = new MemorySource { Name = collectionName };
-            memorySource.Documents.Add(docName);
+            memorySource.Documents.Add(docName!);
             MemoriesPaths.Add(memorySource);
         }
 
         try
         {
             memorySource.IsLoaded = false;
-            await _ragMemory.SaveAsync(collectionName, pathName, _modelCore!.CancelToken!.Token);
+            await _ragMemory.SaveAsync(collectionName, pathName!, _modelCore!.CancelToken!.Token);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error importing document");
-            throw;
+            return false;
         }
         finally
         {
             memorySource.IsLoaded = true;
             SelectedMemory ??= memorySource;
         }
+
+        return true;
     }
 
-    public async Task Delete(string collection)
+    public async Task<bool> Delete(string collection)
     {
         var existingItem = MemoriesPaths.FirstOrDefault(item => item.Name == collection);
         if (existingItem != null)
             MemoriesPaths.Remove(existingItem);
-
         try
         {
             foreach (var document in existingItem?.Documents!)
             {
                 await _ragMemory.RemoveAsync($"{collection}:{document}", _modelCore!.CancelToken!.Token);
             }
+            
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting document");
-            throw;
+            return false;
         }
+
+        return true;
     }
 
     public async Task<T?> Generate<T>(string userInput, TextGenerationParameters? generationParameters = null,
