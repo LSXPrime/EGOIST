@@ -1,4 +1,6 @@
-﻿namespace EGOIST.Application.Interfaces.Text;
+﻿using EGOIST.Domain.Entities;
+
+namespace EGOIST.Application.Interfaces.Text;
 
 public interface IRagMemory
 {
@@ -18,18 +20,21 @@ public interface IRagMemory
     /// Saves a new memory item.
     /// </summary>
     /// <param name="key">The unique key for the memory item.</param>
-    /// <param name="value">The value to be stored.</param>
+    /// <param name="paths">The paths of the memory items to save.</param>
+    /// <param name="parameters">The optional parameters for the save.</param>
     /// <param name="cancellationToken">The optional cancellation token for the operation.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    Task SaveAsync(string key, string value, CancellationToken cancellationToken = default);
+    Task SaveAsync(string key, IEnumerable<string> paths, Dictionary<string, string>? parameters = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a memory item by its key.
     /// </summary>
-    /// <param name="key">The key of the memory item to retrieve.</param>
+    /// <param name="query">The question to search for.</param>
+    /// <param name="paths">The keys of the memory items to retrieve.</param>
+    /// <param name="parameters">The optional parameters for the retrieval.</param>
     /// <param name="cancellationToken">The optional cancellation token for the operation.</param>
     /// <returns>The value associated with the key, or null if the key is not found.</returns>
-    Task<string> GetAsync(string key, CancellationToken cancellationToken = default);
+    Task<Citation[]> GetAsync(string query, IEnumerable<MemorySource> paths, Dictionary<string, string>? parameters = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves all memory items.

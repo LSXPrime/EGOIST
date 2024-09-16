@@ -10,7 +10,7 @@ public interface IModelCoreService
     ModelInfo? SelectedGenerationModel { get; set; }
     ModelInfoWeight? SelectedGenerationWeight { get; set; }
     CancellationTokenSource? CancelToken { get; set; }
-    Task Switch(ModelInfo? model, ModelInfoWeight? weight);
+    Task Switch(ModelInfo? model, ModelInfoWeight? weight, Dictionary<string, object?>? parameters = null);
     Task Unload();
     
     delegate Task SwitchHandler(params object[] args);

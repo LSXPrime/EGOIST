@@ -6,7 +6,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:icons="using:FluentIcons.Avalonia.Fluent"
         xmlns:ui="using:FluentAvalonia.UI.Controls"
+        xmlns:utilities="clr-namespace:EGOIST.Application.Services.Utilities;assembly=EGOIST.Application"
         mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+        MinWidth="1280" MinHeight="720" WindowState="FullScreen"
         x:Class="EGOIST.Presentation.UI.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
@@ -18,104 +20,151 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <Panel>
-        <ExperimentalAcrylicBorder IsHitTestVisible="True">
-            <ExperimentalAcrylicBorder.Material>
-                <ExperimentalAcrylicMaterial
-                    BackgroundSource="Digger"
-                    TintColor="Black"
-                    TintOpacity="1"
-                    MaterialOpacity="0.65" />
-            </ExperimentalAcrylicBorder.Material>
+    <ExperimentalAcrylicBorder>
+        <ExperimentalAcrylicBorder.Material>
+            <ExperimentalAcrylicMaterial
+                BackgroundSource="Digger"
+                TintColor="Black"
+                TintOpacity="1"
+                MaterialOpacity="0.65" />
+        </ExperimentalAcrylicBorder.Material>
 
 
-            <ui:NavigationView x:Name="NavView" PaneDisplayMode="LeftCompact"
-                               SelectionChanged="NavView_OnSelectionChanged">
-                <ui:NavigationView.Content>
-                    <TransitioningContentControl Margin="55,10,30,15"
-                                                 Content="{Binding Source={x:Static services:NavigationService.Current}, Path=Main}" />
-                </ui:NavigationView.Content>
+        <ui:NavigationView x:Name="NavView" PaneDisplayMode="LeftCompact" IsSettingsVisible="False"
+                           SelectionChanged="NavView_OnSelectionChanged">
+            <ui:NavigationView.Background>
+                <ImageBrush
+                    Source="{Binding Source={x:Static utilities:AppConfig.Instance}, Path=Parameters.CurrentBackground, Converter={StaticResource ConditionMultiConverter}, ConverterParameter=Bitmap}" />
+            </ui:NavigationView.Background>
+            <ui:NavigationView.Content>
+                <TransitioningContentControl CornerRadius="32" Margin="55,10,30,15"
+                                             Content="{Binding Source={x:Static services:NavigationService.Current}, Path=Main}" />
+            </ui:NavigationView.Content>
 
-                <ui:NavigationView.Header>
-                    <Grid ColumnDefinitions="*,Auto">
-                        <TextBlock Text="{Binding NavigationPath}" FontSize="24" />
+            <ui:NavigationView.Header>
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding NavigationPath}" FontSize="24" />
 
-                        <!-- System Info -->
-                        <StackPanel Grid.Column="1" Margin="50,0" Orientation="Horizontal" Spacing="25"
-                                    VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="- CPU Usage: %" FontFamily="Cambria" FontSize="20"
-                                           FontWeight="Normal" />
-                                <TextBlock Text="{Binding SystemInfo.CPU, FallbackValue=00}" FontFamily="Cambria"
-                                           FontSize="20" FontWeight="Normal" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="- RAM Usage: %" FontFamily="Cambria" FontSize="20"
-                                           FontWeight="Normal" />
-                                <TextBlock Text="{Binding SystemInfo.RAM, FallbackValue=00}" FontFamily="Cambria"
-                                           FontSize="20" FontWeight="Normal" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="- GPU Usage: %" FontFamily="Cambria" FontSize="20"
-                                           FontWeight="Normal" />
-                                <TextBlock Text="{Binding SystemInfo.GPU, FallbackValue=00}" FontFamily="Cambria"
-                                           FontSize="20" FontWeight="Normal" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="- GPU Memory Usage: %" FontFamily="Cambria" FontSize="20"
-                                           FontWeight="Normal" />
-                                <TextBlock Text="{Binding SystemInfo.VRAM, FallbackValue=00}" FontFamily="Cambria"
-                                           FontSize="20" FontWeight="Normal" />
-                            </StackPanel>
+                    <!-- System Info -->
+                    <StackPanel Grid.Column="1" Margin="50,0" Orientation="Horizontal" Spacing="25"
+                                VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="- CPU Usage: %" FontFamily="Cambria" FontSize="20"
+                                       FontWeight="Normal" />
+                            <TextBlock Text="{Binding SystemInfo.CPU, FallbackValue=00}" FontFamily="Cambria"
+                                       FontSize="20" FontWeight="Normal" />
                         </StackPanel>
-                    </Grid>
-                </ui:NavigationView.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="- RAM Usage: %" FontFamily="Cambria" FontSize="20"
+                                       FontWeight="Normal" />
+                            <TextBlock Text="{Binding SystemInfo.RAM, FallbackValue=00}" FontFamily="Cambria"
+                                       FontSize="20" FontWeight="Normal" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="- GPU Usage: %" FontFamily="Cambria" FontSize="20"
+                                       FontWeight="Normal" />
+                            <TextBlock Text="{Binding SystemInfo.GPU, FallbackValue=00}" FontFamily="Cambria"
+                                       FontSize="20" FontWeight="Normal" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="- GPU Memory Usage: %" FontFamily="Cambria" FontSize="20"
+                                       FontWeight="Normal" />
+                            <TextBlock Text="{Binding SystemInfo.VRAM, FallbackValue=00}" FontFamily="Cambria"
+                                       FontSize="20" FontWeight="Normal" />
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </ui:NavigationView.Header>
 
-                <ui:NavigationView.MenuItems>
-                    <ui:NavigationViewItem Content="Home" Tag="HomePageViewModel" IconSource="Home" />
-                    <ui:NavigationViewItem Content="Text" SelectsOnInvoked="False">
-                        <ui:NavigationViewItem.IconSource>
-                            <icons:SymbolIconSource Symbol="Textbox" />
-                        </ui:NavigationViewItem.IconSource>
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem Content="Home" Tag="HomePageViewModel" IconSource="Home" />
 
-                        <ui:NavigationViewItem.MenuItems>
-                            <ui:NavigationViewItem Content="Chat" Tag="Text.ChatPageViewModel">
-                                <ui:NavigationViewItem.IconSource>
-                                    <icons:SymbolIconSource Symbol="Chat" />
-                                </ui:NavigationViewItem.IconSource>
-                            </ui:NavigationViewItem>
-                            <ui:NavigationViewItem Content="Completion" Tag="Text.CompletionPageViewModel">
-                                <ui:NavigationViewItem.IconSource>
-                                    <icons:SymbolIconSource Symbol="Pen" />
-                                </ui:NavigationViewItem.IconSource>
-                            </ui:NavigationViewItem>
-                            <ui:NavigationViewItem Content="Memory" Tag="Text.MemoryPageViewModel">
-                                <ui:NavigationViewItem.IconSource>
-                                    <icons:SymbolIconSource Symbol="Record" />
-                                </ui:NavigationViewItem.IconSource>
-                            </ui:NavigationViewItem>
-                            <ui:NavigationViewItem Content="Roleplay" Tag="Text.RoleplayPageViewModel">
-                                <ui:NavigationViewItem.IconSource>
-                                    <icons:SymbolIconSource Symbol="Person" />
-                                </ui:NavigationViewItem.IconSource>
-                            </ui:NavigationViewItem>
-                        </ui:NavigationViewItem.MenuItems>
-                    </ui:NavigationViewItem>
-                    <ui:NavigationViewItem Content="Voice" SelectsOnInvoked="False">
-                        <ui:NavigationViewItem.IconSource>
-                            <icons:SymbolIconSource Symbol="Headphones" />
-                        </ui:NavigationViewItem.IconSource>
-                        <ui:NavigationViewItem.MenuItems>
-                            <ui:NavigationViewItem Content="Transcribe" Tag="Voice.TranscribePageViewModel">
-                                <ui:NavigationViewItem.IconSource>
-                                    <icons:SymbolIconSource Symbol="Voicemail" />
-                                </ui:NavigationViewItem.IconSource>
-                            </ui:NavigationViewItem>
-                        </ui:NavigationViewItem.MenuItems>
-                    </ui:NavigationViewItem>
-                </ui:NavigationView.MenuItems>
-            </ui:NavigationView>
-        </ExperimentalAcrylicBorder>
-    </Panel>
+                <ui:NavigationViewItem Content="Image" SelectsOnInvoked="False">
+                    <ui:NavigationViewItem.IconSource>
+                        <icons:SymbolIconSource Symbol="Image" />
+                    </ui:NavigationViewItem.IconSource>
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem Content="Imagine" Tag="Image.ImaginePageViewModel">
+                            <ui:NavigationViewItem.IconSource>
+                                <icons:SymbolIconSource Symbol="ImageAltText" />
+                            </ui:NavigationViewItem.IconSource>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem Content="Transform" Tag="Image.TransformPageViewModel">
+                            <ui:NavigationViewItem.IconSource>
+                                <icons:SymbolIconSource Symbol="ImageSparkle" />
+                            </ui:NavigationViewItem.IconSource>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem Content="Upscale" Tag="Image.UpscalePageViewModel">
+                            <ui:NavigationViewItem.IconSource>
+                                <icons:SymbolIconSource Symbol="ExpandUpRight" />
+                            </ui:NavigationViewItem.IconSource>
+                        </ui:NavigationViewItem>
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
+
+
+                <ui:NavigationViewItem Content="Text" SelectsOnInvoked="False">
+                    <ui:NavigationViewItem.IconSource>
+                        <icons:SymbolIconSource Symbol="Textbox" />
+                    </ui:NavigationViewItem.IconSource>
+
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem Content="Chat" Tag="Text.ChatPageViewModel">
+                            <ui:NavigationViewItem.IconSource>
+                                <icons:SymbolIconSource Symbol="Chat" />
+                            </ui:NavigationViewItem.IconSource>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem Content="Completion" Tag="Text.CompletionPageViewModel">
+                            <ui:NavigationViewItem.IconSource>
+                                <icons:SymbolIconSource Symbol="Pen" />
+                            </ui:NavigationViewItem.IconSource>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem Content="Memory" Tag="Text.MemoryPageViewModel">
+                            <ui:NavigationViewItem.IconSource>
+                                <icons:SymbolIconSource Symbol="Record" />
+                            </ui:NavigationViewItem.IconSource>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem Content="Roleplay" Tag="Text.RoleplayPageViewModel">
+                            <ui:NavigationViewItem.IconSource>
+                                <icons:SymbolIconSource Symbol="Person" />
+                            </ui:NavigationViewItem.IconSource>
+                        </ui:NavigationViewItem>
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
+                <ui:NavigationViewItem Content="Voice" SelectsOnInvoked="False">
+                    <ui:NavigationViewItem.IconSource>
+                        <icons:SymbolIconSource Symbol="Headphones" />
+                    </ui:NavigationViewItem.IconSource>
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem Content="Transcribe" Tag="Voice.TranscribePageViewModel">
+                            <ui:NavigationViewItem.IconSource>
+                                <icons:SymbolIconSource Symbol="Voicemail" />
+                            </ui:NavigationViewItem.IconSource>
+                        </ui:NavigationViewItem>
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
+                <ui:NavigationViewItem Content="Management" SelectsOnInvoked="False">
+                    <ui:NavigationViewItem.IconSource>
+                        <icons:SymbolIconSource Symbol="Board" />
+                    </ui:NavigationViewItem.IconSource>
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem Content="Characters" Tag="Management.CharactersPageViewModel">
+                            <ui:NavigationViewItem.IconSource>
+                                <icons:SymbolIconSource Symbol="Person" />
+                            </ui:NavigationViewItem.IconSource>
+                        </ui:NavigationViewItem>
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
+            </ui:NavigationView.MenuItems>
+
+            <ui:NavigationView.FooterMenuItems>
+                <ui:NavigationViewItem Content="Settings" Tag="SettingsPageViewModel">
+                    <ui:NavigationViewItem.IconSource>
+                        <icons:SymbolIconSource Symbol="Settings" />
+                    </ui:NavigationViewItem.IconSource>
+                </ui:NavigationViewItem>
+            </ui:NavigationView.FooterMenuItems>
+        </ui:NavigationView>
+    </ExperimentalAcrylicBorder>
 
 </Window>

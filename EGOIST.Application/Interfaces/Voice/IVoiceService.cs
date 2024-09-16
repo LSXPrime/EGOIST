@@ -23,6 +23,6 @@ namespace EGOIST.Application.Interfaces.Voice
         /// </summary>
         /// <param name="dto">The voice transcribe DTO containing the audio data and options.</param>
         /// <returns>An asynchronous enumerable of transcribed text segments.</returns>
-        IAsyncEnumerable<string> Generate(VoiceTranscribeDto dto);
+        IAsyncEnumerable<string> Transcribe(VoiceTranscribeDto dto);
     }
 }

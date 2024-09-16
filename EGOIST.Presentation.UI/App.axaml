@@ -2,26 +2,43 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="EGOIST.Presentation.UI.App"
              xmlns:local="using:EGOIST.Presentation.UI"
-             xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:fluent="using:FluentAvalonia.Styling"
-             xmlns:helpers="clr-namespace:EGOIST.Presentation.UI.Helpers"
+             xmlns:converters="clr-namespace:EGOIST.Presentation.UI.Converters"
              RequestedThemeVariant="Dark">
     <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
     <Application.Resources>
-        <helpers:CharacterAvatarPathConverter x:Key="CharacterAvatarPathConverter" />
-        <helpers:EnumToBoolConverter x:Key="EnumToBoolConverter" />
-        <helpers:EnumValuesConverter x:Key="EnumValuesConverter" />
+        <converters:CharacterAvatarPathConverter x:Key="CharacterAvatarPathConverter" />
+        <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />
+        <converters:EnumValuesConverter x:Key="EnumValuesConverter" />
+        <converters:ConditionMultiConverter x:Key="ConditionMultiConverter" />
+        <converters:ConditionIconConverter x:Key="ConditionIconConverter" />
+        <converters:CollectionStringConverter x:Key="CollectionStringConverter" />
+        <converters:ConditionCheckConverter x:Key="ConditionCheckConverter" />
+        <converters:MemoryPathTypeCollectionConverter x:Key="MemoryPathTypeCollectionConverter" />
+        <converters:DictionaryValueConverter x:Key="DictionaryValueConverter" />
+        <!--
+        <ControlTheme x:Key="DisplayTextBlockStyle" />
+        <ControlTheme x:Key="TitleLargeTextBlockStyle" />
+        <ControlTheme x:Key="TitleTextBlockStyle" />
+        <ControlTheme x:Key="SubtitleTextBlockStyle" />
+        <ControlTheme x:Key="BodyStrongTextBockStyle" />
+        <ControlTheme x:Key="BodyTextBlockStyle" />
+        <ControlTheme x:Key="CaptionTextBlockStyle" />
+        -->
     </Application.Resources>
     <Application.DataTemplates>
         <local:ViewLocator />
     </Application.DataTemplates>
 
     <Application.Styles>
-        <icons:MaterialIconStyles />
         <fluent:FluentAvaloniaTheme />
+        <StyleInclude Source="avares://UVtools.AvaloniaControls/Controls.axaml"/>
         <StyleInclude Source="Views/Controls/SessionsListControl.axaml" />
         <StyleInclude Source="Views/Controls/SessionOptionsControl.axaml" />
+        <StyleInclude Source="Views/Controls/ImageGenerationOptionsControl.axaml" />
+        <StyleInclude Source="Views/Controls/MessageInputOptionsControl.axaml" />
+        <StyleInclude Source="Views/Controls/ImageGenerationHistoryControl.axaml" />
         <StyleInclude Source="Styles/ButtonTransparent.axaml" />
     </Application.Styles>
 </Application>

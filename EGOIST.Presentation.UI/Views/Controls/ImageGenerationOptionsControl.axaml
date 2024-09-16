@@ -1,0 +1,265 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:EGOIST.Presentation.UI.Views.Controls"
+        xmlns:icons="clr-namespace:FluentIcons.Avalonia;assembly=FluentIcons.Avalonia"
+        x:DataType="controls:ImageGenerationOptionsControl">
+    <Design.PreviewWith>
+        <controls:ImageGenerationOptionsControl />
+    </Design.PreviewWith>
+
+    <Style Selector="controls|ImageGenerationOptionsControl">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <SplitView
+                    CornerRadius="16"
+                    CompactPaneLength="70"
+                    DisplayMode="CompactInline"
+                    PanePlacement="Right"
+                    OpenPaneLength="400"
+                    IsPaneOpen="{TemplateBinding IsOpen}"
+                    PaneBackground="Transparent"
+                    VerticalAlignment="Stretch">
+                    <SplitView.Pane>
+                        <Border CornerRadius="16">
+                            <Grid ColumnDefinitions="70,*" Margin="0,20,10,0">
+                                <Button Name="PART_TogglePaneBtn"
+                                        Grid.Column="0"
+                                        VerticalAlignment="Top"
+                                        Classes="transparent"
+                                        Height="50"
+                                        Width="50"
+                                        Margin="10,0,0,0">
+                                    <icons:SymbolIcon Symbol="Options" FontSize="26" />
+                                </Button>
+                                <TextBlock Grid.Column="0"
+                                           Text="{TemplateBinding Title}"
+                                           FontSize="24"
+                                           VerticalAlignment="Top"
+                                           TextAlignment="Left"
+                                           TextWrapping="Wrap"
+                                           Width="300"
+                                           Margin="0,200,0,0">
+                                    <TextBlock.RenderTransform>
+                                        <TransformGroup>
+                                            <ScaleTransform />
+                                            <SkewTransform />
+                                            <RotateTransform Angle="90" />
+                                            <TranslateTransform X="0" />
+                                        </TransformGroup>
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+
+                                <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*,Auto">
+                                    <Grid Grid.Row="0" Margin="10,0,10,0">
+                                        <icons:SymbolIcon Symbol="Chat" FontSize="30" HorizontalAlignment="Left" />
+                                        <Label Content="Options" FontSize="26" FontFamily="Cambria" FontWeight="Bold"
+                                               Margin="35,5,0,0" />
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        </StackPanel>
+                                    </Grid>
+                                    <ScrollViewer Grid.Row="1" Margin="0,20" Height="{Binding $parent.Bounds.Height}">
+                                        <Grid RowDefinitions="Auto,Auto,Auto,65">
+                                            <!-- settings of prompt formatting -->
+                                            <Expander Grid.Row="0" Header="Prompt Formatting" IsExpanded="True">
+                                                <StackPanel Spacing="20">
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <TextBlock Text="Prompt" />
+                                                        <TextBlock
+                                                            Text="A prompt that describes the image to be generated."
+                                                            TextWrapping="Wrap" FontSize="12"
+                                                            Foreground="LightSteelBlue" />
+                                                        <TextBox
+                                                            Text="{Binding Parameters.Prompt, Mode=TwoWay}"
+                                                            TextWrapping="Wrap" AcceptsReturn="True" MinHeight="100" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <TextBlock Text="Negative Prompt" />
+                                                        <TextBlock
+                                                            Text="A prompt that describes things that should be excluded from the image."
+                                                            TextWrapping="Wrap" FontSize="12"
+                                                            Foreground="LightSteelBlue" />
+                                                        <TextBox
+                                                            Text="{Binding Parameters.NegativePrompt, Mode=TwoWay}"
+                                                            TextWrapping="Wrap" AcceptsReturn="True" MinHeight="100" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Expander>
+
+                                            <!-- settings of generation parameters -->
+                                            <Expander Grid.Row="1" Header="Customization">
+                                                <StackPanel>
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <TextBlock Text="Sampler" />
+                                                        <ComboBox HorizontalAlignment="Stretch"
+                                                                  ItemsSource="{Binding Parameters.Sampler, Converter={StaticResource EnumValuesConverter}}"
+                                                                  SelectedValue="{Binding Sampler, Mode=TwoWay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10">
+                                                        <TextBlock Text="CFG Scale" />
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Slider Width="180" Minimum="1" Maximum="10"
+                                                                    Value="{Binding Parameters.CfgScale, Mode=TwoWay}"
+                                                                    TickFrequency="0.5"
+                                                                    TickPlacement="BottomRight"
+                                                                    IsSnapToTickEnabled="True"
+                                                                    VerticalAlignment="Center" />
+                                                            <NumericUpDown
+                                                                Value="{Binding Parameters.CfgScale, Mode=TwoWay}"
+                                                                Increment="0.5"
+                                                                FormatString="0"
+                                                                ShowButtonSpinner="False"
+                                                                Margin="20,0,0,0" VerticalAlignment="Center" Width="70" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10">
+                                                        <TextBlock Text="Steps" />
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Slider Width="180" Minimum="1" Maximum="100"
+                                                                    Value="{Binding Parameters.Steps, Mode=TwoWay}"
+                                                                    VerticalAlignment="Center" TickFrequency="1"
+                                                                    TickPlacement="BottomRight" />
+                                                            <NumericUpDown
+                                                                Value="{Binding Parameters.Steps, Mode=TwoWay}"
+                                                                Increment="1"
+                                                                ShowButtonSpinner="False"
+                                                                Margin="20,0,0,0" VerticalAlignment="Center" Width="70" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10">
+                                                        <TextBlock Text="Strength" />
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Slider Width="180" Minimum="0" Maximum="1"
+                                                                    Value="{Binding Parameters.Strength, Mode=TwoWay}"
+                                                                    VerticalAlignment="Center" TickFrequency="0.1"
+                                                                    TickPlacement="BottomRight" />
+                                                            <NumericUpDown
+                                                                Value="{Binding Parameters.Strength, Mode=TwoWay}"
+                                                                Increment="0.1"
+                                                                ShowButtonSpinner="False"
+                                                                Margin="20,0,0,0" VerticalAlignment="Center" Width="70" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10">
+                                                        <TextBlock Text="Clip Skip" />
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Slider Width="180" Minimum="0" Maximum="10"
+                                                                    Value="{Binding Parameters.ClipSkip, Mode=TwoWay}"
+                                                                    VerticalAlignment="Center" TickFrequency="1"
+                                                                    TickPlacement="BottomRight" />
+                                                            <NumericUpDown
+                                                                Value="{Binding Parameters.ClipSkip, Mode=TwoWay}"
+                                                                Increment="1"
+                                                                ShowButtonSpinner="False"
+                                                                Margin="20,0,0,0" VerticalAlignment="Center" Width="70" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10">
+                                                        <TextBlock Text="Seed" />
+                                                        <Grid ColumnDefinitions="*,10,Auto" Margin="0,10,0,0">
+                                                            <TextBox
+                                                                Text="{Binding Parameters.Seed, Mode=TwoWay}"
+                                                                IsEnabled="{Binding !RandomizedSeed}"
+                                                                VerticalAlignment="Center"
+                                                                HorizontalAlignment="Stretch" />
+                                                            <ToggleButton Name="RandomizedSeedBtn" Grid.Column="2">
+                                                                <icons:SymbolIcon Symbol="ArrowReset" />
+                                                            </ToggleButton>
+                                                        </Grid>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <TextBlock Text="Width / Height" />
+                                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                                            <NumericUpDown
+                                                                Value="{Binding Parameters.Width, Mode=TwoWay}"
+                                                                Increment="128"
+                                                                ShowButtonSpinner="True"
+                                                                Width="130" HorizontalAlignment="Stretch" />
+                                                            <NumericUpDown
+                                                                Value="{Binding Parameters.Height, Mode=TwoWay}"
+                                                                Increment="128"
+                                                                ShowButtonSpinner="True"
+                                                                Width="130" HorizontalAlignment="Stretch" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Expander>
+
+                                            <Expander Grid.Row="2" Header="Control Net">
+                                                <StackPanel Spacing="20">
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <TextBlock Text="Source Image" />
+                                                        <TextBlock
+                                                            Text="An Image that will be used to guide the generation process"
+                                                            TextWrapping="Wrap" FontSize="12"
+                                                            Foreground="LightSteelBlue" />
+
+                                                        <Border Name="ControlNetImageBorder" CornerRadius="8"
+                                                                HorizontalAlignment="Left" Width="150"
+                                                                DragDrop.AllowDrop="True">
+                                                            <Border.Background>
+                                                                <SolidColorBrush Color="#333333" />
+                                                            </Border.Background>
+                                                            <Grid>
+                                                                <Image
+                                                                    Source="{Binding Parameters.ControlNetParameters.ControlNetImage, Converter={StaticResource ConditionMultiConverter}, ConverterParameter=Bitmap}"
+                                                                    IsVisible="{Binding Parameters.ControlNetParameters.ControlNetImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                    Margin="10" />
+                                                                <StackPanel VerticalAlignment="Center" Spacing="10"
+                                                                            IsVisible="{Binding Parameters.ControlNetParameters.ControlNetImage, Converter={x:Static ObjectConverters.IsNull}}"
+                                                                            Margin="30">
+                                                                    <TextBlock
+                                                                        Text="Drag and Drop image here or"
+                                                                        TextWrapping="Wrap" FontSize="12"
+                                                                        Foreground="LightSteelBlue"
+                                                                        HorizontalAlignment="Center" />
+                                                                    <Button Command="{Binding ControlNetLoadImage}">
+                                                                        <StackPanel Orientation="Horizontal"
+                                                                            Spacing="5">
+                                                                            <icons:SymbolIcon Symbol="OpenFolder" />
+                                                                            <TextBlock Text="Browse" />
+                                                                        </StackPanel>
+                                                                    </Button>
+                                                                </StackPanel>
+                                                                <Button Command="{Binding ControlNetDeleteImage}"
+                                                                        IsVisible="{Binding Parameters.ControlNetParameters.ControlNetImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                        Background="DarkGray"
+                                                                        Width="30" Height="25" Margin="10"
+                                                                        VerticalAlignment="Top"
+                                                                        HorizontalAlignment="Right">
+                                                                    <icons:SymbolIcon Symbol="Dismiss" FontSize="18" />
+                                                                </Button>
+                                                            </Grid>
+                                                        </Border>
+                                                        <StackPanel Margin="10">
+                                                            <TextBlock Text="Strength" />
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <Slider Width="180" Minimum="0" Maximum="1"
+                                                                        Value="{Binding Parameters.ControlNetParameters.ControlNetStrength, Mode=TwoWay}"
+                                                                        TickFrequency="0.1"
+                                                                        TickPlacement="BottomRight"
+                                                                        IsSnapToTickEnabled="True"
+                                                                        VerticalAlignment="Center" />
+                                                                <NumericUpDown
+                                                                    Value="{Binding Parameters.ControlNetParameters.ControlNetStrength, Mode=TwoWay}"
+                                                                    Increment="0.1"
+                                                                    FormatString="00.0%"
+                                                                    ShowButtonSpinner="False"
+                                                                    Margin="20,0,0,0" VerticalAlignment="Center"
+                                                                    Width="70" />
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Expander>
+
+                                        </Grid>
+                                    </ScrollViewer>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </SplitView.Pane>
+                </SplitView>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

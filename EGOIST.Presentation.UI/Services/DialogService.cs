@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.DependencyInjection;
+using EGOIST.Application.Interfaces.Utilities;
 using EGOIST.Presentation.UI.Interfaces.Navigation;
 using EGOIST.Presentation.UI.ViewModels;
 using FluentAvalonia.UI.Controls;
@@ -36,18 +37,36 @@ public static class DialogService
         return await dialog.ShowAsync();
     }
 
+    public static async Task<string> CreateInputDialogAsync(string? title = null, string content = "",
+        string primaryButtonText = "Create", string cancelButtonText = "Cancel")
+    {
+        var dialog = new ContentDialog
+        {
+            Title = title,
+            Content = new TextBlock { Text = content },
+            PrimaryButtonText = primaryButtonText,
+            CloseButtonText = cancelButtonText
+        };
+
+
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary)
+            return string.Empty;
+
+        return (dialog.Content as TextBlock)?.Text ?? string.Empty;
+    }
+
     public static async Task<T?> CreateDialogAsync<T>(string? title = null, string primaryButtonText = "Create",
         string cancelButtonText = "Cancel") where T : ViewModelBase
     {
         if (Locator == null)
-            throw new InvalidOperationException("Locator is not initialized."); 
+            throw new InvalidOperationException("Locator is not initialized.");
 
-        var vm = Ioc.Default.GetRequiredService<T>(); 
+        var vm = Ioc.Default.GetRequiredService<T>();
         var isNavigationAware = vm is INavigationAware;
         var navAware = vm as INavigationAware;
 
         if (isNavigationAware && navAware != null)
-            await navAware.Initialize(null); 
+            await navAware.Initialize(null);
 
         var dialog = new ContentDialog
         {
@@ -71,26 +90,37 @@ public static class DialogService
 
     private static Window GetMainWindow()
     {
-        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            return desktop.MainWindow!;
-        }
-
-        return null!;
+        return Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+            ? desktop.MainWindow!
+            : null!;
     }
 
-    public static async Task<IEnumerable<string?>> OpenFileDialogAsync(bool allowMultiple = false,
+    public static async Task<IEnumerable<string>> OpenFileDialogAsync(bool allowMultiple = false,
         IReadOnlyList<FilePickerFileType>? fileTypes = null)
     {
         var options = new FilePickerOpenOptions
         {
-            AllowMultiple = false,
+            AllowMultiple = allowMultiple,
             FileTypeFilter = fileTypes
         };
 
         var files = await GetMainWindow().StorageProvider.OpenFilePickerAsync(options);
-        var filePaths = files.Select(file => file.TryGetLocalPath());
+        var filePaths = files.Select(file => file.TryGetLocalPath()!);
 
         return filePaths;
+    }
+
+    public static async Task<string?> OpenFolderDialogAsync()
+    {
+        var path = await GetMainWindow().StorageProvider
+            .OpenFolderPickerAsync(new FolderPickerOpenOptions { AllowMultiple = false });
+
+        return path.FirstOrDefault()?.Path.AbsolutePath;
+    }
+
+    public static async Task LaunchUriAsync(string path)
+    {
+        if (Uri.TryCreate(path, UriKind.Absolute, out var uri))
+            await GetMainWindow().Launcher.LaunchUriAsync(uri);
     }
 }

@@ -1,9 +1,9 @@
-using EGOIST.Domain.Interfaces;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
 using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json;
+using EGOIST.Application.Interfaces.Utilities;
 
 namespace EGOIST.Infrastructure.Services.FileTypes;
 

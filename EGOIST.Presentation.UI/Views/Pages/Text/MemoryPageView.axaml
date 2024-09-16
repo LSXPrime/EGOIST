@@ -1,22 +1,21 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl Name="MemoryPage"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:icons="using:FluentIcons.Avalonia"
              xmlns:controls="using:EGOIST.Presentation.UI.Views.Controls"
              xmlns:vm="using:EGOIST.Presentation.UI.ViewModels.Pages.Text"
-             xmlns:helpers="using:EGOIST.Presentation.UI.Helpers"
              xmlns:services="using:EGOIST.Application.Services.Text"
+             xmlns:ui="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
              mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
              x:DataType="vm:MemoryPageViewModel"
              x:Class="EGOIST.Presentation.UI.Views.Pages.Text.MemoryPageView">
-    <UserControl.Resources>
-        <helpers:ConditionCheckConverter x:Key="ConditionCheckConverter" />
-        <helpers:ConditionIconConverter x:Key="ConditionIconConverter" />
-    </UserControl.Resources>
     <Design.DataContext>
         <vm:MemoryPageViewModel>
             <x:Arguments>
+                <x:Null />
+                <x:Null />
                 <x:Null />
             </x:Arguments>
         </vm:MemoryPageViewModel>
@@ -25,81 +24,269 @@
     <Grid Margin="0" ColumnDefinitions="Auto,*,Auto">
         <!-- Chat Sessions List -->
         <controls:SessionsListControl
+            IsEnabled="{Binding State, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=!Started}"
             Title="Memory Sources"
-            Sessions="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).((services:MemoryService)Service).MemoriesPaths, FallbackValue={x:Null}}"
-            SelectedSession="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).((services:MemoryService)Service).SelectedMemory, FallbackValue={x:Null}}"
+            Sessions="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).((services:MemoryService)Service).Sessions, FallbackValue={x:Null}}"
             MainActionIcon="Add"
             SubActionIcon="Delete"
-            MainAction="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).ChatCreateCommand, FallbackValue={x:Null}}"
-            SubAction="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).ChatDeleteCommand, FallbackValue={x:Null}}" />
+            MainAction="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).AddCommand, FallbackValue={x:Null}}"
+            SubAction="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).DeleteCommand, FallbackValue={x:Null}}" />
 
         <!-- Session Inference Options -->
         <controls:SessionOptionsControl
             Grid.Column="2"
             Title="Inference Options"
-            Parameters="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).GenerationParameters, FallbackValue={x:Null}}"
-            PromptFormat="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).PromptParameters, FallbackValue={x:Null}}"
-            ModelParameters="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).ModelParameters, FallbackValue={x:Null}}" 
-            PromptTemplates="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).((services:MemoryService)Service).PromptTemplates, FallbackValue={x:Null}}"/>
+            IsParametersVisible="False"
+            IsPromptVisible="False"
+            IsMemoryVisible="True"
+            IsMemoryExpanded="True"
+            MemoryModels="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).Models, FallbackValue={x:Null}}"
+            ModelParameters="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).ModelParameters, FallbackValue={x:Null}}"
+            MemoryChunkSize="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).ChunkSize, FallbackValue={x:Null}}"
+            MemoryOverlapping="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).ChunkOverlap, FallbackValue={x:Null}}"
+            MemoryChunkSeparator="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).ChunkSeparator, FallbackValue={x:Null}}"
+            LoadMemoryModelCommand="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).SwitchModelCommand, FallbackValue={x:Null}}"
+            DisposeMemoryModelCommand="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).DisposeCommand, FallbackValue={x:Null}}"
+            RefreshMemoryModelsCommand="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).RefreshModelsCommand, FallbackValue={x:Null}}" />
 
-        <!-- Chat UI -->
-        <Grid Grid.Column="1" RowDefinitions="93*,Auto">
-            <!-- Chat Messages Container -->
-            <ScrollViewer x:Name="ChatContainerView" Grid.Row="0" Margin="20" Padding="25,0" VerticalScrollBarVisibility="Auto">
-                <ItemsControl ItemsSource="{Binding ((services:MemoryService)Service).SelectedMemory.Messages, FallbackValue={x:Null}}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Grid ColumnDefinitions="Auto,15,*" Margin="0,10" HorizontalAlignment="Stretch">
-                                <icons:SymbolIcon Grid.Column="0"
-                                    Symbol="{Binding Sender, Converter={StaticResource ConditionIconConverter}}"
-                                    HorizontalAlignment="Left" FontSize="36" />
+        <!-- Memory Contents UI -->
+        <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto" Margin="25"
+              IsVisible="{Binding SelectedMemory, Converter={x:Static ObjectConverters.IsNotNull}, Mode=OneWay}">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBox Name="TitleTextBox" Text="{Binding SelectedMemory.Name, FallbackValue={x:Null}}" FontSize="36"
+                         IsEnabled="False"
+                         Foreground="White" Background="Transparent" BorderBrush="Transparent" Margin="0,0,10,0">
+                    <TextBox.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.MergedDictionaries>
+                                <ResourceDictionary>
+                                    <!-- ReSharper disable Xaml.RedundantResource -->
+                                    <SolidColorBrush x:Key='TextControlBackgroundDisabled'>Transparent</SolidColorBrush>
+                                    <SolidColorBrush x:Key='TextControlBorderBrushDisabled'>Transparent</SolidColorBrush>
+                                    <SolidColorBrush x:Key='TextControlBorderBrushPointerOver'>Transparent</SolidColorBrush>
+                                    <SolidColorBrush x:Key='TextControlBackgroundPointerOver'>Transparent</SolidColorBrush>
+                                    <SolidColorBrush x:Key='TextControlBorderBrushFocused'>Transparent</SolidColorBrush>
+                                    <!-- ReSharper restore Xaml.RedundantResource -->
+                                </ResourceDictionary>
+                            </ResourceDictionary.MergedDictionaries>
+                        </ResourceDictionary>
+                    </TextBox.Resources>
+                </TextBox>
+                <ToggleButton Grid.Column="1" HorizontalAlignment="Right" IsChecked="{Binding #TitleTextBox.IsEnabled}">
+                    <icons:SymbolIcon Symbol="Edit" />
+                </ToggleButton>
+            </Grid>
+            <ScrollViewer Grid.Row="1" Margin="0,25">
+                <StackPanel Spacing="10">
 
-                                <Border Grid.Column="2" BorderThickness="1" CornerRadius="12" Padding="8" >
-                                    <Border.Background>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                            <GradientStop Color="Transparent" Offset="0.0" />
-                                            <GradientStop Color="#44000000" Offset="0.5" />
-                                            <GradientStop Color="#22000000" Offset="1.0" />
-                                        </LinearGradientBrush>
-                                    </Border.Background>
-                                    <Border.BoxShadow>
-                                        <BoxShadows>3 2 2 1 #2F000000</BoxShadows>
-                                    </Border.BoxShadow>
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="10" />
-                                    </Border.Effect>
-                                    <StackPanel Spacing="10">
-                                        <Border Background="DarkRed" HorizontalAlignment="Left" CornerRadius="16"
-                                                Padding="12,0">
-                                            <TextBlock Text="{Binding Sender}" TextWrapping="Wrap" />
-                                        </Border>
-                                        <TextBlock Text="{Binding Message}" IsEnabled="True" MaxWidth="900"
-                                                   TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" />
+                    <ui:SettingsExpander Header="Files" Description="Add supported files types to your collection">
+                        <ui:SettingsExpander.Footer>
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Button Command="{Binding LoadAttachmentCommand}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <icons:SymbolIcon Symbol="DocumentAdd" />
+                                        <TextBlock Text="Add Document" Margin="5,0,0,0" />
                                     </StackPanel>
-                                </Border>
-                            </Grid>
+                                </Button>
 
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                                <TextBox MinWidth="35" TextAlignment="Center" VerticalAlignment="Center"
+                                         Text="{Binding #FileItems.ItemCount, FallbackValue={x:Null}, Mode=OneWay}" />
+                            </StackPanel>
+                        </ui:SettingsExpander.Footer>
+                        <StackPanel>
+                            <ItemsControl Name="FileItems"
+                                          ItemsSource="{Binding Citations, Converter={StaticResource MemoryPathTypeCollectionConverter}, ConverterParameter='File'}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Spacing="25" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Classes="transparent" Margin="10" HorizontalAlignment="Stretch"
+                                                Command="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).OpenAttachmentCommand, FallbackValue={x:Null}}"
+                                                CommandParameter="{Binding .}">
+                                            <Grid HorizontalAlignment="Stretch" ColumnDefinitions="Auto,*,Auto">
+                                                <icons:SymbolIcon Symbol="Document" />
+                                                <StackPanel Grid.Column="1" Margin="10,0" HorizontalAlignment="Stretch">
+                                                    <TextBlock Text="{Binding Title}" FontWeight="Bold" />
+                                                    <TextBlock Text="{Binding Path}" FontWeight="Light" />
+                                                </StackPanel>
+                                                
+                                                <Button Grid.Column="2" HorizontalAlignment="Right"
+                                                        Classes="transparent"
+                                                        CommandParameter="{Binding .}"
+                                                        Command="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).RemoveAttachmentCommand, FallbackValue={x:Null}}">
+                                                    <icons:SymbolIcon Symbol="Delete" />
+                                                </Button>
+                                            </Grid>
+                                            
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ui:SettingsExpander>
+
+                    <ui:SettingsExpander Header="Web" Description="Add any webpages to your collection by link.">
+                        <ui:SettingsExpander.Footer>
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Button Command="{Binding AddWebEntryCommand}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <icons:SymbolIcon Symbol="LinkAdd" />
+                                        <TextBlock Text="Add Link" Margin="5,0,0,0" />
+                                    </StackPanel>
+                                </Button>
+
+                                <TextBox MinWidth="35" TextAlignment="Center" VerticalAlignment="Center"
+                                         Text="{Binding #WebItems.ItemCount, FallbackValue={x:Null}, Mode=OneWay}" />
+                            </StackPanel>
+                        </ui:SettingsExpander.Footer>
+                        <StackPanel>
+                            <ItemsControl Name="WebItems"
+                                          ItemsSource="{Binding Citations, Converter={StaticResource MemoryPathTypeCollectionConverter}, ConverterParameter='Url'}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Spacing="25" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Classes="transparent" Margin="10" HorizontalAlignment="Stretch"
+                                                Command="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).OpenAttachmentCommand, FallbackValue={x:Null}}"
+                                                CommandParameter="{Binding .}">
+                                            <Grid HorizontalAlignment="Stretch" ColumnDefinitions="Auto,*,Auto">
+                                                <icons:SymbolIcon Symbol="Link" />
+                                                <StackPanel Grid.Column="1" Margin="10,0" HorizontalAlignment="Stretch">
+                                                    <TextBox Background="Transparent" BorderBrush="Transparent"
+                                                             Watermark="Title" Text="{Binding Title}" FontWeight="Bold"
+                                                             HorizontalAlignment="Stretch" />
+                                                    <TextBox Background="Transparent" BorderBrush="Transparent"
+                                                             Watermark="Link" Text="{Binding Path}" FontWeight="Light"
+                                                             HorizontalAlignment="Stretch" />
+                                                </StackPanel>
+                                                <Button Grid.Column="2" HorizontalAlignment="Right"
+                                                        Classes="transparent"
+                                                        CommandParameter="{Binding .}"
+                                                        Command="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).RemoveAttachmentCommand, FallbackValue={x:Null}}">
+                                                    <icons:SymbolIcon Symbol="Delete" />
+                                                </Button>
+                                            </Grid>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ui:SettingsExpander>
+
+                    <ui:SettingsExpander Header="Youtube Transcripts"
+                                         Description="Add Youtube videos transcripts to your collection.">
+                        <ui:SettingsExpander.Footer>
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Button
+                                    IsVisible="{Binding #YoutubeItems.ItemCount, FallbackValue={x:Null}, Mode=OneWay}"
+                                    Command="{Binding FetchYoutubeLanguagesCommand}"
+                                    CommandParameter="{Binding #YoutubeItems.ItemsSource}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <icons:SymbolIcon Symbol="LocalLanguage" />
+                                        <TextBlock Text="Fetch Languages" Margin="5,0,0,0" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Command="{Binding AddYoutubeEntryCommand}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <icons:SymbolIcon Symbol="LinkAdd" />
+                                        <TextBlock Text="Add Link" Margin="5,0,0,0" />
+                                    </StackPanel>
+                                </Button>
+
+                                <TextBox MinWidth="35" TextAlignment="Center" VerticalAlignment="Center"
+                                         Text="{Binding #YoutubeItems.ItemCount, FallbackValue={x:Null}, Mode=OneWay}" />
+                            </StackPanel>
+                        </ui:SettingsExpander.Footer>
+                        <StackPanel>
+                            <ItemsControl Name="YoutubeItems"
+                                          ItemsSource="{Binding Citations, Converter={StaticResource MemoryPathTypeCollectionConverter}, ConverterParameter='Youtube'}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Spacing="25" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Classes="transparent" Margin="10" HorizontalAlignment="Stretch"
+                                                Command="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).OpenAttachmentCommand, FallbackValue={x:Null}}"
+                                                CommandParameter="{Binding .}">
+                                            <Grid HorizontalAlignment="Stretch" ColumnDefinitions="Auto,*,Auto">
+                                                <icons:SymbolIcon Symbol="Link" />
+                                                <StackPanel Grid.Column="1" Margin="10,0" Spacing="0"
+                                                            HorizontalAlignment="Stretch">
+                                                    <TextBox Background="Transparent" BorderBrush="Transparent"
+                                                             Watermark="Title" Text="{Binding Title}" FontWeight="Bold"
+                                                             HorizontalAlignment="Stretch" />
+                                                    <TextBox Name="YoutubeLinkTextBox" Background="Transparent"
+                                                             BorderBrush="Transparent"
+                                                             Watermark="Link" Text="{Binding Path}" FontWeight="Light"
+                                                             HorizontalAlignment="Stretch" />
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="2" Spacing="10" VerticalAlignment="Center">
+                                                    <Button Classes="transparent"
+                                                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                            CommandParameter="{Binding .}"
+                                                            Command="{Binding $parent[UserControl].((vm:MemoryPageViewModel)DataContext).RemoveAttachmentCommand, FallbackValue={x:Null}}">
+                                                        <icons:SymbolIcon Symbol="Delete" />
+                                                    </Button>
+                                                    <ComboBox Name="TranscriptionLanguageComboBox"
+                                                              IsVisible="{Binding #MemoryPage.((vm:MemoryPageViewModel)DataContext).TranscriptionsLanguages, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue={x:Null}}" >
+                                                        <ComboBox.ItemsSource>
+                                                            <MultiBinding
+                                                                Converter="{StaticResource DictionaryValueConverter}">
+                                                                <Binding Path="#YoutubeLinkTextBox.Text" />
+                                                                <Binding
+                                                                    Path="#MemoryPage.((vm:MemoryPageViewModel)DataContext).TranscriptionsLanguages"
+                                                                    FallbackValue="{x:Null}" />
+                                                            </MultiBinding>
+                                                        </ComboBox.ItemsSource>
+                                                        <Interaction.Behaviors>
+                                                            <EventTriggerBehavior EventName="SelectionChanged">
+                                                                <InvokeCommandAction
+                                                                    Command="{Binding #MemoryPage.((vm:MemoryPageViewModel)DataContext).SetYoutubeLanguageCommand, FallbackValue={x:Null}}">
+                                                                    <InvokeCommandAction.CommandParameter>
+                                                                        <MultiBinding>
+                                                                            <Binding />
+                                                                            <Binding
+                                                                                Path="#TranscriptionLanguageComboBox.SelectedItem" />
+                                                                        </MultiBinding>
+                                                                    </InvokeCommandAction.CommandParameter>
+                                                                </InvokeCommandAction>
+                                                            </EventTriggerBehavior>
+                                                        </Interaction.Behaviors>
+                                                    </ComboBox>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ui:SettingsExpander>
+
+                </StackPanel>
             </ScrollViewer>
 
-            <!-- Message Writing & Send Controls -->
-            <Grid Grid.Row="1" VerticalAlignment="Bottom" ColumnDefinitions="*,Auto">
-                <TextBox CornerRadius="8" Margin="10" Text="{Binding UserInput}"
-                         Watermark="Write your message here!" AcceptsReturn="True" HorizontalAlignment="Stretch"
-                         VerticalAlignment="Stretch" Height="50" MaxHeight="300">
-                    <TextBox.KeyBindings>
-                        <KeyBinding Gesture="Enter" Command="{Binding MessageSendCommand}" />
-                    </TextBox.KeyBindings>
-                </TextBox>
-                <Button Command="{Binding MessageSendCommand}" CornerRadius="8" Margin="10" Width="100" Height="50"
-                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="1">
-                    <icons:SymbolIcon
-                        Symbol="{Binding State, Converter={StaticResource ConditionCheckConverter}, ConverterParameter=Started|Stop|Send}"
-                        FontSize="32" Foreground="White" />
+            <!-- Save Button -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10" Margin="0,25" HorizontalAlignment="Right">
+                <icons:SymbolIcon Symbol="Circle" Width="50" Height="45" FontSize="32"
+                                  IsVisible="{Binding State, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Started}"
+                                  ToolTip.Tip="{Binding SelectedMemory.Name, FallbackValue='Saving Memory Collection' , StringFormat='Saving Memory Collection: {0}'}" />
+                <Button Command="{Binding CreateCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <icons:SymbolIcon Symbol="Save" />
+                        <TextBlock Text="Save Collection" />
+                    </StackPanel>
                 </Button>
-            </Grid>
+            </StackPanel>
+
         </Grid>
     </Grid>
 

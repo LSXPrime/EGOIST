@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Threading;
 using EGOIST.Presentation.UI.ViewModels.Dialogs;
 
 namespace EGOIST.Presentation.UI.Views.Dialogs;
@@ -7,7 +8,7 @@ public partial class TextRoleplayCreateView : UserControl
 {
     public TextRoleplayCreateView(TextRoleplayCreateViewModel viewModel)
     {
-        DataContext = viewModel;
+        Dispatcher.UIThread.Invoke(() => DataContext = viewModel);
         InitializeComponent();
     }
     

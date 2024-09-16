@@ -15,6 +15,7 @@ public class RoleplayCharacter : EntityBase
     private string _version = "1.0";
     private string _notes = string.Empty;
     private string _avatar = string.Empty;
+    private ObservableCollection<string> _tags = [];
     private RpCharacterInteractionFrequency _interactionFrequency = RpCharacterInteractionFrequency.Normal;
 
     public string Name { get => _name; set => Notify(ref _name, value); }
@@ -26,7 +27,7 @@ public class RoleplayCharacter : EntityBase
     public string Version { get => _version; set => Notify(ref _version, value); }
     public string Notes { get => _notes; set => Notify(ref _notes, value); }
     public string Avatar { get => _avatar; set => Notify(ref _avatar, value); }
-    public ObservableCollection<string> Tags { get; set; } = [];
+    public ObservableCollection<string> Tags { get => _tags; set => Notify(ref _tags, value); }
     public RpCharacterInteractionFrequency InteractionFrequency { get => _interactionFrequency; set => Notify(ref _interactionFrequency, value); }
     public ObservableCollection<ChatMessage> ExampleDialogue { get; set; } = [];
 }

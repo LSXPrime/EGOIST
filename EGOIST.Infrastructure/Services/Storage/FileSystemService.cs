@@ -1,4 +1,4 @@
-using EGOIST.Domain.Interfaces;
+using EGOIST.Application.Interfaces.Utilities;
 
 namespace EGOIST.Infrastructure.Services.Storage;
 
@@ -44,7 +44,7 @@ public class FileSystemService : IFileSystemService
     /// <param name="path">The path to the file to delete.</param>
     public void DeleteFile(string path)
     {
-        if (File.Exists(path))
+        if (FileExists(path))
             File.Delete(path);
     }
 
@@ -75,7 +75,7 @@ public class FileSystemService : IFileSystemService
     /// <returns>The size of the file in bytes.</returns>
     public long GetFileSize(string filePath)
     {
-        return File.Exists(filePath) ? new FileInfo(filePath).Length : 0;
+        return FileExists(filePath) ? new FileInfo(filePath).Length : 0;
     }
 
     public FileStream? Open(string path, FileMode mode = FileMode.Open, FileAccess access = FileAccess.Read,
@@ -103,6 +103,26 @@ public class FileSystemService : IFileSystemService
     {
         File.WriteAllText(path, content);
     }
+    
+    /// <summary>
+    /// Reads the entire contents of a binary file.
+    /// </summary>
+    /// <param name="path">The path to the binary file.</param>
+    /// <returns>The contents of the file as a byte array.</returns>
+    public byte[] ReadAllBytes(string path)
+    {
+        return FileExists(path) ? File.ReadAllBytes(path) : [];
+    }
+    
+    /// <summary>
+    /// Writes bytes to a file.
+    /// </summary>
+    /// <param name="path">The path to the file to write to.</param>
+    /// <param name="bytes">The bytes to write to the file.</param>
+    public void WriteAllBytes(string path, byte[] bytes)
+    {
+        File.WriteAllBytes(path, bytes);
+    }
 
     /// <summary>
     /// Reads the entire contents of a text file asynchronously.
@@ -123,5 +143,26 @@ public class FileSystemService : IFileSystemService
     public async Task WriteAllTextAsync(string path, string content)
     {
         await File.WriteAllTextAsync(path, content, CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Reads the entire contents of a binary file asynchronously.
+    /// </summary>
+    /// <param name="path">The path to the binary file.</param>
+    /// <returns>A task that completes with the contents of the file.</returns>
+    public async Task<byte[]> ReadAllBytesAsync(string path)
+    {
+        return FileExists(path) ? await File.ReadAllBytesAsync(path, CancellationToken.None) : [];
+    }
+
+    /// <summary>
+    /// Writes text to a file asynchronously.
+    /// </summary>
+    /// <param name="path">The path to the file to write to.</param>
+    /// <param name="data">The text content to write to the file.</param>
+    /// <returns>A task that completes when the text is written to the file.</returns>
+    public async Task WriteAllBytesAsync(string path, byte[] data)
+    {
+        await File.WriteAllBytesAsync(path, data, CancellationToken.None);
     }
 }

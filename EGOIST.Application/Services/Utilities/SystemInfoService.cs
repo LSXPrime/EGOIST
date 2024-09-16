@@ -34,14 +34,14 @@ public class SystemInfoService : IDisposable
         };
         _computer.Open();
 
-        InitializeVramTotalAsync(); 
+        _ = InitializeVramTotalAsync(); 
 
         _timer = new Timer(1000);
         _timer.Elapsed += OnTimerElapsed;
         _timer.Start();
     }
 
-    private async void InitializeVramTotalAsync()
+    private async Task InitializeVramTotalAsync()
     {
         Info.VRAMTotal = await Task.Run(() =>
         {
@@ -92,5 +92,6 @@ public class SystemInfoService : IDisposable
     {
         _timer.Dispose();
         _computer.Close(); 
+        GC.SuppressFinalize(this);
     }
 }

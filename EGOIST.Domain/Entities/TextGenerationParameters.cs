@@ -4,11 +4,11 @@ namespace EGOIST.Domain.Entities;
 
 public class TextGenerationParameters : EntityBase
 {
-    private int _maxTokens = 1200;
-    private float _randomness = 0.7f;
-    private float _randomnessBooster = 0.3f;
-    private float _optimalProbability = 0.2f;
-    private float _frequencyPenalty = 1f;
+    private int _maxTokens;
+    private float _randomness;
+    private float _randomnessBooster;
+    private float _optimalProbability;
+    private float _frequencyPenalty;
     
 
     public int MaxTokens { get => _maxTokens; set => Notify(ref _maxTokens, value); }

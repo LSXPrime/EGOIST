@@ -1,19 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EGOIST.Application.Interfaces.Text;
-using EGOIST.Application.Services.Text;
 using EGOIST.Domain.Entities;
 using EGOIST.Domain.Enums;
+using EGOIST.Domain.Interfaces;
+using EGOIST.Presentation.UI.Interfaces.Interactions;
 using EGOIST.Presentation.UI.Interfaces.Navigation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EGOIST.Presentation.UI.ViewModels.Pages.Text;
 
-public partial class CompletionPageViewModel([FromKeyedServices("CompletionService")] ITextService completionService) : ViewModelBase, INavigationAware
+public partial class CompletionPageViewModel([FromKeyedServices("CompletionService")] ITextService<CompletionSession> completionService) : ViewModelBase, INavigationAware, ITextViewModel
 {
     [ObservableProperty]
     private GenerationState _state = GenerationState.None;
@@ -35,7 +35,7 @@ public partial class CompletionPageViewModel([FromKeyedServices("CompletionServi
     [ObservableProperty]
     private TextModelParameters _modelParameters = new();
 
-    public ITextService Service { get; } = completionService;
+    public ITextService<CompletionSession> Service { get; } = completionService;
 
 
 
@@ -56,25 +56,77 @@ public partial class CompletionPageViewModel([FromKeyedServices("CompletionServi
     
     
     [RelayCommand]
-    private void SessionCreate()
+    public async Task Create()
     {
-        // Create a new chat session and add it to ChatSessions
-        Service.Create();
+        // Create a new chat session and add it to Sessions
+        await Service.Create();
     }
 
     [RelayCommand]
-    private void SessionDelete()
+    public async Task Delete()
     {
         // Delete the selected chat session
-        Service.Delete();
+        await Service.Delete();
+    }
+    
+    [RelayCommand]
+    public Task Select(ISession? session)
+    {
+        Service.SelectedSession = session as CompletionSession;
+        return Task.CompletedTask;
     }
 
     [RelayCommand]
-    private async Task Generate() 
+    public async Task Unload()
+    {
+        // Unload and save the selected chat session
+        await Service.Dispose();
+    }
+
+    [RelayCommand]
+    public async Task Generate() 
     {
         State = GenerationState.Started;
         await Task.Run(async () =>  await Service.Generate<string>(string.Empty, GenerationParameters, PromptParameters));
         State = GenerationState.Finished;
+    }
+
+    #endregion
+
+    #region ITextViewModelUnused
+
+    public string UserInput { get; set; }
+    public bool WebSearchEnabled { get; set; }
+    public int WebSearchResultsCount { get; set; }
+    public ObservableCollection<Citation> Citations { get; set; }
+    public bool MemoryEnabled { get; set; }
+    public int MemoryChunksCount { get; set; }
+    public double MemorySimilarity { get; set; }
+    public ObservableCollection<MemorySource> Sources { get; set; }
+    
+
+    public Task Select(MemorySource[] session)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public Task Load(ISession? session)
+    {
+        throw new System.NotImplementedException();
+    }
+    public Task LoadAttachment()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void RemoveAttachment(Citation citation)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public Task OpenAttachment(Citation citation)
+    {
+        throw new System.NotImplementedException();
     }
 
     #endregion

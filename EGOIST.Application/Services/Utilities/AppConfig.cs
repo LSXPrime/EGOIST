@@ -1,49 +1,31 @@
 ﻿using System.Collections;
 using System.Diagnostics;
 using System.Text.Json;
+using EGOIST.Domain.Entities;
 using EGOIST.Domain.Enums;
 
 namespace EGOIST.Application.Services.Utilities;
 
 public class AppConfig
 {
-    public readonly string AppVersion = "1.2.0";
-    public string ApiUrl => $"{ApiHost}/{ApiPort}";
+    public string AppVersion { get; } = "1.2.0";
+    public string ApiUrl => $"{Parameters.ApiHost}/{Parameters.ApiPort}";
 
-    public string ApiHost { get; set; } = "http://127.0.0.1";
-    public int ApiPort { get; set; } = 8000;
-    public string DataSecretKey { get; set; } = "USER_SECRET_KEY_TO_DECRYPT_DATA";
-    public string ModelsPath { get; set; } = @"C:\External\Models";// $@"{Directory.GetCurrentDirectory()}\Resources\Models\Checkpoints";
-    public string PromptsPath { get; set; } = @"C:\External\Prompts";// $@"{Directory.GetCurrentDirectory()}\Resources\Prompts";
-    public string VoicesPath { get; set; } = $@"{Directory.GetCurrentDirectory()}\Resources\Voices";
-    public string ResultsPath { get; set; } = $@"{Directory.GetCurrentDirectory()}\Resources\Results";
-    public string CharactersPath { get; set; } = @"C:\External\Characters"; // $@"{Directory.GetCurrentDirectory()}\Resources\Characters";
-    public string WorldMemoriesPath { get; set; } = @"C:\External\WorldMemories"; // $@"{Directory.GetCurrentDirectory()}\Resources\WorldMemories";
-    public string BackgroundsPath { get; set; } = $@"{Directory.GetCurrentDirectory()}\Resources\Backgrounds";
-    public Device Device { get; set; } = Device.CPU;
+    public ConfigParameters Parameters { get; private set; } = new();
+
+
+    private readonly string _configFilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\Config.json";
     
-    private readonly string _configFilePath = $"{Directory.GetCurrentDirectory()}\\Config.json";
-
-    private AppConfig() { }
-
     public void Load()
     {
         if (File.Exists(_configFilePath))
         {
             var json = File.ReadAllText(_configFilePath);
-            var config = JsonSerializer.Deserialize<AppConfig>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var config = JsonSerializer.Deserialize<ConfigParameters>(json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            ApiHost = config!.ApiHost;
-            ApiPort = config.ApiPort;
-            DataSecretKey = config.DataSecretKey;
-            ModelsPath = config.ModelsPath;
-            PromptsPath = config.PromptsPath;
-            VoicesPath = config.VoicesPath;
-            ResultsPath = config.ResultsPath;
-            CharactersPath = config.CharactersPath;
-            WorldMemoriesPath = config.WorldMemoriesPath;
-            BackgroundsPath = config.BackgroundsPath;
-            Device = config.Device;
+            if (config != null)
+                Parameters = config;
         }
 
         CheckPaths();
@@ -52,17 +34,20 @@ public class AppConfig
 
     private void CheckPaths()
     {
-        Directory.CreateDirectory(ModelsPath);
-        Directory.CreateDirectory(VoicesPath);
-        Directory.CreateDirectory(ResultsPath);
-        Directory.CreateDirectory(CharactersPath);
-        Directory.CreateDirectory(WorldMemoriesPath);
-        Directory.CreateDirectory(BackgroundsPath);
+        Directory.CreateDirectory(Parameters.ModelsPath);
+        Directory.CreateDirectory(Parameters.MemoriesPath);
+        Directory.CreateDirectory(Parameters.PromptsPath);
+        Directory.CreateDirectory(Parameters.VoicesPath);
+        Directory.CreateDirectory(Parameters.ResultsPath);
+        Directory.CreateDirectory(Parameters.CharactersPath);
+        Directory.CreateDirectory(Parameters.WorldMemoriesPath);
+        Directory.CreateDirectory(Parameters.BackgroundsPath);
+        Directory.CreateDirectory(Parameters.CachePath);
     }
 
     public void Save()
     {
-        var json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
+        var json = JsonSerializer.Serialize(Parameters, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(_configFilePath, json);
         CheckPaths();
     }
@@ -72,9 +57,10 @@ public class AppConfig
         if (File.Exists(_configFilePath))
             File.Delete(_configFilePath);
 
+        Parameters = new ConfigParameters();
         Load();
     }
-    
+
     public async Task<string?> CheckForUpdate()
     {
         using var client = new HttpClient();
@@ -107,7 +93,7 @@ public class AppConfig
         }
 
         // The embedded batch script as a string
-        string batchScript = $@"
+        var batchScript = $@"
 @echo off
 set ""APP_NAME=EGOIST.exe""
 set ""DOWNLOAD_PATH={Directory.GetCurrentDirectory()}\EGOIST.exe.update""
@@ -123,7 +109,7 @@ start %APP_PATH%
 ";
 
         // Save the batch script to a temporary file
-        string tempBatchFile = Path.Combine(Path.GetTempPath(), "egoist_update.bat");
+        var tempBatchFile = Path.Combine(Path.GetTempPath(), "egoist_update.bat");
         await File.WriteAllTextAsync(tempBatchFile, batchScript);
 
         // Execute the batch file

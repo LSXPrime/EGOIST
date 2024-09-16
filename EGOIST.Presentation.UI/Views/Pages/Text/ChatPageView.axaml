@@ -5,18 +5,22 @@
              xmlns:icons="using:FluentIcons.Avalonia"
              xmlns:controls="using:EGOIST.Presentation.UI.Views.Controls"
              xmlns:vm="using:EGOIST.Presentation.UI.ViewModels.Pages.Text"
-             xmlns:helpers="using:EGOIST.Presentation.UI.Helpers"
              xmlns:services="using:EGOIST.Application.Services.Text"
+             xmlns:converters="clr-namespace:EGOIST.Presentation.UI.Converters"
+             xmlns:ui="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+             xmlns:entities="clr-namespace:EGOIST.Domain.Entities;assembly=EGOIST.Domain"
              mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
              x:DataType="vm:ChatPageViewModel"
              x:Class="EGOIST.Presentation.UI.Views.Pages.Text.ChatPageView">
     <UserControl.Resources>
-        <helpers:ConditionCheckConverter x:Key="ConditionCheckConverter" />
-        <helpers:ConditionIconConverter x:Key="ConditionIconConverter" />
+        <converters:ConditionCheckConverter x:Key="ConditionCheckConverter" />
+        <converters:ConditionIconConverter x:Key="ConditionIconConverter" />
     </UserControl.Resources>
     <Design.DataContext>
         <vm:ChatPageViewModel>
             <x:Arguments>
+                <x:Null />
+                <x:Null />
                 <x:Null />
             </x:Arguments>
         </vm:ChatPageViewModel>
@@ -26,12 +30,13 @@
         <!-- Chat Sessions List -->
         <controls:SessionsListControl
             Title="Chat Sessions"
-            Sessions="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).((services:ChatService)ChatService).ChatSessions, FallbackValue={x:Null}}"
-            SelectedSession="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).((services:ChatService)ChatService).SelectedChatSession, FallbackValue={x:Null}}"
+            Sessions="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).Service.Sessions, FallbackValue={x:Null}}"
             MainActionIcon="Add"
             SubActionIcon="Delete"
-            MainAction="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).ChatCreateCommand, FallbackValue={x:Null}}"
-            SubAction="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).ChatDeleteCommand, FallbackValue={x:Null}}" />
+            ThirdActionIcon="Stop"
+            MainAction="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).CreateCommand, FallbackValue={x:Null}}"
+            SubAction="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).DeleteCommand, FallbackValue={x:Null}}"
+            ThirdAction="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).UnloadCommand, FallbackValue={x:Null}}" />
 
         <!-- Session Inference Options -->
         <controls:SessionOptionsControl
@@ -39,22 +44,23 @@
             Title="Inference Options"
             Parameters="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).GenerationParameters, FallbackValue={x:Null}}"
             PromptFormat="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).PromptParameters, FallbackValue={x:Null}}"
-            ModelParameters="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).ModelParameters, FallbackValue={x:Null}}" 
-            PromptTemplates="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).((services:ChatService)ChatService).PromptTemplates, FallbackValue={x:Null}}"/>
+            ModelParameters="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).ModelParameters, FallbackValue={x:Null}}"
+            PromptTemplates="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).((services:ChatService)Service).PromptTemplates, FallbackValue={x:Null}}" />
 
         <!-- Chat UI -->
-        <Grid Grid.Column="1" RowDefinitions="93*,Auto">
+        <Grid Grid.Column="1" RowDefinitions="90*, Auto,Auto">
             <!-- Chat Messages Container -->
-            <ScrollViewer x:Name="ChatContainerView" Grid.Row="0" Margin="20" Padding="25,0" VerticalScrollBarVisibility="Auto">
-                <ItemsControl ItemsSource="{Binding ((services:ChatService)ChatService).SelectedChatSession.Messages, FallbackValue={x:Null}}">
+            <ScrollViewer x:Name="ChatContainerView" Grid.Row="0" Margin="20" Padding="25,0"
+                          VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Service.SelectedSession.Messages, FallbackValue={x:Null}}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid ColumnDefinitions="Auto,15,*" Margin="0,10" HorizontalAlignment="Stretch">
                                 <icons:SymbolIcon Grid.Column="0"
-                                    Symbol="{Binding Sender, Converter={StaticResource ConditionIconConverter}}"
-                                    HorizontalAlignment="Left" FontSize="36" />
+                                                  Symbol="{Binding Sender, Converter={StaticResource ConditionIconConverter}}"
+                                                  HorizontalAlignment="Left" FontSize="36" />
 
-                                <Border Grid.Column="2" BorderThickness="1" CornerRadius="12" Padding="8" >
+                                <Border Grid.Column="2" BorderThickness="1" CornerRadius="12" Padding="8">
                                     <Border.Background>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                             <GradientStop Color="Transparent" Offset="0.0" />
@@ -68,13 +74,46 @@
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="10" />
                                     </Border.Effect>
-                                    <StackPanel Spacing="10">
+                                    <StackPanel Spacing="10" Margin="10,0">
                                         <Border Background="DarkRed" HorizontalAlignment="Left" CornerRadius="16"
                                                 Padding="12,0">
                                             <TextBlock Text="{Binding Sender}" TextWrapping="Wrap" />
                                         </Border>
                                         <TextBlock Text="{Binding Message}" IsEnabled="True" MaxWidth="900"
                                                    TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" />
+
+                                        <Expander Header="Citations" BorderThickness="0"
+                                                  BorderBrush="Transparent" Background="Transparent"
+                                                  IsVisible="{Binding Citations.Length, Converter={StaticResource ConditionCheckConverter}, ConverterParameter=0|False|True}">
+                                            <Expander.Resources>
+                                                <ResourceDictionary>
+                                                    <ResourceDictionary.MergedDictionaries>
+                                                        <ResourceDictionary>
+                                                            <SolidColorBrush x:Key='ExpanderHeaderBackground'>Transparent</SolidColorBrush>
+                                                            <SolidColorBrush x:Key='ExpanderHeaderBorderBrush'>Transparent</SolidColorBrush>
+                                                        </ResourceDictionary>
+                                                    </ResourceDictionary.MergedDictionaries>
+                                                </ResourceDictionary>
+                                            </Expander.Resources>
+                                            <ItemsControl ItemsSource="{Binding Citations}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate DataType="entities:Citation">
+                                                        <Button Classes="transparent" Margin="10"
+                                                                Command="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).OpenAttachmentCommand, FallbackValue={x:Null}}"
+                                                                CommandParameter="{Binding .}">
+                                                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                                                <icons:SymbolIcon Symbol="Document" />
+                                                                <StackPanel>
+                                                                    <TextBlock Text="{Binding Title}"
+                                                                               FontWeight="Medium" />
+                                                                    <TextBlock Text="{Binding Path}" FontWeight="Light" />
+                                                                </StackPanel>
+                                                            </StackPanel>
+                                                        </Button>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Expander>
                                     </StackPanel>
                                 </Border>
                             </Grid>
@@ -84,22 +123,31 @@
                 </ItemsControl>
             </ScrollViewer>
 
-            <!-- Message Writing & Send Controls -->
-            <Grid Grid.Row="1" VerticalAlignment="Bottom" ColumnDefinitions="*,Auto">
-                <TextBox CornerRadius="8" Margin="10" Text="{Binding ChatUserInput}"
-                         Watermark="Write your message here!" AcceptsReturn="True" HorizontalAlignment="Stretch"
-                         VerticalAlignment="Stretch" Height="50" MaxHeight="300">
-                    <TextBox.KeyBindings>
-                        <KeyBinding Gesture="Enter" Command="{Binding MessageSendCommand}" />
-                    </TextBox.KeyBindings>
-                </TextBox>
-                <Button Command="{Binding MessageSendCommand}" CornerRadius="8" Margin="10" Width="100" Height="50"
-                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="1">
-                    <icons:SymbolIcon
-                        Symbol="{Binding State, Converter={StaticResource ConditionCheckConverter}, ConverterParameter=Started|Stop|Send}"
-                        FontSize="32" Foreground="White" />
+            <StackPanel Grid.Row="1" Spacing="10" HorizontalAlignment="Center" Margin="10"
+                        IsVisible="{Binding !Service.SelectedSession.IsLoaded, FallbackValue=False}">
+                <TextBlock Text="Session is not loaded yet." TextAlignment="Center" />
+                <Button Command="{Binding LoadCommand}" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <icons:SymbolIcon Symbol="Open" Foreground="White" />
+                        <TextBlock Text="Load Session" Foreground="White" />
+                    </StackPanel>
                 </Button>
-            </Grid>
+            </StackPanel>
+
+            <!-- Message Writing & Send Controls -->
+            <controls:MessageInputOptionsControl Grid.Row="2" 
+                                                 UserInput="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).UserInput, FallbackValue={x:Null}}"
+                                                 WebSearchEnabled="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).WebSearchEnabled, FallbackValue={x:Null}}"
+                                                 WebSearchResultsCount="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).WebSearchResultsCount, FallbackValue={x:Null}}"
+                                                 Citations="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).Citations, FallbackValue={x:Null}}"
+                                                 MemoryEnabled="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).MemoryEnabled, FallbackValue={x:Null}}"
+                                                 MemoryChunksCount="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).MemoryChunksCount, FallbackValue={x:Null}}"
+                                                 MemoryRelevance="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).MemorySimilarity, FallbackValue={x:Null}}"
+                                                 MemorySources="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).MemoryService.Sessions, FallbackValue={x:Null}}"
+                                                 State="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).State, FallbackValue={x:Null}}"
+                                                 GenerateCommand="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).GenerateCommand, FallbackValue={x:Null}}"
+                                                 LoadAttachmentCommand="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).LoadAttachmentCommand, FallbackValue={x:Null}}"
+                                                 RemoveAttachmentCommand="{Binding $parent[UserControl].((vm:ChatPageViewModel)DataContext).RemoveAttachmentCommand, FallbackValue={x:Null}}" />
         </Grid>
     </Grid>
 

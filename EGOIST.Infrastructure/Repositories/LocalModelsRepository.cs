@@ -2,7 +2,6 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using EGOIST.Application.Services.Utilities;
-using EGOIST.Application.Utilities;
 using EGOIST.Domain.Entities;
 using EGOIST.Domain.Interfaces;
 using NetFabric.Hyperlinq;
@@ -11,52 +10,42 @@ namespace EGOIST.Infrastructure.Repositories;
 
 public class LocalModelsRepository : IModelsRepository
 {
-    private readonly ConcurrentDictionary<string, IEnumerable<ModelInfo>> _modelsCache = new();
-
     public Task<IEnumerable<ModelInfo>> GetAllModels(Dictionary<string, string>? parameters = null)
     {
-        var cacheKey = "all_models" + (parameters != null ? JsonSerializer.Serialize(parameters) : "");
-        if (_modelsCache.TryGetValue(cacheKey, out var cachedModels))
-            return Task.FromResult(cachedModels);
-
-        var modelsPath = Path.Combine(AppConfig.Instance.ModelsPath , parameters?["Type"] ?? string.Empty);
+        var modelsPath = Path.Combine(AppConfig.Instance.Parameters.ModelsPath , parameters?["Type"] ?? string.Empty);
         var models = Directory
             .EnumerateDirectories(modelsPath, "*", SearchOption.AllDirectories)
             .AsValueEnumerable()
             .Select(directoryPath =>
             {
-                var model = GetOrCreateModelInfo(directoryPath);
+                var model = GetOrCreateModelInfo(directoryPath, weightExtensions: parameters != null && parameters.TryGetValue("WeightExtensions", out var weightExtensions) ? weightExtensions.Split(",") : null);
                 return model;
             })
             .Where(model =>
             {
                 if (parameters == null) return true;
 
-                var matchesType = !parameters.ContainsKey("Type") || model.Type == parameters["Type"];
-                var matchesTask = !parameters.ContainsKey("Task") || model.Task == parameters["Task"];
+                var matchesType = !parameters.ContainsKey("Type") ||
+                                  string.Equals(model.Type, parameters["Type"], StringComparison.OrdinalIgnoreCase);
+                var matchesTask = !parameters.ContainsKey("Task") ||
+                                  string.Equals(model.Task, parameters["Task"], StringComparison.OrdinalIgnoreCase);
 
                 return matchesType && matchesTask;
             }).ToArray();
 
-    //    models = WithExistWeightsOnly(models);
-        _modelsCache[cacheKey] = models;
         return Task.FromResult(models.AsEnumerable());
     }
 
-    public Task<IEnumerable<ModelInfo>> GetAllModels(string query = "", int modelsCount = 10)
+    public Task<IEnumerable<ModelInfo>> GetAllModels(string query = "", int modelsCount = 10, string[]? weightExtensions = null)
     {
-        var cacheKey = $"search_{query}_{modelsCount}";
-        if (_modelsCache.TryGetValue(cacheKey, out var cachedModels))
-            return Task.FromResult(cachedModels);
-
-        var modelsPath = AppConfig.Instance.ModelsPath;
+        var modelsPath = AppConfig.Instance.Parameters.ModelsPath;
         var models = Directory
             .EnumerateDirectories(modelsPath, "*", SearchOption.AllDirectories)
             .AsValueEnumerable()
             .Select(folder =>
             {
                 var model = GetOrCreateModelInfo(folder);
-                model.Weights = GetOrCreateWeights(folder);
+                model.Weights = GetOrCreateWeights(folder, weightExtensions);
                 return model;
             })
             .Where(model =>
@@ -67,8 +56,6 @@ public class LocalModelsRepository : IModelsRepository
             )
             .Take(modelsCount).ToArray();
 
-   //     models = WithExistWeightsOnly(models);
-        _modelsCache[cacheKey] = models;
         return Task.FromResult(models.AsEnumerable());
     }
 
@@ -77,28 +64,8 @@ public class LocalModelsRepository : IModelsRepository
     {
         return Task.FromResult(GetAllModels(repoId, 1).Result.FirstOrDefault());
     }
-
-    private static IEnumerable<ModelInfo> WithExistWeightsOnly(IEnumerable<ModelInfo> models)
-    {
-        return models
-            .AsValueEnumerable()
-            .Select(x =>
-            {
-                if (x.Weights != null)
-                    x.Weights = new ObservableCollection<ModelInfoWeight>(x.Weights.Where(w =>
-                    {
-                        var weightPath = $"{AppConfig.Instance.ModelsPath}\\" +
-                                         $"{x.Type.RemoveSpaces()}\\" +
-                                         $"{x.Name.RemoveSpaces()}\\" +
-                                         $"{w.Weight.RemoveSpaces()}.{w.Extension.ToLower().RemoveSpaces()}";
-
-                        return File.Exists(weightPath);
-                    }));
-                return x;
-            });
-    }
-
-    private static ModelInfo GetOrCreateModelInfo(string modelPath, string configFile = "egoist_config.json")
+    
+    private static ModelInfo GetOrCreateModelInfo(string modelPath, string configFile = "egoist_config.json", string[]? weightExtensions = null)
     {
         var configPath = Path.Combine(modelPath, configFile);
         if (File.Exists(configPath))
@@ -110,17 +77,18 @@ public class LocalModelsRepository : IModelsRepository
             Type = directoryParts[^3],
             Task = "Generation",
             Name = directoryParts[^2].Replace("_", " "),
-            Weights = GetOrCreateWeights(modelPath)
+            Weights = GetOrCreateWeights(modelPath, weightExtensions)
         };
         
         File.WriteAllText(configPath, JsonSerializer.Serialize(model, new JsonSerializerOptions { WriteIndented = true }));
         return model;
     }
 
-    private static ObservableCollection<ModelInfoWeight> GetOrCreateWeights(string directoryPath)
+    private static ObservableCollection<ModelInfoWeight> GetOrCreateWeights(string directoryPath, string[]? weightExtensions)
     {
         var weights = new ObservableCollection<ModelInfoWeight>();
-        var weightFiles = Directory.EnumerateFiles(directoryPath, "*.gguf", SearchOption.TopDirectoryOnly);
+        var weightFiles = Directory.EnumerateFiles(directoryPath, "*.*", SearchOption.TopDirectoryOnly)
+            .Where(file => weightExtensions?.Any(file.EndsWith) ?? new[] { ".gguf", ".safetensors", ".ckpt", ".pth" }.Any(file.EndsWith));
         foreach (var weightFile in weightFiles)
         {
             var weight = new ModelInfoWeight

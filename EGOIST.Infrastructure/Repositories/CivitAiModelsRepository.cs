@@ -10,7 +10,7 @@ public class CivitAiModelsRepository : IModelsRepository
 {
     private readonly HttpClient _httpClient = new();
 
-    public async Task<IEnumerable<ModelInfo>> GetAllModels(string query, int modelsCount = 10)
+    public async Task<IEnumerable<ModelInfo>> GetAllModels(string query, int modelsCount = 10, string[]? weightExtensions = null)
     {
         var response = await _httpClient.GetAsync($"https://civitai.com/api/v1/models?query={query}&limit={modelsCount}\"");
         response.EnsureSuccessStatusCode();
@@ -18,7 +18,8 @@ public class CivitAiModelsRepository : IModelsRepository
         return result?.ToModelsInfo()!;
     }
 
-    public Task<IEnumerable<ModelInfo>> GetAllModels(Dictionary<string, string>? parameters) => throw new NotImplementedException();
+    public Task<IEnumerable<ModelInfo>> GetAllModels(Dictionary<string, string>? parameters = null) => throw new NotImplementedException();
+
 
     public async Task<ModelInfo?> GetModel(string modelVersionId)
     {

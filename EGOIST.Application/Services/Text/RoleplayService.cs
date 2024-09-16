@@ -1,8 +1,12 @@
 ﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Text;
 using EGOIST.Application.Inference.Text;
 using EGOIST.Application.Interfaces.Core;
 using EGOIST.Application.Interfaces.Text;
+using EGOIST.Application.Services.Management.Loaders;
+using EGOIST.Application.Services.Utilities;
+using EGOIST.Application.Utilities;
 using EGOIST.Domain.Abstracts;
 using EGOIST.Domain.Entities;
 using EGOIST.Domain.Enums;
@@ -13,14 +17,9 @@ using Microsoft.Extensions.Logging;
 
 namespace EGOIST.Application.Services.Text;
 
-public class RoleplayService(
-    ILogger<CompletionService> logger,
-    IPromptRepository<TextPromptParameters> promptRepository,
-    [FromKeyedServices("TextModelCoreService")]
-    IModelCoreService modelCore) : EntityBase, ITextService
+public class RoleplayService : EntityBase, ITextService<RoleplaySession>
 {
-    public ObservableCollection<TextPromptParameters> PromptTemplates { get; set; } =
-        new(promptRepository.GetAllTemplates(null).Result);
+    public ObservableCollection<TextPromptParameters> PromptTemplates { get; set; } = [];
 
     public ObservableCollection<RoleplaySession> Sessions { get; set; } = [];
 
@@ -34,20 +33,69 @@ public class RoleplayService(
 
     public string CharacterReceiver { get; set; } = "Auto";
 
-    private readonly TextModelCoreService? _modelCore = modelCore as TextModelCoreService;
     private RoleplaySession? _selectedSession;
+
+    private readonly TextModelCoreService _modelCore;
+    private readonly TextDataLoader _dataLoader;
+    private readonly MemoryService _memoryService;
+    private readonly IPromptRepository<TextPromptParameters> _promptRepository;
+    private readonly ILogger<RoleplayService> _logger;
+
+    public RoleplayService(ILogger<RoleplayService> logger,
+        IPromptRepository<TextPromptParameters> promptRepository,
+        [FromKeyedServices("TextModelCoreService")]
+        IModelCoreService modelCore, TextDataLoader dataLoader, MemoryService memoryService)
+    {
+        _logger = logger;
+        _promptRepository = promptRepository;
+        _dataLoader = dataLoader;
+        _memoryService = memoryService;
+        _modelCore = (TextModelCoreService)modelCore;
+
+        _ = Initialize();
+    }
+
+    private async Task Initialize()
+    {
+        PromptTemplates = new ObservableCollection<TextPromptParameters>(await _promptRepository.GetAllTemplates(null));
+        Sessions = new ObservableCollection<RoleplaySession>(
+            await _dataLoader.LoadAllSessions<RoleplaySession>("Roleplay"));
+    }
+
+    public async Task<bool> LoadSession(string sessionName, bool loadCache = true,
+        Dictionary<string, object>? parameter = null)
+    {
+        if (string.IsNullOrEmpty(sessionName) || _modelCore.SelectedGenerationModel == null ||
+            _modelCore.ModelParameters == null || _modelCore.Model == null)
+            return false;
+
+        var existingSession = Sessions.FirstOrDefault(x => x.Name == sessionName);
+        var session = existingSession != null && loadCache
+            ? await _dataLoader.LoadSession(existingSession)
+            : await _dataLoader.LoadSession<RoleplaySession>(sessionName, "Roleplay", loadCache);
+        if (session == null)
+            return false;
+
+        if (existingSession == null)
+            Sessions.Add(session);
+
+
+        SelectedSession = session;
+        return true;
+    }
 
     public Task<bool> Create(Dictionary<string, object>? parameter = null)
     {
-        if (_modelCore?.SelectedGenerationModel == null)
+        if (_modelCore.SelectedGenerationModel == null)
         {
-            logger.LogWarning("Text Generation Model isn't loaded yet.");
+            _logger.LogWarning("Text Generation Model isn't loaded yet.");
             return Task.FromResult(false);
         }
 
         var newSession = new RoleplaySession
         {
-            Name = parameter?["Name"].ToString() ?? $"Roleplay {DateTime.Now}",
+            Name = parameter?["Name"].ToString() ??
+                   $"Roleplay {DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo.InvariantCulture)}",
             UserRoleName = parameter?["UserRoleName"].ToString() ?? "User",
             Characters = (parameter?["Characters"] as ObservableCollection<RoleplayCharacter>)!,
             PersonalityApproach =
@@ -61,20 +109,43 @@ public class RoleplayService(
                 newSession.Characters.ToDictionary<RoleplayCharacter?, RoleplayCharacter, IInference>(
                     character => character,
                     _ => new InferenceService(
-                        new InteractiveExecutor(_modelCore?.Model?.CreateContext(_modelCore?.ModelParameters!)!)));
+                        new InteractiveExecutor(_modelCore.Model?.CreateContext(_modelCore.ModelParameters!)!)));
+        else
+            newSession.Executor = new InferenceService(
+                new InteractiveExecutor(_modelCore.Model?.CreateContext(_modelCore.ModelParameters!)!));
+
+        newSession.IsLoaded = true;
 
         Sessions.Add(newSession);
-        SelectedSession = newSession;
+//        SelectedSession = newSession;
 
         return Task.FromResult(true);
     }
 
-    public Task<bool> Delete(string parameter = "")
+    public async Task<bool> Delete(string parameter = "")
     {
-        if (SelectedSession == null)
-            return Task.FromResult(false);
+        if (!string.IsNullOrEmpty(parameter))
+        {
+            var session = Sessions.FirstOrDefault(x => x.Name == parameter);
+            if (session == null)
+                return false;
+            session.Executor?.Dispose();
+            if (session.PersonalityApproach == RpCharacterInferenceApproach.PerCharacterExecutor)
+            {
+                session.CharacterInferences.Values.ToList().ForEach(x => x.Dispose());
+                session.CharacterInferences.Clear();
+            }
 
-        logger.LogInformation($"Chat {SelectedSession.Name} Deleted");
+            Sessions.Remove(session);
+            if (session == SelectedSession)
+                SelectedSession = null;
+
+            await _dataLoader.DeleteSession(parameter);
+            return true;
+        }
+
+        if (SelectedSession == null)
+            return false;
 
         SelectedSession.Messages.Clear();
         SelectedSession.Executor?.Dispose();
@@ -86,29 +157,31 @@ public class RoleplayService(
         }
 
         Sessions.Remove(SelectedSession);
+        await _dataLoader.DeleteSession(SelectedSession.Name);
         SelectedSession = null;
 
-        return Task.FromResult(true);
+        _logger.LogInformation("Chat {SelectedSession} Deleted", SelectedSession!.Name);
+        return true;
     }
 
     public async Task<T?> Generate<T>(string userInput, TextGenerationParameters? generationParameters = null,
-        TextPromptParameters? promptParameters = null) where T : class
+        TextPromptParameters? promptParameters = null, Citation[]? citations = null) where T : class
     {
-        if (_modelCore?.State == GenerationState.Started)
+        if (_modelCore.State == GenerationState.Started)
         {
-            await _modelCore?.CancelToken?.CancelAsync()!;
+            await _modelCore.CancelToken?.CancelAsync()!;
             return null;
         }
 
-        if (_modelCore?.SelectedGenerationModel == null)
+        if (_modelCore.SelectedGenerationModel == null)
         {
-            logger.LogWarning("Text Generation Model isn't loaded yet.");
+            _logger.LogWarning("Text Generation Model isn't loaded yet.");
             return null;
         }
 
         if (SelectedSession == null)
         {
-            logger.LogWarning("Session isn't selected yet.");
+            _logger.LogWarning("Session isn't selected yet.");
             return null;
         }
 
@@ -119,7 +192,9 @@ public class RoleplayService(
 
         string prompt;
         var memorizedPrompt = GetMemorizedPrompt(SelectedSession, userInput);
+
         var firstPrompt = false;
+        var systemPrompt = string.Empty;
         _modelCore.CancelToken = new CancellationTokenSource();
 
         if (SelectedSession.PersonalityApproach == RpCharacterInferenceApproach.PerCharacterExecutor)
@@ -129,7 +204,7 @@ public class RoleplayService(
                 if (!SelectedSession.CharacterInferences.ContainsKey(characterToInteract))
                     SelectedSession.CharacterInferences[characterToInteract] =
                         new InferenceService(
-                            new InteractiveExecutor(_modelCore?.Model?.CreateContext(_modelCore?.ModelParameters!)!));
+                            new InteractiveExecutor(_modelCore.Model?.CreateContext(_modelCore.ModelParameters!)!));
 
                 if (SelectedSession.CharacterInferences[characterToInteract].IsFirstRun(nameof(StatefulExecutorBase))
                     .Result)
@@ -140,7 +215,7 @@ public class RoleplayService(
         {
             SelectedSession!.Executor ??=
                 new InferenceService(
-                    new InteractiveExecutor(_modelCore?.Model?.CreateContext(_modelCore?.ModelParameters!)!));
+                    new InteractiveExecutor(_modelCore.Model?.CreateContext(_modelCore.ModelParameters!)!));
 
             if (SelectedSession.Executor.IsFirstRun(nameof(StatefulExecutorBase)).Result)
                 firstPrompt = true;
@@ -149,7 +224,7 @@ public class RoleplayService(
         if (firstPrompt)
         {
             var firstCharacter = SelectedSession.Characters.FirstOrDefault();
-            var initialPrompt = SelectedSession.Characters.Count > 1
+            systemPrompt = SelectedSession.Characters.Count > 1
                 ? SelectedSession.PersonalityApproach switch
                 {
                     RpCharacterInferenceApproach.DetailedOnce => GenerateDetailedCharacterPrompt(SelectedSession),
@@ -162,35 +237,71 @@ public class RoleplayService(
 
             prompt =
                 $"\n {(SelectedSession.Messages.Count > 0 ? SelectedSession.ToString() : string.Empty)} \n{SelectedSession.UserRoleName}: {memorizedPrompt}";
-            prompt = promptParameters?.Prompt(!string.IsNullOrEmpty(prompt) ? prompt : memorizedPrompt, initialPrompt)!;
         }
         else
-            prompt = promptParameters?.Prompt(
-                    SelectedSession.PersonalityApproach != RpCharacterInferenceApproach.PerCharacterExecutor
-                        ? memorizedPrompt
-                        : $"{SelectedSession.ToString(SelectedSession.GetMissedMessages(characterToInteract!))}{memorizedPrompt}")!;
+        {
+            prompt = SelectedSession.PersonalityApproach != RpCharacterInferenceApproach.PerCharacterExecutor
+                ? memorizedPrompt
+                : $"{SelectedSession.ToString(SelectedSession.GetMissedMessages(characterToInteract!))}{memorizedPrompt}";
+        }
+
+        citations ??= [];
+        if (AppConfig.Instance.Parameters.ChatMemory)
+            citations = citations.Concat(await _memoryService.Generate(userInput, [], isGlobalMemory: true)).ToArray();
+
+        if (citations.Length > 0)
+        {
+            var memories = citations.Where(x => x.Collection == Constants.GlobalMessagesMemory).ToArray();
+            var extraCitations = citations.Where(x => x.Collection != Constants.GlobalMessagesMemory).ToArray();
+            if (memories.Length > 0)
+            {
+                prompt += $"\n\n{AppConfig.Instance.Parameters.GlobalMemoryPrompt}";
+                foreach (var citation in memories)
+                    prompt += $"\n{citation.Content}";
+            }
+            if (extraCitations.Length > 0)
+            {
+                prompt += $"\n\n{AppConfig.Instance.Parameters.MemoryPrompt}";
+                foreach (var citation in extraCitations)
+                    prompt += $"\n{citation.Content}";
+            }
+        }
+
+        // Apply prompt template 
+        prompt = promptParameters?.Prompt(prompt, systemPrompt)!;
+
+        RoleplayMessage? userMessage = null;
+        if (!string.IsNullOrEmpty(userInput))
+            userMessage = SelectedSession.AddMessage(null, userInput,
+                citations.Where(x => x.Collection == "User Attachments").ToArray());
+
+        var aiMessage = SelectedSession.AddMessage(characterToInteract, string.Empty,
+            citations.Where(x => x.Collection != "User Attachments").ToArray());
+
         
-        SelectedSession?.AddMessage(null, userInput);
-        var aiMessage = SelectedSession?.AddMessage(characterToInteract!, string.Empty);
 
         var tokens =
             (SelectedSession!.PersonalityApproach == RpCharacterInferenceApproach.PerCharacterExecutor
                 ? SelectedSession.CharacterInferences[characterToInteract!]
                 : SelectedSession?.Executor)!.Inference(prompt, promptParameters?.BlackList ?? [],
-                generationParameters ?? new TextGenerationParameters(true), _modelCore!.CancelToken.Token);
+                generationParameters ?? new TextGenerationParameters(true), _modelCore.CancelToken.Token);
         await foreach (var token in tokens)
         {
             if (token == "FILTERING MECHANISM TRIGGERED")
             {
-                aiMessage!.Message = token;
+                await _modelCore.CancelToken.CancelAsync();
                 break;
             }
 
-            aiMessage!.Message += token + " ";
+            aiMessage.Message += token;
         }
 
+        if (!string.IsNullOrEmpty(userInput) && userMessage != null)
+            await _memoryService.Feed(userMessage.ToString());
+        await _memoryService.Feed(aiMessage.ToString());
 
-        _modelCore!.State = GenerationState.Finished;
+
+        _modelCore.State = GenerationState.Finished;
 
         if (!_modelCore.CancelToken.IsCancellationRequested && CharacterTurn == "Multi-Turn" &&
             SelectedSession!.Characters.Any(x =>
@@ -206,6 +317,16 @@ public class RoleplayService(
             _modelCore.CancelToken.Dispose();
 
         return aiMessage as T;
+    }
+
+    public async Task Dispose()
+    {
+        if (SelectedSession != null)
+        {
+            SelectedSession.IsLoaded = false;
+            await _dataLoader.SaveSession(SelectedSession, "Roleplay");
+            SelectedSession.Executor?.Dispose();
+        }
     }
 
     private string GenerateDetailedCharacterPrompt(RoleplaySession session)
@@ -299,12 +420,13 @@ public class RoleplayService(
                 var mentionedCharacter = session.Characters.FirstOrDefault(x =>
                     userInput.Contains(x.Name, StringComparison.OrdinalIgnoreCase));
                 return mentionedCharacter ??
-                       session.Characters.FirstOrDefault(x =>
-                           (x.InteractionFrequency == RpCharacterInteractionFrequency.Chatty ||
-                            (x.InteractionFrequency == RpCharacterInteractionFrequency.Normal &&
-                             Random.Shared.NextDouble() < 0.6) ||
-                            (x.InteractionFrequency == RpCharacterInteractionFrequency.Shy &&
-                             Random.Shared.NextDouble() < 0.3)));
+                       (session.Characters.FirstOrDefault(x =>
+                            (x.InteractionFrequency == RpCharacterInteractionFrequency.Chatty ||
+                             (x.InteractionFrequency == RpCharacterInteractionFrequency.Normal &&
+                              Random.Shared.NextDouble() < 0.6) ||
+                             (x.InteractionFrequency == RpCharacterInteractionFrequency.Shy &&
+                              Random.Shared.NextDouble() < 0.3)) && x.Name != session.UserRoleName) ??
+                        session.Characters.First());
             }
 
             return session.Characters.FirstOrDefault(x => x.Name == CharacterReceiver);
@@ -342,7 +464,7 @@ public class RoleplayService(
     {
         if (session.World == null || session.World.Memories.Count == 0)
             return prompt;
-        
+
         var lowercaseMemories = session.World.Memories
             .ToDictionary(x => x.Name.ToLower(), x => x);
 

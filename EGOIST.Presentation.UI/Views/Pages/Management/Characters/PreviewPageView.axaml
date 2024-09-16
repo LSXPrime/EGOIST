@@ -1,0 +1,193 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:icons="using:FluentIcons.Avalonia"
+             xmlns:iconsFluent="using:FluentIcons.Avalonia.Fluent"
+             xmlns:vm="using:EGOIST.Presentation.UI.ViewModels.Pages.Management.Characters"
+             xmlns:ui="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+             mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+             x:DataType="vm:PreviewPageViewModel"
+             x:Class="EGOIST.Presentation.UI.Views.Pages.Management.Characters.PreviewPageView">
+    <UserControl.Resources>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" x:Key="MessageBgBrush">
+            <GradientStop Color="Transparent" Offset="0.0" />
+            <GradientStop Color="#44000000" Offset="0.5" />
+            <GradientStop Color="#22000000" Offset="1.0" />
+        </LinearGradientBrush>
+    </UserControl.Resources>
+    <Design.DataContext>
+        <vm:PreviewPageViewModel />
+    </Design.DataContext>
+
+    <Grid ColumnDefinitions="25*,50*,25*" Margin="50">
+        <Border CornerRadius="16" Margin="5">
+            <Border.Background>
+                <ImageBrush Stretch="UniformToFill"
+                            Source="{Binding Character, Converter={StaticResource CharacterAvatarPathConverter}}" />
+            </Border.Background>
+            <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="25">
+
+                <TextBlock Text="{Binding Character.Name}" FontSize="36" HorizontalAlignment="Left" />
+                <TextBlock HorizontalAlignment="Left" Margin="10"
+                           TextWrapping="Wrap" Text="{Binding Character.Summary}" />
+                <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,20,0,0">
+                    <icons:SymbolIcon Symbol="Record" />
+                    <TextBlock Text="{Binding Character.InteractionFrequency}" FontSize="16" />
+                </StackPanel>
+                <Grid ColumnDefinitions="Auto,*">
+                    <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,20,0,0">
+                        <icons:SymbolIcon Symbol="Person" />
+                        <TextBlock Text="{Binding Character.Creator}" FontSize="16" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5"
+                                Margin="0,20,0,0">
+                        <icons:SymbolIcon Symbol="Branch" />
+                        <TextBlock Text="{Binding Character.Version}" FontSize="16" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <Grid RowDefinitions="Auto,90*,10*" Grid.Column="1" Margin="10">
+            <ui:InfoBar IsOpen="True" IsClosable="False" Title="Description" Margin="25,0"
+                        Message="{Binding Character.Description}">
+                <ui:InfoBar.IconSource>
+                    <iconsFluent:SymbolIconSource Symbol="TextDescription" />
+                </ui:InfoBar.IconSource>
+            </ui:InfoBar>
+            <ScrollViewer Grid.Row="1" Margin="20" VerticalScrollBarVisibility="Auto">
+                <Grid RowDefinitions="Auto,*">
+                    <Grid ColumnDefinitions="Auto,15,*" Margin="0,10" HorizontalAlignment="Stretch">
+                        <Image Grid.Column="0" Width="75" Height="100" Margin="10,0,0,0"
+                               Source="{Binding Character, FallbackValue={x:Null}, Converter={StaticResource CharacterAvatarPathConverter}}"
+                               HorizontalAlignment="Left" VerticalAlignment="Top" />
+
+                        <Border Grid.Column="2" BorderThickness="1" CornerRadius="12" Padding="8"
+                                Background="{StaticResource MessageBgBrush}">
+                            <Border.BoxShadow>
+                                <BoxShadows>3 2 2 1 #2F000000</BoxShadows>
+                            </Border.BoxShadow>
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="10" />
+                            </Border.Effect>
+                            <StackPanel Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Border Background="DarkRed" HorizontalAlignment="Left"
+                                            CornerRadius="16"
+                                            Padding="12,0">
+                                        <TextBlock Text="{Binding Character.Name}" TextWrapping="Wrap" />
+                                    </Border>
+                                    <Border Background="DarkRed" HorizontalAlignment="Left"
+                                            CornerRadius="16"
+                                            Padding="12,0">
+                                        <TextBlock Text="First Message" TextWrapping="Wrap" />
+                                    </Border>
+                                </StackPanel>
+
+                                <TextBlock Text="{Binding Character.FirstMessage}" TextWrapping="Wrap"
+                                         TextAlignment="Left" HorizontalAlignment="Stretch"
+                                         VerticalAlignment="Stretch" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <ItemsControl Grid.Row="1" ItemsSource="{Binding Character.ExampleDialogue}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,15,*" Margin="0,10" HorizontalAlignment="Stretch">
+                                    <Image Grid.Column="0" Width="75" Height="100" Margin="10,0,0,0"
+                                           IsVisible="{Binding Sender, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter='User'}"
+                                           Source="{Binding $parent[UserControl].((vm:PreviewPageViewModel)DataContext).Character, FallbackValue={x:Null}, Converter={StaticResource CharacterAvatarPathConverter}}"
+                                           HorizontalAlignment="Left" VerticalAlignment="Top" />
+                                    <icons:SymbolIcon Grid.Column="0" FontSize="72" Symbol="Person"
+                                                      IsVisible="{Binding Sender, Converter={x:Static ObjectConverters.Equal}, ConverterParameter='User'}"
+                                                      HorizontalAlignment="Left" VerticalAlignment="Top" />
+
+                                    <Border Grid.Column="2" BorderThickness="1" CornerRadius="12" Padding="8" Background="{StaticResource MessageBgBrush}">
+                                        <Border.BoxShadow>
+                                            <BoxShadows>3 2 2 1 #2F000000</BoxShadows>
+                                        </Border.BoxShadow>
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="10" />
+                                        </Border.Effect>
+                                        <StackPanel Spacing="10">
+                                            <Border Background="DarkRed" HorizontalAlignment="Left" CornerRadius="16"
+                                                    Padding="12,0">
+                                                <TextBlock Text="{Binding Sender}" TextWrapping="Wrap" />
+                                            </Border>
+                                            <TextBlock Text="{Binding Message}" IsEnabled="True" MaxWidth="900"
+                                                       TextWrapping="Wrap" TextAlignment="Left"
+                                                       HorizontalAlignment="Left" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </ScrollViewer>
+            <StackPanel Grid.Row="2" Spacing="15" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="50"
+                        Orientation="Horizontal">
+                <Button Command="{Binding EditCommand}">
+                    <StackPanel Spacing="10" Orientation="Horizontal">
+                        <icons:SymbolIcon Symbol="Edit" FontSize="28" />
+                        <TextBlock Text="Edit" FontSize="24" />
+                    </StackPanel>
+                </Button>
+
+                <Button Command="{Binding BackCommand}">
+                    <StackPanel Spacing="10" Orientation="Horizontal">
+                        <icons:SymbolIcon Symbol="ArrowExit" FontSize="28" />
+                        <TextBlock Text="Back" FontSize="24" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Column="2" CornerRadius="16" Margin="5">
+            <Border.Background>
+                <SolidColorBrush Color="#1F000000" />
+            </Border.Background>
+            <Grid RowDefinitions="Auto,*">
+                <StackPanel VerticalAlignment="Stretch" Spacing="50" Margin="25">
+                    <StackPanel Spacing="10">
+                        <StackPanel Spacing="10" Orientation="Horizontal">
+                            <icons:SymbolIcon Symbol="Teaching" FontSize="36" />
+                            <TextBlock Text="Scenario" FontSize="36" FontWeight="Medium" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding Character.Scenario}" TextWrapping="Wrap" FontSize="26"
+                                   HorizontalAlignment="Left" />
+                    </StackPanel>
+                    <StackPanel Spacing="10">
+                        <StackPanel Spacing="10" Orientation="Horizontal">
+                            <icons:SymbolIcon Symbol="Note" FontSize="36" />
+                            <TextBlock Text="Notes" FontSize="36" FontWeight="Medium" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding Character.Notes}" TextWrapping="Wrap" FontSize="26"
+                                   HorizontalAlignment="Left" />
+                    </StackPanel>
+                </StackPanel>
+                <ItemsControl Grid.Row="1" Margin="25" VerticalAlignment="Bottom"
+                              ItemsSource="{Binding Character.Tags}" Height="35">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border CornerRadius="8" Background="DarkRed" Margin="5,0" Padding="3">
+                                <Label Content="{Binding .}" FontWeight="Bold"
+                                       VerticalAlignment="Center" />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+
+        </Border>
+    </Grid>
+
+</UserControl>

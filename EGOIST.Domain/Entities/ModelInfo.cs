@@ -25,7 +25,7 @@ public class ModelInfo : EntityBase
     public string Parameters { get => _parameters; set => Notify(ref _parameters, value); }
     public string UpdateDate { get => _updateDate; set => Notify(ref _updateDate, value); }
     public string Description { get => _description; set => Notify(ref _description, value); }
-    public ObservableCollection<ModelInfoWeight>? Weights { get; set; } = new();
+    public ObservableCollection<ModelInfoWeight> Weights { get; set; } = [];
     public string DownloadRepo { get => _downloadRepo; set => Notify(ref _downloadRepo, value); }
     public TextPromptParameters? TextConfig { get => _textConfig; set => Notify(ref _textConfig, value); }
     public Dictionary<string, string> Metadata { get => _metadata; set => Notify(ref _metadata, value); }

@@ -5,15 +5,11 @@
              xmlns:icons="using:FluentIcons.Avalonia"
              xmlns:controls="using:EGOIST.Presentation.UI.Views.Controls"
              xmlns:vm="using:EGOIST.Presentation.UI.ViewModels.Pages.Text"
-             xmlns:helpers="using:EGOIST.Presentation.UI.Helpers"
              xmlns:services="using:EGOIST.Application.Services.Text"
              mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
              x:DataType="vm:CompletionPageViewModel"
              x:Class="EGOIST.Presentation.UI.Views.Pages.Text.CompletionPageView"
              Name="CompletionPage">
-    <UserControl.Resources>
-        <helpers:ConditionCheckConverter x:Key="ConditionCheckConverter" />
-    </UserControl.Resources>
     <Design.DataContext>
         <vm:CompletionPageViewModel>
             <x:Arguments>
@@ -26,12 +22,13 @@
         <!-- Chat Sessions List -->
         <controls:SessionsListControl
             Title="Completion Sessions"
-            Sessions="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).((services:CompletionService)Service).CompletionSessions, FallbackValue={x:Null}}"
-            SelectedSession="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).((services:CompletionService)Service).SelectedCompletionSession, FallbackValue={x:Null}}"
+            Sessions="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).((services:CompletionService)Service).Sessions, FallbackValue={x:Null}}"
             MainActionIcon="Add"
             SubActionIcon="Delete"
-            MainAction="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).SessionCreateCommand, FallbackValue={x:Null}}"
-            SubAction="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).SessionDeleteCommand, FallbackValue={x:Null}}" />
+            ThirdActionIcon="Stop"
+            MainAction="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).CreateCommand, FallbackValue={x:Null}}"
+            SubAction="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).DeleteCommand, FallbackValue={x:Null}}"
+            ThirdAction="{Binding $parent[UserControl].((vm:CompletionPageViewModel)DataContext).UnloadCommand, FallbackValue={x:Null}}" />
 
         <!-- Session Inference Options -->
         <controls:SessionOptionsControl
@@ -74,7 +71,7 @@
             <Grid Grid.Row="1" Margin="25,25">
                 <!-- Completion Container -->
                 <TextBox x:Name="CompletionTextEditor"
-                         Text="{Binding ((services:CompletionService)Service).SelectedCompletionSession.Content, FallbackValue={x:Null}}"
+                         Text="{Binding ((services:CompletionService)Service).SelectedSession.Content, FallbackValue={x:Null}}"
                          KeyDown="CompletionTextEditor_SuggestionHandler" AcceptsReturn="True"
                          Watermark="Write your Instruction here!" CornerRadius="8" TextWrapping="Wrap" />
                 <Button Command="{Binding GenerateCommand}" Margin="20" Width="75" Height="50"

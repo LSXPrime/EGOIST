@@ -6,6 +6,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using EGOIST.Domain.Enums;
 using EGOIST.Presentation.UI.ViewModels.Pages.Text;
 using NetFabric.Hyperlinq;
@@ -33,7 +34,7 @@ public partial class CompletionPageView : UserControl
     
     public CompletionPageView(CompletionPageViewModel viewModel)
     {
-        DataContext = viewModel;
+        Dispatcher.UIThread.Invoke(() => DataContext = viewModel);
         InitializeComponent();
         var assembly = Assembly.GetExecutingAssembly();
         using var stream = assembly.GetManifestResourceStream($"{assembly.FullName}.Assets.dictionary.txt");

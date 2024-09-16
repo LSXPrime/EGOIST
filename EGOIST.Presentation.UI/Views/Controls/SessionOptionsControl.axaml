@@ -1,21 +1,18 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:EGOIST.Presentation.UI.Views.Controls"
-        xmlns:helpers="using:EGOIST.Presentation.UI.Helpers"
         xmlns:models="using:EGOIST.Domain.Entities"
         xmlns:icons="clr-namespace:FluentIcons.Avalonia;assembly=FluentIcons.Avalonia"
+        xmlns:utilities="clr-namespace:EGOIST.Application.Services.Utilities;assembly=EGOIST.Application"
         x:DataType="controls:SessionOptionsControl">
     <Design.PreviewWith>
-        <controls:SessionOptionsControl />
+        <controls:SessionOptionsControl Height="850" />
     </Design.PreviewWith>
 
     <!--
     <Design.DataContext>
         <controls:SessionOptionsControl />
     </Design.DataContext> -->
-    <Styles.Resources>
-        <helpers:CollectionStringConverter x:Key="CollectionStringConverter" />
-    </Styles.Resources>
 
     <Style Selector="controls|SessionOptionsControl">
         <Setter Property="Template">
@@ -31,14 +28,13 @@
                     VerticalAlignment="Stretch">
                     <SplitView.Pane>
                         <Border CornerRadius="16">
-
                             <Grid ColumnDefinitions="70,*" Margin="0,20,10,0">
-                                <Button Name="PART_TogglePaneBtn" 
+                                <Button Name="PART_TogglePaneBtn"
                                         Grid.Column="0"
                                         VerticalAlignment="Top"
                                         Classes="transparent"
                                         Height="50"
-                                        Width="50" 
+                                        Width="50"
                                         Margin="10,0,0,0">
                                     <icons:SymbolIcon Symbol="Options" FontSize="26" />
                                 </Button>
@@ -68,18 +64,20 @@
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                         </StackPanel>
                                     </Grid>
-                                    <ScrollViewer Grid.Row="1" Height="{Binding $parent.Bounds.Height}">
-                                        <Grid RowDefinitions="Auto,Auto,Auto,65">
+                                    <ScrollViewer Grid.Row="1" Margin="0,20" Height="{Binding $parent.Bounds.Height}">
+                                        <Grid RowDefinitions="Auto,Auto,Auto, Auto,100">
                                             <!-- settings of tokens parameters -->
-                                            <Expander Header="Customization" IsExpanded="True">
+                                            <Expander Header="Customization" IsEnabled="{Binding IsParametersVisible}"
+                                                      IsVisible="{Binding IsParametersVisible}"
+                                                      IsExpanded="{Binding IsParametersExpanded}">
                                                 <StackPanel>
                                                     <StackPanel Margin="10">
                                                         <TextBlock Text="Max Tokens" />
                                                         <StackPanel Orientation="Horizontal">
                                                             <Slider Width="180" Minimum="0" Maximum="32000"
                                                                     Value="{Binding Parameters.MaxTokens, Mode=TwoWay}"
-                                                                    TickFrequency="2048" 
-                                                                    TickPlacement="BottomRight" 
+                                                                    TickFrequency="2048"
+                                                                    TickPlacement="BottomRight"
                                                                     IsSnapToTickEnabled="True"
                                                                     VerticalAlignment="Center" />
                                                             <NumericUpDown
@@ -96,6 +94,7 @@
                                                             <Slider Width="180" Minimum="0" Maximum="2"
                                                                     Value="{Binding Parameters.Randomness, Mode=TwoWay}"
                                                                     VerticalAlignment="Center" TickFrequency="0.1"
+                                                                    IsSnapToTickEnabled="True"
                                                                     TickPlacement="BottomRight" />
                                                             <NumericUpDown
                                                                 Value="{Binding Parameters.Randomness, Mode=TwoWay}"
@@ -110,6 +109,7 @@
                                                             <Slider Width="180" Minimum="0" Maximum="1"
                                                                     Value="{Binding Parameters.RandomnessBooster, Mode=TwoWay}"
                                                                     VerticalAlignment="Center" TickFrequency="0.1"
+                                                                    IsSnapToTickEnabled="True"
                                                                     TickPlacement="BottomRight" />
                                                             <NumericUpDown
                                                                 Value="{Binding Parameters.RandomnessBooster, Mode=TwoWay}"
@@ -124,6 +124,7 @@
                                                             <Slider Width="180" Minimum="0" Maximum="2"
                                                                     Value="{Binding Parameters.OptimalProbability, Mode=TwoWay}"
                                                                     VerticalAlignment="Center" TickFrequency="0.1"
+                                                                    IsSnapToTickEnabled="True"
                                                                     TickPlacement="BottomRight" />
                                                             <NumericUpDown
                                                                 Value="{Binding Parameters.OptimalProbability, Mode=TwoWay}"
@@ -138,6 +139,7 @@
                                                             <Slider Width="180" Minimum="0" Maximum="2"
                                                                     Value="{Binding Parameters.FrequencyPenalty, Mode=TwoWay}"
                                                                     VerticalAlignment="Center" TickFrequency="0.1"
+                                                                    IsSnapToTickEnabled="True"
                                                                     TickPlacement="BottomRight" />
                                                             <NumericUpDown
                                                                 Value="{Binding Parameters.FrequencyPenalty, Mode=TwoWay}"
@@ -150,21 +152,26 @@
                                             </Expander>
 
                                             <!-- settings of prompt formatting -->
-                                            <Expander Grid.Row="1" Header="Prompt Formatting">
+                                            <Expander Grid.Row="1" Header="Prompt Formatting"
+                                                      IsEnabled="{Binding IsPromptVisible}"
+                                                      IsVisible="{Binding IsPromptVisible}"
+                                                      IsExpanded="{Binding IsPromptExpanded}">
                                                 <StackPanel Spacing="20">
                                                     <StackPanel Margin="10" Spacing="10">
                                                         <TextBlock Text="System Prompt Prefix" />
                                                         <TextBox
-                                                            Text="{Binding PromptFormat.SystemPrefix, Mode=TwoWay}" AcceptsReturn="True" />
+                                                            Text="{Binding PromptFormat.SystemPrefix, Mode=TwoWay}"
+                                                            AcceptsReturn="True" />
                                                         <TextBlock Text="System Prompt Suffix" />
                                                         <TextBox
-                                                            Text="{Binding PromptFormat.SystemSuffix, Mode=TwoWay}" AcceptsReturn="True" />
+                                                            Text="{Binding PromptFormat.SystemSuffix, Mode=TwoWay}"
+                                                            AcceptsReturn="True" />
                                                     </StackPanel>
                                                     <StackPanel Margin="10" Spacing="10">
                                                         <TextBlock Text="System Prompt / Instructions" />
                                                         <TextBlock
                                                             Text="A system prompt sets the stage and guides an AI's behavior in conversations or tasks."
-                                                            TextWrapping="Wrap" FontSize="12" 
+                                                            TextWrapping="Wrap" FontSize="12"
                                                             Foreground="LightSteelBlue" />
                                                         <TextBox
                                                             Text="{Binding PromptFormat.SystemPrompt, Mode=TwoWay}"
@@ -182,14 +189,18 @@
                                                     <StackPanel Margin="10" Spacing="10">
                                                         <TextBlock Text="User Prompt Prefix" />
                                                         <TextBox
-                                                            Text="{Binding PromptFormat.PromptPrefix, Mode=TwoWay}" AcceptsReturn="True" />
+                                                            Text="{Binding PromptFormat.PromptPrefix, Mode=TwoWay}"
+                                                            AcceptsReturn="True" />
                                                         <TextBlock Text="User Prompt Suffix" />
                                                         <TextBox
-                                                            Text="{Binding PromptFormat.PromptSuffix, Mode=TwoWay}" AcceptsReturn="True" />
+                                                            Text="{Binding PromptFormat.PromptSuffix, Mode=TwoWay}"
+                                                            AcceptsReturn="True" />
                                                     </StackPanel>
                                                     <StackPanel Margin="10" Spacing="10">
                                                         <TextBlock Text="Prompt Template" />
-                                                        <ComboBox HorizontalAlignment="Stretch" ItemsSource="{TemplateBinding PromptTemplates}" SelectedValue="{Binding PromptFormatBinding, Mode=TwoWay}">
+                                                        <ComboBox HorizontalAlignment="Stretch"
+                                                                  ItemsSource="{TemplateBinding PromptTemplates}"
+                                                                  SelectedValue="{Binding PromptFormatBinding, Mode=TwoWay}">
                                                             <ComboBox.ItemTemplate>
                                                                 <DataTemplate DataType="models:TextPromptParameters">
                                                                     <TextBlock Text="{Binding Name}" />
@@ -197,7 +208,8 @@
                                                             </ComboBox.ItemTemplate>
                                                         </ComboBox>
                                                         <TextBox Text="{Binding PromptFormat.Name, Mode=TwoWay}" />
-                                                        <Button HorizontalAlignment="Stretch" Command="{TemplateBinding SavePrompt}">
+                                                        <Button HorizontalAlignment="Stretch"
+                                                                Command="{TemplateBinding SavePrompt}">
                                                             <StackPanel Orientation="Horizontal" Spacing="10">
                                                                 <icons:SymbolIcon Symbol="Save" />
                                                                 <TextBlock Text="Save Template" />
@@ -208,7 +220,10 @@
                                             </Expander>
 
                                             <!-- settings of model loader -->
-                                            <Expander Grid.Row="2" Header="Model Management">
+                                            <Expander Grid.Row="2" Header="Model Management"
+                                                      IsEnabled="{Binding IsModelVisible}"
+                                                      IsVisible="{Binding IsModelVisible}"
+                                                      IsExpanded="{Binding IsModelExpanded}">
                                                 <StackPanel Spacing="20">
                                                     <StackPanel Margin="10" Spacing="10">
                                                         <Grid ColumnDefinitions="*,Auto">
@@ -221,13 +236,14 @@
                                                                     IsEnabled="{Binding !#CtxLength.IsChecked}">
                                                             <Slider Width="180" Minimum="100" Maximum="128000"
                                                                     Value="{Binding ModelParameters.ContextLength, Mode=TwoWay}"
-                                                                    TickFrequency="3200" TickPlacement="BottomRight"
+                                                                    TickFrequency="3200" IsSnapToTickEnabled="True"
+                                                                    TickPlacement="BottomRight"
                                                                     VerticalAlignment="Center" />
                                                             <NumericUpDown
                                                                 Value="{Binding ModelParameters.ContextLength, Mode=TwoWay}"
-                                                                ShowButtonSpinner="False"                                                                Increment="100"
+                                                                ShowButtonSpinner="False" Increment="100"
                                                                 FormatString="0"
-                                                                Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                                Margin="20,0,0,0" VerticalAlignment="Center" Width="70" />
                                                         </StackPanel>
                                                     </StackPanel>
                                                     <StackPanel Margin="10" Spacing="10">
@@ -241,12 +257,13 @@
                                                                     IsEnabled="{Binding !#CpuThreads.IsChecked}">
                                                             <Slider Width="180" Minimum="2" Maximum="96"
                                                                     Value="{Binding ModelParameters.CpuThreads, Mode=TwoWay}"
-                                                                    TickFrequency="1" TickPlacement="BottomRight"
+                                                                    TickFrequency="1" IsSnapToTickEnabled="True"
+                                                                    TickPlacement="BottomRight"
                                                                     VerticalAlignment="Center" />
                                                             <NumericUpDown
                                                                 Value="{Binding ModelParameters.CpuThreads, Mode=TwoWay}"
-                                                                ShowButtonSpinner="False"                                                                FormatString="0"
-                                                                Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                                ShowButtonSpinner="False" FormatString="0"
+                                                                Margin="20,0,0,0" VerticalAlignment="Center" Width="70" />
                                                         </StackPanel>
                                                     </StackPanel>
                                                     <StackPanel Margin="10" Spacing="10">
@@ -259,14 +276,15 @@
                                                         </Grid>
                                                         <StackPanel Orientation="Horizontal"
                                                                     IsEnabled="{Binding !#GpuLayers.IsChecked}">
-                                                            <Slider Width="180" Minimum="100" Maximum="32000"
+                                                            <Slider Width="180" Minimum="0" Maximum="96"
                                                                     Value="{Binding ModelParameters.GpuSharedLayers, Mode=TwoWay}"
-                                                                    TickFrequency="3200" TickPlacement="BottomRight"
+                                                                    TickFrequency="1" IsSnapToTickEnabled="True"
+                                                                    TickPlacement="BottomRight"
                                                                     VerticalAlignment="Center" />
                                                             <NumericUpDown
                                                                 Value="{Binding ModelParameters.GpuSharedLayers, Mode=TwoWay}"
-                                                                ShowButtonSpinner="False"                                                                FormatString="0"
-                                                                Margin="20,0,0,0" VerticalAlignment="Top" Width="70" />
+                                                                ShowButtonSpinner="False" FormatString="0"
+                                                                Margin="20,0,0,0" VerticalAlignment="Center" Width="70" />
                                                         </StackPanel>
                                                     </StackPanel>
                                                     <StackPanel Margin="10" Spacing="10">
@@ -278,6 +296,131 @@
                                                         <ToggleSwitch OffContent="Allow OS-Based Optimizations"
                                                                       OnContent="Lock Model in Memory"
                                                                       IsChecked="{Binding ModelParameters.MemoryLock}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <TextBlock Text="Flash Attention" />
+                                                        <TextBlock
+                                                            Text="An optimized attention mechanism that speeds up model inference and reduces memory usage, enabling faster and more efficient model execution and higher context length."
+                                                            TextWrapping="Wrap" FontSize="12"
+                                                            Foreground="LightSteelBlue" />
+                                                        <ToggleSwitch OffContent="Flash Attention Disabled"
+                                                                      OnContent="Flash Attention Enabled"
+                                                                      IsChecked="{Binding ModelParameters.FlashAttention}" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Expander>
+
+                                            <!-- settings of model loader -->
+                                            <Expander Grid.Row="3" Header="Memory"
+                                                      IsEnabled="{Binding IsMemoryVisible}"
+                                                      IsVisible="{Binding IsMemoryVisible}"
+                                                      IsExpanded="{Binding IsMemoryExpanded}">
+                                                <StackPanel Spacing="20">
+                                                    <StackPanel Spacing="10" Margin="10">
+                                                        <Grid ColumnDefinitions="Auto,*">
+                                                            <TextBlock Text="Embeddings Model" FontWeight="Bold" />
+                                                            <StackPanel Grid.Column="1" Spacing="5"
+                                                                        Orientation="Horizontal"
+                                                                        HorizontalAlignment="Right">
+                                                                <Button Name="PART_UnloadMemoryModelBtn"
+                                                                        IsVisible="False"
+                                                                        Classes="transparent"
+                                                                        ToolTip.Tip="Unload Embeddings Model">
+                                                                    <icons:SymbolIcon Symbol="ArrowReset" />
+                                                                </Button>
+                                                                <Button Classes="transparent"
+                                                                        Command="{Binding RefreshMemoryModelsCommand}"
+                                                                        ToolTip.Tip="Refresh Models List">
+                                                                    <icons:SymbolIcon Symbol="ArrowRepeatAll"
+                                                                        FontSize="24" />
+                                                                </Button>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                        <StackPanel Spacing="5">
+                                                            <Label Content="Model" />
+                                                            <ComboBox Name="PART_MemoryModelComboBox"
+                                                                      ItemsSource="{Binding MemoryModels}"
+                                                                      DisplayMemberBinding="{Binding Name, DataType=models:ModelInfo}"
+                                                                      FontSize="24" HorizontalAlignment="Stretch" />
+                                                        </StackPanel>
+                                                        <StackPanel Name="PART_MemoryModelWeightContainer" Spacing="5" IsVisible="False">
+                                                            <Label Content="Weight" />
+                                                            <ComboBox Name="PART_MemoryModelWeightComboBox"
+                                                                      ItemsSource="{Binding #PART_MemoryModelComboBox.((models:ModelInfo)SelectedItem).Weights, FallbackValue={x:Null}}"
+                                                                      DisplayMemberBinding="{Binding Weight, DataType=models:ModelInfoWeight}"
+                                                                      FontSize="24"
+                                                                      HorizontalAlignment="Stretch" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <Grid ColumnDefinitions="*,Auto">
+                                                            <TextBlock Text="Chunk Size" VerticalAlignment="Center" />
+                                                            <icons:SymbolIcon Grid.Column="1" Symbol="QuestionCircle"
+                                                                              ToolTip.Tip="The size of each chunk when splitting the memory contents. Smaller chunks are processed faster, while larger chunks retain more context. &#10;&#10;Options: Low (256), Medium (512), High (1024), Highest (2048). &#10;&#10;Recommended: Medium (512) for optimal balance." />
+                                                        </Grid>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Slider Width="180" Minimum="256" Maximum="2048"
+                                                                    Value="{Binding MemoryChunkSize, Mode=TwoWay}"
+                                                                    TickFrequency="256" IsSnapToTickEnabled="True"
+                                                                    TickPlacement="BottomRight"
+                                                                    VerticalAlignment="Center" />
+                                                            <NumericUpDown
+                                                                Value="{Binding MemoryChunkSize, Mode=TwoWay}"
+                                                                ShowButtonSpinner="False" Increment="100"
+                                                                FormatString="0"
+                                                                Margin="20,0,0,0" VerticalAlignment="Center" Width="70" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <Grid ColumnDefinitions="*,Auto">
+                                                            <TextBlock Text="Chunk Overlapping"
+                                                                       VerticalAlignment="Center" />
+                                                            <icons:SymbolIcon Grid.Column="1" Symbol="QuestionCircle"
+                                                                              ToolTip.Tip="The number of overlapping tokens between consecutive chunks when splitting the memory contents. Overlapping helps maintain context and improve retrieval accuracy, especially with shorter chunk sizes.&#10;&#10;Options: None (0), Low (64), Medium (128), High (256).&#10;&#10;Recommended: Low (64) for a balance between accuracy and processing speed, ensuring it remains smaller than the chosen Chunk Size.&#10;&#10;This value must always be less than the Chunk Size." />
+                                                        </Grid>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Slider Width="180" Minimum="0" Maximum="256"
+                                                                    Value="{Binding MemoryOverlapping, Mode=TwoWay}"
+                                                                    TickFrequency="64" IsSnapToTickEnabled="True"
+                                                                    TickPlacement="BottomRight"
+                                                                    VerticalAlignment="Center" />
+                                                            <NumericUpDown
+                                                                Value="{Binding MemoryOverlapping, Mode=TwoWay}"
+                                                                ShowButtonSpinner="False" Increment="100"
+                                                                FormatString="0"
+                                                                Margin="20,0,0,0" VerticalAlignment="Center" Width="70" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <Grid ColumnDefinitions="*,Auto">
+                                                            <TextBlock Text="Chunk Separator" VerticalAlignment="Center" />
+                                                            <icons:SymbolIcon Grid.Column="1" Symbol="QuestionCircle"
+                                                                              ToolTip.Tip="Add a custom header to the beginning of each chunk created when splitting the memory contents. This can be useful for providing additional context or metadata to each chunk, which can improve retrieval accuracy and relevance.  &#10;&#10;Example: You could include the source document's title or a brief summary in the header. &#10;&#10;Default: No header is added." />
+                                                        </Grid>
+                                                        <TextBox Text="{Binding MemoryChunkSeparator}" TextWrapping="Wrap" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <Grid ColumnDefinitions="*,Auto">
+                                                            <TextBlock Text="Retrieval Prompt"
+                                                                       VerticalAlignment="Center" />
+                                                            <icons:SymbolIcon Grid.Column="1" Symbol="QuestionCircle"
+                                                                              ToolTip.Tip="Prompt to instruct the model to answer user questions based solely on the provided context, without using any prior knowledge or external information. &#10;&#10;This prevents the LLM from hallucinating or making assumptions, ensuring that the answers are grounded in the given data." />
+                                                        </Grid>
+                                                        <TextBox
+                                                            Text="{Binding Parameters.MemoryPrompt, Source={x:Static utilities:AppConfig.Instance}}"
+                                                            TextWrapping="Wrap" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="10" Spacing="10">
+                                                        <Grid ColumnDefinitions="*,Auto">
+                                                            <TextBlock Text="Global Prompt"
+                                                                       VerticalAlignment="Center" />
+                                                            <icons:SymbolIcon Grid.Column="1" Symbol="QuestionCircle"
+                                                                              ToolTip.Tip="Provides the model with additional context from previous conversations, potentially leading to more relevant and coherent responses. &#10;&#10;This improves conversational flow and user experience." />
+                                                        </Grid>
+                                                        <TextBox
+                                                            Text="{Binding Parameters.GlobalMemoryPrompt, Source={x:Static utilities:AppConfig.Instance}}"
+                                                            TextWrapping="Wrap" />
                                                     </StackPanel>
                                                 </StackPanel>
                                             </Expander>

@@ -8,7 +8,7 @@ public class VoiceTranscribeDto
     /// <summary>
     /// The audio language.
     /// </summary>
-    public string Language { get; set; } = "EN";
+    public string? Language { get; set; }
     
     /// <summary>
     /// The file extension of the audio data.
@@ -18,7 +18,7 @@ public class VoiceTranscribeDto
     /// <summary>
     /// The audio data in byte array format.
     /// </summary>
-    public byte[] File { get; set; } = Array.Empty<byte>();
+    public byte[] File { get; set; } = [];
 
     /// <summary>
     /// The desired output type of the transcription.

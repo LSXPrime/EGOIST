@@ -1,0 +1,135 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:EGOIST.Presentation.UI.Views.Controls"
+        xmlns:icons="clr-namespace:FluentIcons.Avalonia;assembly=FluentIcons.Avalonia"
+        xmlns:entities="clr-namespace:EGOIST.Domain.Entities;assembly=EGOIST.Domain"
+        x:DataType="controls:MessageInputOptionsControl">
+    <Design.PreviewWith>
+        <controls:MessageInputOptionsControl Width="600" Height="300" />
+    </Design.PreviewWith>
+
+
+    <Style Selector="controls|MessageInputOptionsControl">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Spacing="10" Margin="15,0,10,50">
+                        <!-- Attachments -->
+                        <ItemsControl ItemsSource="{TemplateBinding Citations}" VerticalAlignment="Top" Height="40">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="5" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="entities:Citation">
+                                    <Border Background="#262626" CornerRadius="8" VerticalAlignment="Center"
+                                            Padding="10">
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                                <icons:SymbolIcon Symbol="Document" />
+                                                <TextBlock Text="{Binding Title}" />
+                                            </StackPanel>
+
+                                            <Button Classes="transparent" HorizontalAlignment="Right"
+                                                    Command="{Binding  $parent[controls:MessageInputOptionsControl].((controls:MessageInputOptionsControl)DataContext).RemoveAttachmentCommand, FallbackValue={x:Null}}"
+                                                    CommandParameter="{Binding .}">
+                                                <icons:SymbolIcon Symbol="DismissCircle" />
+                                            </Button>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Grid>
+                            <!-- Message Input -->
+                            <TextBox CornerRadius="8" Text="{Binding UserInput}" TextWrapping="Wrap" Height="100"
+                                     Watermark="Write your message here!" AcceptsReturn="True"
+                                     HorizontalAlignment="Stretch"
+                                     VerticalAlignment="Stretch">
+                                <TextBox.KeyBindings>
+                                    <KeyBinding Gesture="Enter" Command="{Binding GenerateCommand}" />
+                                </TextBox.KeyBindings>
+                            </TextBox>
+
+                            <!-- Message Controls -->
+                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="25,15" VerticalAlignment="Bottom">
+                                <Button Command="{TemplateBinding LoadAttachmentCommand}" Classes="transparent">
+                                    <icons:SymbolIcon Symbol="Folder" />
+                                </Button>
+                                <Button Classes="transparent">
+                                    <Button.Flyout>
+                                        <Flyout>
+                                            <StackPanel Spacing="10" Width="300">
+                                                <TextBlock Text="Web Search" FontWeight="Black" />
+                                                <Grid ColumnDefinitions="*,*">
+                                                    <TextBlock Text="Enabled" VerticalAlignment="Center" />
+                                                    <ToggleSwitch Grid.Column="1"
+                                                                  IsChecked="{Binding WebSearchEnabled}" />
+                                                </Grid>
+                                                <Grid ColumnDefinitions="*,*">
+                                                    <TextBlock Text="Sources" VerticalAlignment="Center" />
+                                                    <NumericUpDown Grid.Column="1"
+                                                                   Value="{Binding WebSearchResultsCount}" />
+                                                </Grid>
+                                            </StackPanel>
+                                        </Flyout>
+                                    </Button.Flyout>
+                                    <icons:SymbolIcon
+                                        Symbol="{Binding WebSearchEnabled, Converter={StaticResource ConditionCheckConverter}, ConverterParameter=True|Globe|GlobeOff}" />
+                                </Button>
+                                <Button Classes="transparent">
+                                    <Button.Flyout>
+                                        <Flyout>
+                                            <StackPanel Spacing="10" Width="300">
+                                                <TextBlock Text="Memories" FontWeight="Black" />
+                                                <Grid ColumnDefinitions="*,*">
+                                                    <TextBlock Text="Enabled" VerticalAlignment="Center" />
+                                                    <ToggleSwitch Grid.Column="1"
+                                                                  IsChecked="{Binding MemoryEnabled}" />
+                                                </Grid>
+                                                <StackPanel Spacing="10">
+                                                    <TextBlock Text="Sources" FontWeight="Black" />
+                                                    <ListBox Name="PART_MemorySourcesList" SelectionMode="Multiple" ItemsSource="{TemplateBinding MemorySources}">
+                                                        <ListBox.ItemTemplate>
+                                                            <DataTemplate DataType="entities:MemorySource">
+                                                                <TextBlock Text="{Binding Name}" />
+                                                            </DataTemplate>
+                                                        </ListBox.ItemTemplate>
+                                                    </ListBox>
+                                                </StackPanel>
+                                                <Grid ColumnDefinitions="*,*">
+                                                    <TextBlock Text="Relevance" VerticalAlignment="Center" />
+                                                    <NumericUpDown Grid.Column="1" Increment="0.25" Minimum="0"
+                                                                   Maximum="1"
+                                                                   Value="{Binding MemoryRelevance}" />
+                                                </Grid>
+                                                <Grid ColumnDefinitions="*,*">
+                                                    <TextBlock Text="Chunks" VerticalAlignment="Center" />
+                                                    <NumericUpDown Grid.Column="1" Minimum="1" Maximum="5"
+                                                                   Value="{Binding MemoryChunksCount}" />
+                                                </Grid>
+                                            </StackPanel>
+                                        </Flyout>
+
+                                    </Button.Flyout>
+                                    <icons:SymbolIcon Symbol="Stack" />
+                                </Button>
+                            </StackPanel>
+
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Send Button -->
+                    <Button Command="{TemplateBinding GenerateCommand}" CornerRadius="8" Width="100" Height="100"
+                            VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="1">
+                        <icons:SymbolIcon
+                            Symbol="{Binding State, Converter={StaticResource ConditionCheckConverter}, ConverterParameter=Started|Stop|Send}"
+                            FontSize="32" Foreground="White" />
+                    </Button>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

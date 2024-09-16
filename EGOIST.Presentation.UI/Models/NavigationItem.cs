@@ -2,9 +2,10 @@
 
 namespace EGOIST.Presentation.UI.Models;
 
-public class NavigationItem(Type type, NavigationItemType navType, string title, string icon)
+public class NavigationItem(Type type, NavigationItemType navType, string title, string icon, string description = "")
 {
     public string Title { get; } = title;
+    public string Description { get; } = description;
     public string Icon { get; } = icon;
     public Type ViewModel { get; } = type;
     public NavigationItemType NavType { get; } = navType;

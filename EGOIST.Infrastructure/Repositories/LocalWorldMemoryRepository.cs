@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using EGOIST.Application.Interfaces.Utilities;
 using EGOIST.Application.Services.Utilities;
 using EGOIST.Domain.Entities;
 using EGOIST.Domain.Interfaces;
@@ -7,7 +8,7 @@ namespace EGOIST.Infrastructure.Repositories;
 
 public class LocalWorldMemoryRepository(IFileSystemService fileSystemService) : IWorldMemoryRepository
 {
-    private readonly string _baseDirectory = AppConfig.Instance.WorldMemoriesPath;
+    private readonly string _baseDirectory = AppConfig.Instance.Parameters.WorldMemoriesPath;
 
     public async Task<bool> SaveWorldAsync(RoleplayWorld roleplayWorld)
     {

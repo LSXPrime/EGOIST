@@ -1,95 +1,84 @@
 using EGOIST.Application.Interfaces.Core;
 using EGOIST.Application.Interfaces.Image;
+using EGOIST.Application.Interfaces.Utilities;
+using EGOIST.Domain.Entities;
 using EGOIST.Domain.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StableDiffusion.NET;
 
-namespace EGOIST.Application.Services.Image
+namespace EGOIST.Application.Services.Image;
+
+public class ImagineService(
+    ILogger<ImagineService> logger,
+    [FromKeyedServices("ImageModelCoreService")] IModelCoreService modelCore,
+    IImageHelper imageHelper) : IImageService
 {
-    public class ImagineService(ILogger<ImagineService> logger, [FromKeyedServices("ImageModelCoreService")] IModelCoreService modelCore) : IImageService
+    private readonly ImageModelCoreService? _imageModelCore = modelCore as ImageModelCoreService;
+
+    /// <summary>
+    /// Generates an image from a text prompt using Stable Diffusion.
+    /// </summary>
+    /// <param name="parameters">Optional parameters for the image generation including prompts, sampling, and other settings.</param>
+    /// <returns>A task that completes with the generated image data.</returns>
+    public async Task<byte[]> Imagine(ImageGenerationParameters parameters)
     {
-        private readonly ImageModelCoreService? _imageModelCore = modelCore as ImageModelCoreService;
-
-        /// <summary>
-        /// Generates an image from a text prompt using Stable Diffusion.
-        /// </summary>
-        /// <param name="prompt">The text prompt describing the desired image.</param>
-        /// <param name="negative">Optional negative prompt to exclude elements from the image.</param>
-        /// <returns>A task that completes with the generated image data.</returns>
-        public async Task<byte[]> Imagine(string prompt, string negative = "")
+        if (_imageModelCore?.SelectedGenerationModel == null)
         {
-            if (_imageModelCore?.SelectedGenerationModel == null)
-            {
-                logger.LogWarning("Text Generation Model isn't loaded yet.");
-                return [];
-            }
+            logger.LogWarning("Text Generation Model isn't loaded yet.");
+            return [];
+        }
 
-            _imageModelCore.State = GenerationState.Started;
+        _imageModelCore.State = GenerationState.Started;
 
-            try
+        var stableDiffusionImage = _imageModelCore.Model is null
+            ? null
+            : await Task.Run(() =>
             {
-                var stableDiffusionImage = await Task.Run(() =>
+                var param = new DiffusionParameter
                 {
-                    if (_imageModelCore.Model != null)
-                    {
-                        var parameters = new StableDiffusionParameter
-                        {
-                            NegativePrompt = negative,
-                            Width = 512,
-                            Height = 512,
-                            CfgScale = 7.5f,
-                            SampleSteps = 25,
-                            Seed = Random.Shared.NextInt64(),
-                            SampleMethod = Sampler.Euler_A
-                        };
+                    NegativePrompt = parameters.NegativePrompt,
+                    Width = parameters.Width,
+                    Height = parameters.Height,
+                    CfgScale = parameters.CfgScale,
+                    SampleSteps = parameters.Steps,
+                    Seed = parameters.Seed,
+                    SampleMethod = (Sampler)(short)parameters.Sampler,
+                    ClipSkip = parameters.ClipSkip,
+                    Strength = parameters.Strength
+                };
+                
+                if (parameters.ControlNetParameters is { IsEnabled: true, ControlNetImage: not null })
+                {
+                    param.ControlNet.Image =
+                        imageHelper.LoadImage(parameters.ControlNetParameters.ControlNetImage);
+                    param.ControlNet.Strength = parameters.ControlNetParameters.ControlNetStrength;
+                }
 
-                        return _imageModelCore.Model.TextToImage(prompt, parameters);
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                });
+                return _imageModelCore.Model.TextToImage(parameters.Prompt, param);
+            });
 
-                _imageModelCore.State = GenerationState.Finished;
+        _imageModelCore.State = GenerationState.Finished;
 
-                return stableDiffusionImage != null ? stableDiffusionImage.Data.ToArray() : [];
-            }
-            finally
-            {
-                _imageModelCore.State = GenerationState.None;
-                _imageModelCore.Model?.Dispose();
-            }
-        }
-
-        /// <summary>
-        /// Inpaints an image based on a prompt and a mask.
-        /// </summary>
-        /// <param name="prompt">The text prompt describing the desired inpainting.</param>
-        /// <param name="negative">Optional negative prompt to exclude elements from the inpainted region.</param>
-        /// <param name="source">The source image data.</param>
-        /// <param name="mask">The mask image data, where white pixels indicate the region to inpaint.</param>
-        /// <returns>A task that completes with the inpainted image data.</returns>
-        public Task<byte[]> Inpaint(string prompt, string negative, byte[] source, byte[] mask)
-        {
-            // Implement inpainting logic using Stable Diffusion.
-            // You can use the StableDiffusionModel.ImageToImage method to achieve this.
-            return Task.FromResult(Array.Empty<byte>());
-        }
-
-        /// <summary>
-        /// Transforms an image based on a prompt.
-        /// </summary>
-        /// <param name="prompt">The text prompt describing the desired image transformation.</param>
-        /// <param name="negative">Optional negative prompt to exclude elements from the transformed image.</param>
-        /// <param name="source">The source image data.</param>
-        /// <returns>A task that completes with the transformed image data.</returns>
-        public Task<byte[]> Transform(string prompt, string negative, byte[] source)
-        {
-            // Implement image transformation logic using Stable Diffusion.
-            // You can use the StableDiffusionModel.ImageToImage method to achieve this.
-            return Task.FromResult(Array.Empty<byte>());
-        }
+        return stableDiffusionImage != null ? imageHelper.SaveImage(stableDiffusionImage) : [];
     }
+
+    /// <summary>
+    /// Inpaints an image based on a prompt and a mask.
+    /// </summary>
+    /// <param name="parameters">Optional parameters for the image generation including prompts, sampling, and other settings.</param>
+    /// <param name="source">The source image data.</param>
+    /// <param name="mask">The mask image data, where white pixels indicate the region to inpaint.</param>
+    /// <returns>A task that completes with the inpainted image data.</returns>
+    public Task<byte[]> Inpaint(ImageGenerationParameters parameters, byte[] source, byte[] mask) => Task.FromResult(Array.Empty<byte>());
+
+    /// <summary>
+    /// Transforms an image based on a prompt.
+    /// </summary>
+    /// <param name="parameters">Optional parameters for the image generation including prompts, sampling, and other settings.</param>
+    /// <param name="source">The source image data.</param>
+    /// <returns>A task that completes with the transformed image data.</returns>
+    public Task<byte[]> Transform(ImageGenerationParameters parameters, byte[] source) => Task.FromResult(Array.Empty<byte>());
+
+    public Task<byte[]> Upscale(int scale, byte[] source) => Task.FromResult(Array.Empty<byte>());
 }

@@ -7,7 +7,9 @@ using NAudio.Wave;
 
 namespace EGOIST.Application.Services.Voice
 {
-    public class TranscribeService(ILogger<TranscribeService> logger, [FromKeyedServices("VoiceModelCoreService")] IModelCoreService modelCore)
+    public class TranscribeService(
+        ILogger<TranscribeService> logger,
+        [FromKeyedServices("VoiceModelCoreService")] IModelCoreService modelCore)
         : IVoiceService
     {
         private readonly VoiceModelCoreService? _modelCore = modelCore as VoiceModelCoreService;
@@ -17,22 +19,24 @@ namespace EGOIST.Application.Services.Voice
         /// </summary>
         /// <param name="dto">The voice transcribe DTO containing the audio data.</param>
         /// <returns>An asynchronous enumerable of transcribed text segments.</returns>
-        public async IAsyncEnumerable<string> Generate(VoiceTranscribeDto dto)
+        public async IAsyncEnumerable<string> Transcribe(VoiceTranscribeDto dto)
         {
             ArgumentNullException.ThrowIfNull(dto);
+            ArgumentNullException.ThrowIfNull(dto.File);
 
             await using var audioReader = new WaveFileReader(new MemoryStream(dto.File));
-
-            // get Whisper transcriber
             var transcriber = _modelCore?.TranscribeProcessor;
+
+            if (audioReader.Length == 0 || transcriber == null)
+                yield break;
+
             // Set the language
-            transcriber?.ChangeLanguage(dto.Language);
+            if (!string.IsNullOrEmpty(dto.Language))
+                transcriber.ChangeLanguage(dto.Language);
 
             // Transcribe the audio
-            await foreach (var segment in transcriber?.ProcessAsync(audioReader, CancellationToken.None)!)
-            {
+            await foreach (var segment in transcriber.ProcessAsync(audioReader, CancellationToken.None))
                 yield return segment.Text;
-            }
         }
 
         /// <summary>

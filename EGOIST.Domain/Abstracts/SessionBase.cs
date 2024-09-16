@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Text;
+using EGOIST.Domain.Entities;
 using EGOIST.Domain.Interfaces;
 
 namespace EGOIST.Domain.Abstracts;
@@ -12,14 +13,26 @@ public abstract class SessionBase<TMessage>(string sessionName) : EntityBase, IS
         get => sessionName;
         set => Notify(ref sessionName, value);
     }
+    
+    [NonSerialized]
+    private bool _isLoaded;
+    public bool IsLoaded
+    {
+        get => _isLoaded;
+        set => Notify(ref _isLoaded, value);
+    }
 
     public ObservableCollection<TMessage> Messages { get; set; } = [];
 
-    public TMessage AddMessage(string user, string message)
+    public virtual TMessage AddMessage(string user, string message, Citation[]? citations = null)
     {
-        var messageInput = new TMessage();
+        var messageInput = new TMessage
+        {
+            Message = message,
+            Citations = citations ?? []
+        };
         messageInput.GetType().GetProperty("Sender")!.SetValue(messageInput, user);
-        messageInput.GetType().GetProperty("Message")!.SetValue(messageInput, message);
+   //     messageInput.GetType().GetProperty("Message")!.SetValue(messageInput, message);
         Messages.Add(messageInput);
 
         return messageInput;

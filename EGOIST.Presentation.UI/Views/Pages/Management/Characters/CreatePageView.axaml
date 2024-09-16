@@ -1,0 +1,270 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:icons="using:FluentIcons.Avalonia"
+             xmlns:vm="using:EGOIST.Presentation.UI.ViewModels.Pages.Management.Characters"
+             mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+             x:DataType="vm:CreatePageViewModel"
+             x:Class="EGOIST.Presentation.UI.Views.Pages.Management.Characters.CreatePageView">
+    <UserControl.Resources>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" x:Key="MessageBgBrush">
+            <GradientStop Color="Transparent" Offset="0.0" />
+            <GradientStop Color="#44000000" Offset="0.5" />
+            <GradientStop Color="#22000000" Offset="1.0" />
+        </LinearGradientBrush>
+    </UserControl.Resources>
+    <Design.DataContext>
+        <vm:CreatePageViewModel>
+            <x:Arguments>
+                <x:Null />
+                <x:Null />
+            </x:Arguments>
+        </vm:CreatePageViewModel>
+    </Design.DataContext>
+
+    <Grid ColumnDefinitions="25*,50*,25*" Margin="50">
+        <Border Name="AvatarImageBorder" CornerRadius="16" Margin="5">
+            <Border.Background>
+                <ImageBrush Stretch="UniformToFill"
+                            Source="{Binding Avatar, Converter={StaticResource ConditionMultiConverter}, ConverterParameter='Bitmap'}" />
+            </Border.Background>
+            <Grid>
+                <Button HorizontalAlignment="Right" VerticalAlignment="Top" Margin="15" Width="50" Height="50"
+                        IsVisible="{Binding Avatar, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        Command="{Binding ClearImageCommand, FallbackValue={x:Null}}">
+                    <icons:SymbolIcon Symbol="Delete" FontSize="36" />
+                </Button>
+                <StackPanel VerticalAlignment="Center" Spacing="10"
+                            IsVisible="{Binding Avatar, Converter={x:Static ObjectConverters.IsNull}}"
+                            HorizontalAlignment="Center"
+                            Margin="30">
+                    <TextBlock
+                        Text="Drag and Drop image here or"
+                        TextWrapping="Wrap" FontSize="18"
+                        Foreground="LightSteelBlue"
+                        HorizontalAlignment="Center" />
+                    <Button Command="{Binding SelectImageCommand}" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="5">
+                            <icons:SymbolIcon Symbol="OpenFolder" FontSize="26" />
+                            <TextBlock Text="Browse" FontSize="24" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+                <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="25">
+
+                    <TextBox Background="Transparent" Text="{Binding Character.Name}" Watermark="Character name..."
+                             FontSize="36"
+                             HorizontalAlignment="Left" />
+                    <TextBox Background="Transparent" HorizontalAlignment="Left" Margin="0,10"
+                             TextWrapping="Wrap" Text="{Binding Character.Summary}"
+                             Watermark="A brief description of the personality" />
+                    <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,20,0,0">
+                        <icons:SymbolIcon Symbol="Record" />
+                        <ComboBox Background="Transparent"
+                                  ItemsSource="{Binding Character.InteractionFrequency, Converter={StaticResource EnumValuesConverter}}"
+                                  SelectedValue="{Binding InteractionFrequency}" />
+                    </StackPanel>
+                    <Grid ColumnDefinitions="Auto,*">
+                        <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,20,0,0">
+                            <icons:SymbolIcon Symbol="Person" />
+                            <TextBox Background="Transparent" Text="{Binding Character.Creator}"
+                                     Watermark="Creator name..." FontSize="16" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5"
+                                    Margin="0,20,0,0">
+                            <icons:SymbolIcon Symbol="Branch" />
+                            <TextBox Background="Transparent" Text="{Binding Character.Version}" Watermark="Version..."
+                                     FontSize="16" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid RowDefinitions="30*,70*,10*" Grid.Column="1" Margin="20,10">
+            <Grid RowDefinitions="Auto,*" Margin="0,10">
+                <StackPanel Spacing="10" Orientation="Horizontal" Margin="10">
+                    <icons:SymbolIcon Symbol="TextDescription" FontSize="36" />
+                    <TextBlock Text="Description" FontSize="36" FontWeight="Medium" />
+                </StackPanel>
+                <TextBox Grid.Row="1" Text="{Binding Character.Description}"
+                         Watermark="Character's personality and other characteristics..." TextWrapping="Wrap"
+                         FontSize="26"
+                         HorizontalAlignment="Left" VerticalAlignment="Stretch" />
+            </Grid>
+
+            <ScrollViewer Grid.Row="1" Margin="0,20" VerticalScrollBarVisibility="Auto">
+                <Grid RowDefinitions="Auto,*">
+                    <Grid ColumnDefinitions="Auto,15,*" Margin="0,10" HorizontalAlignment="Stretch">
+                        <Image Grid.Column="0" Width="75" Height="100" Margin="10,0,0,0"
+                               Source="{Binding Character, FallbackValue={x:Null}, Converter={StaticResource CharacterAvatarPathConverter}}"
+                               HorizontalAlignment="Left" VerticalAlignment="Top" />
+
+                        <Border Grid.Column="2" BorderThickness="1" CornerRadius="12" Padding="8"
+                                Background="{StaticResource MessageBgBrush}">
+                            <Border.BoxShadow>
+                                <BoxShadows>3 2 2 1 #2F000000</BoxShadows>
+                            </Border.BoxShadow>
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="10" />
+                            </Border.Effect>
+                            <StackPanel Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Border Background="DarkRed" HorizontalAlignment="Left"
+                                            CornerRadius="16"
+                                            Padding="12,0">
+                                        <TextBlock Text="{Binding Character.Name}" TextWrapping="Wrap" />
+                                    </Border>
+                                    <Border Background="DarkRed" HorizontalAlignment="Left"
+                                            CornerRadius="16"
+                                            Padding="12,0">
+                                        <TextBlock Text="First Message" TextWrapping="Wrap" />
+                                    </Border>
+                                </StackPanel>
+
+                                <TextBox Background="Transparent" BorderBrush="Transparent"
+                                         Text="{Binding Character.FirstMessage}"
+                                         Watermark="The character's first thought" TextWrapping="Wrap"
+                                         TextAlignment="Left" HorizontalAlignment="Stretch"
+                                         VerticalAlignment="Stretch" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <ItemsControl Grid.Row="1"
+                                  ItemsSource="{Binding Character.ExampleDialogue}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,15,*" Margin="0,10" HorizontalAlignment="Stretch">
+                                    <Image Grid.Column="0" Width="75" Height="100" Margin="10,0,0,0"
+                                           IsVisible="{Binding Sender, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter='User'}"
+                                           Source="{Binding $parent[UserControl].((vm:CreatePageViewModel)DataContext).Character, FallbackValue={x:Null}, Converter={StaticResource CharacterAvatarPathConverter}}"
+                                           HorizontalAlignment="Left" VerticalAlignment="Top" />
+                                    <icons:SymbolIcon Grid.Column="0" FontSize="72" Symbol="Person"
+                                                      IsVisible="{Binding Sender, Converter={x:Static ObjectConverters.Equal}, ConverterParameter='User'}"
+                                                      HorizontalAlignment="Left" VerticalAlignment="Top" />
+
+                                    <Border Grid.Column="2" BorderThickness="1" CornerRadius="12" Padding="8"
+                                            Background="{StaticResource MessageBgBrush}">
+                                        <Border.BoxShadow>
+                                            <BoxShadows>3 2 2 1 #2F000000</BoxShadows>
+                                        </Border.BoxShadow>
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="10" />
+                                        </Border.Effect>
+                                        <StackPanel Spacing="10">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <Border Background="DarkRed" HorizontalAlignment="Left"
+                                                        CornerRadius="16"
+                                                        Padding="12,0">
+                                                    <TextBlock Text="{Binding Sender}" TextWrapping="Wrap" />
+                                                </Border>
+
+                                                <Button Grid.Column="1" HorizontalAlignment="Right" Margin="15,0"
+                                                        Height="20" CommandParameter="{Binding .}"
+                                                        Command="{Binding $parent[UserControl].((vm:CreatePageViewModel)DataContext).RemoveMessageCommand, FallbackValue={x:Null}}">
+                                                    <icons:SymbolIcon Symbol="Delete" FontSize="10" />
+                                                </Button>
+                                            </Grid>
+
+                                            <TextBox Background="Transparent" BorderBrush="Transparent"
+                                                     Watermark="A dialogue example of the character interacting with the user."
+                                                     Text="{Binding Message}" TextWrapping="Wrap"
+                                                     TextAlignment="Left" HorizontalAlignment="Stretch"
+                                                     VerticalAlignment="Stretch" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </ScrollViewer>
+            <Grid Grid.Row="2" VerticalAlignment="Bottom" Height="50">
+                <StackPanel Spacing="10" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Command="{Binding SaveCommand}">
+                        <StackPanel Spacing="10" Orientation="Horizontal">
+                            <icons:SymbolIcon Symbol="Save" FontSize="28" />
+                            <TextBlock Text="Save" FontSize="24" />
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding BackCommand}">
+                        <StackPanel Spacing="10" Orientation="Horizontal">
+                            <icons:SymbolIcon Symbol="ArrowExit" FontSize="28" />
+                            <TextBlock Text="Back" FontSize="24" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+                <StackPanel HorizontalAlignment="Left">
+                    <SplitButton Command="{Binding AddMessageCommand}" CommandParameter="">
+                        <SplitButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuItem Header="User" Command="{Binding AddMessageCommand}" CommandParameter="User" />
+                                <MenuItem Header="{Binding Character.Name}" Command="{Binding AddMessageCommand}"
+                                          CommandParameter="{Binding Character.Name}" />
+                            </MenuFlyout>
+                        </SplitButton.Flyout>
+                        <StackPanel Spacing="10" Orientation="Horizontal">
+                            <icons:SymbolIcon Symbol="ChatAdd" FontSize="28" />
+                            <TextBlock Text="{Binding Character.ExampleDialogue.Count, StringFormat='Dialogs: {0}'}"
+                                       FontSize="24" />
+                        </StackPanel>
+                    </SplitButton>
+                </StackPanel>
+            </Grid>
+        </Grid>
+
+        <Border Grid.Column="2" CornerRadius="16" Margin="5" Background="{StaticResource MessageBgBrush}">
+            <Grid RowDefinitions="85*,15*">
+                <Grid VerticalAlignment="Stretch" RowDefinitions="50*,50*" Margin="25">
+                    <Grid RowDefinitions="Auto,*">
+                        <StackPanel Spacing="10" Orientation="Horizontal" Margin="0,0,0,10">
+                            <icons:SymbolIcon Symbol="Teaching" FontSize="36" />
+                            <TextBlock Text="Scenario" FontSize="36" FontWeight="Medium" />
+                        </StackPanel>
+                        <TextBox Grid.Row="1" Text="{Binding Character.Scenario}"
+                                 Watermark="Circumstances and context of the dialogue." TextWrapping="Wrap"
+                                 FontSize="26"
+                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                    </Grid>
+                    <Grid Grid.Row="1" RowDefinitions="Auto,*" Margin="0,50">
+                        <StackPanel Spacing="10" Orientation="Horizontal" Margin="0,0,0,10">
+                            <icons:SymbolIcon Symbol="Note" FontSize="36" />
+                            <TextBlock Text="Notes" FontSize="36" FontWeight="Medium" />
+                        </StackPanel>
+                        <TextBox Grid.Row="1" Text="{Binding Character.Notes}"
+                                 Watermark="The thoughts of the character creator." TextWrapping="Wrap" FontSize="26"
+                                 HorizontalAlignment="Stretch" />
+                    </Grid>
+                </Grid>
+                <StackPanel Grid.Row="1" Spacing="25" Margin="25">
+                    <ScrollViewer VerticalAlignment="Bottom" HorizontalScrollBarVisibility="Auto" Padding="0,0,0,15">
+                        <ItemsControl ItemsSource="{Binding Character.Tags}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="8" Background="DarkRed" Margin="5,0" Padding="3">
+                                        <Label Content="{Binding .}" FontWeight="Bold"
+                                               VerticalAlignment="Center" />
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+
+                    <TextBox HorizontalAlignment="Stretch"
+                             Text="{Binding Character.Tags, Converter={StaticResource CollectionStringConverter}}"
+                             Watermark="Tags can be separated by comma (,)" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+
+</UserControl>

@@ -2,7 +2,86 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:vm="clr-namespace:EGOIST.Presentation.UI.ViewModels.Pages"
+             xmlns:avalonia="clr-namespace:FluentIcons.Avalonia;assembly=FluentIcons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+             x:DataType="vm:HomePageViewModel"
              x:Class="EGOIST.Presentation.UI.Views.Pages.HomePageView">
-    Welcome to Avalonia!
+    <Grid RowDefinitions="45*,65*">
+        <!-- Background & Overview -->
+        <Border Grid.Row="0" CornerRadius="8" Margin="10">
+            <Border.Background>
+                <ImageBrush
+                    Source="/Assets/BG.png"
+                    Stretch="Fill" />
+            </Border.Background>
+            <Grid>
+                <Grid.Background>
+                    <RadialGradientBrush>
+                        <GradientStop Offset="0" Color="#1F000000" />
+                        <GradientStop Offset="1" Color="#4F000000" />
+                    </RadialGradientBrush>
+                </Grid.Background>
+                <StackPanel
+                    Margin="48,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Background="Transparent">
+                    <TextBlock
+                        Foreground="#FFFFFF"
+                        Text="EGOIST" Theme="{StaticResource TitleLargeTextBlockStyle}" />
+                    <TextBlock
+                        Foreground="#B7FFFFFF"
+                        Text="Generative AI Tools Hub"
+                        Theme="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock
+                        Foreground="#B7FFFFFF"
+                        Text="Empower creativity and innovation with our Generative AI Tool &#x0a;an intuitive platform leveraging cutting-edge AI &#x0a;for seamless text, voice, and image generation."
+                        Theme="{StaticResource BodyTextBlockStyle}" />
+                </StackPanel>
+                <TextBlock
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    TextAlignment="Right"
+                    Foreground="#57FFFFFF"
+                    Text="Created by LSXPrime &#x0a;Inori from Guilty Crown Artwork by matsumayu"
+                    Theme="{StaticResource BodyTextBlockStyle}" />
+            </Grid>
+        </Border>
+
+        <!-- Navigation Buttons -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ItemsControl Margin="25" ItemsSource="{Binding PageCards}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Margin="25" MaxWidth="525" MaxHeight="200" Command="{Binding NavigateAction}">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <avalonia:SymbolIcon Symbol="{Binding Icon}" FontSize="80" Margin="24,0,0,0"
+                                                     Grid.Column="0" />
+                                <StackPanel
+                                    Grid.Column="1"
+                                    Margin="24"
+                                    VerticalAlignment="Center">
+                                    <TextBlock
+                                        Margin="0"
+                                        Theme="{StaticResource SubtitleTextBlockStyle}"
+                                        Text="{Binding Title}"
+                                        TextWrapping="WrapWithOverflow" />
+                                    <TextBlock
+                                        Theme="{StaticResource BodyTextBlockStyle}"
+                                        Text="{Binding Description}"
+                                        TextWrapping="WrapWithOverflow" />
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
 </UserControl>

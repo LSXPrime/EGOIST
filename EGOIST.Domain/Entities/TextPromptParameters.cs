@@ -24,7 +24,7 @@ public class TextPromptParameters : PromptTemplateBase, IPromptTemplate
     public ObservableCollection<string> BlackList { get; set; } = [];
 
     public string Prompt(string prompt, bool system = false) => $"{(system ? $"{SystemPrefix}{SystemPrompt}{SystemSuffix}" : "")}{PromptPrefix}{prompt}{PromptSuffix}";
-    public string Prompt(string prompt, string system) => $"{SystemPrefix}{system}{SystemSuffix}{PromptPrefix}{prompt}{PromptSuffix}";
+    public string Prompt(string prompt, string system) => $"{(!string.IsNullOrEmpty(system) ? $"{SystemPrefix}{SystemPrompt}{SystemSuffix}" : "")}{PromptPrefix}{prompt}{PromptSuffix}";
     public string Prompt(string prompt, string system, string prefix, string suffix) => $"{SystemPrefix}{(string.IsNullOrEmpty(system) ? SystemPrompt : system)}{SystemSuffix}{(string.IsNullOrEmpty(prefix) ? PromptPrefix : prefix)}{prompt}{(string.IsNullOrEmpty(suffix) ? PromptSuffix : suffix)}";
     public string Prompt(string prompt, TextPromptParameters promptParameters) => $"{SystemPrefix}{(string.IsNullOrEmpty(promptParameters.SystemPrompt) ? SystemPrompt : promptParameters.SystemPrompt)}{SystemSuffix}{(string.IsNullOrEmpty(promptParameters.PromptPrefix) ? PromptPrefix : promptParameters.PromptPrefix)}{prompt}{(string.IsNullOrEmpty(promptParameters.PromptSuffix) ? PromptSuffix : promptParameters.PromptSuffix)}";
     

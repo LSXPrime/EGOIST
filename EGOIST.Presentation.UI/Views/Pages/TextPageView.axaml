@@ -24,7 +24,7 @@
 
 		<TransitioningContentControl Grid.Row="0" Margin="0,0,0,20" Content="{Binding Source={x:Static services:NavigationService.Current}, Path=Sub}"/>
 		
-		<!-- Model Selection & System Info -->
+		<!-- Model Selection -->
 		<Grid Grid.Row="1"  ColumnDefinitions="50*,50*,Auto" VerticalAlignment="Stretch">
 			<Grid.Background>
 				<LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
@@ -44,11 +44,11 @@
 				<StackPanel Grid.Column="1" Margin="10,0" >
 					<Label Content="Weight" FontFamily="Cambria" FontWeight="Bold" Margin="0,0,0,5" />
 					<ComboBox ItemsSource="{Binding SelectedGenerationModel.Weights, FallbackValue={x:Null}}" SelectedItem="{Binding SelectedGenerationWeight}" DisplayMemberBinding="{Binding Weight}" FontSize="24" HorizontalAlignment="Stretch">
-						<interactivity:Interaction.Behaviors>
-							<interactions:EventTriggerBehavior EventName="SelectionChanged">
-								<interactions:InvokeCommandAction Command="{Binding SwitchModelCommand}" />
-							</interactions:EventTriggerBehavior>
-						</interactivity:Interaction.Behaviors>
+						<Interaction.Behaviors>
+							<EventTriggerBehavior EventName="SelectionChanged">
+								<InvokeCommandAction Command="{Binding SwitchModelCommand}" />
+							</EventTriggerBehavior>
+						</Interaction.Behaviors>
 					</ComboBox>
 				</StackPanel>
 			</Grid>
@@ -56,6 +56,9 @@
 				<icons:SymbolIcon Symbol="Circle" Width="50" Height="45" FontSize="32" IsVisible="{Binding ModelCoreService.State, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Started}" ToolTip.Tip="{Binding SelectedGenerationModel.Name, FallbackValue='Loading Model' , StringFormat='Loading Model: {0}'}" />
 				<Button Width="50" Height="45" Command="{Binding UnloadModelCommand}" ToolTip.Tip="{Binding SelectedGenerationModel.Name, FallbackValue='Unload Current Model: Already Unloaded' , StringFormat='Unload Current Model: {0}'}" >
 					<icons:SymbolIcon Symbol="ArrowReset" FontSize="24" />
+				</Button>
+				<Button Width="50" Height="45" Command="{Binding RefreshModelsCommand}" ToolTip.Tip="Refresh Models List" >
+					<icons:SymbolIcon Symbol="ArrowRepeatAll" FontSize="24" />
 				</Button>
 				<Button Width="50" Height="45" Command="{Binding RefreshModelsCommand}" ToolTip.Tip="Refresh Models List" >
 					<icons:SymbolIcon Symbol="ArrowRepeatAll" FontSize="24" />

@@ -1,0 +1,267 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:icons="using:FluentIcons.Avalonia"
+             xmlns:vm="using:EGOIST.Presentation.UI.ViewModels.Pages"
+             xmlns:ui="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+             xmlns:iconsFluent="clr-namespace:FluentIcons.Avalonia.Fluent;assembly=FluentIcons.Avalonia.Fluent"
+             mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+             x:DataType="vm:SettingsPageViewModel"
+             x:Class="EGOIST.Presentation.UI.Views.Pages.SettingsPageView">
+
+    <ScrollViewer>
+        <Grid RowDefinitions="Auto,*" Margin="25">
+            <StackPanel Spacing="25">
+                <ui:SettingsExpander Header="Paths"
+                                     Description="Choose paths for where to store your files">
+                    <ui:SettingsExpander.IconSource>
+                        <iconsFluent:SymbolIconSource Symbol="Folder" />
+                    </ui:SettingsExpander.IconSource>
+
+                    <ui:SettingsExpanderItem>
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Models" FontWeight="Medium" />
+                            <Grid ColumnDefinitions="*,15,100">
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding Config.Parameters.ModelsPath}" />
+                                <Button Grid.Column="2"
+                                        Command="{Binding BrowseCommand}"
+                                        CommandParameter="Models">
+                                    <StackPanel Orientation="Horizontal">
+                                        <icons:SymbolIcon Symbol="Folder" />
+                                        <TextBlock Text="Browse" Margin="5,0,0,0" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </ui:SettingsExpanderItem>
+                    <ui:SettingsExpanderItem>
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Memories" FontWeight="Medium" />
+                            <Grid ColumnDefinitions="*,15,100">
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding Config.Parameters.MemoriesPath}" />
+                                <Button Grid.Column="2"
+                                        Command="{Binding BrowseCommand}"
+                                        CommandParameter="Memories">
+                                    <StackPanel Orientation="Horizontal">
+                                        <icons:SymbolIcon Symbol="Folder" />
+                                        <TextBlock Text="Browse" Margin="5,0,0,0" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </ui:SettingsExpanderItem>
+                    <ui:SettingsExpanderItem>
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Prompts" FontWeight="Medium" />
+                            <Grid ColumnDefinitions="*,15,100">
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding Config.Parameters.PromptsPath}" />
+                                <Button Grid.Column="2"
+                                        Command="{Binding BrowseCommand}"
+                                        CommandParameter="Prompts">
+                                    <StackPanel Orientation="Horizontal">
+                                        <icons:SymbolIcon Symbol="Folder" />
+                                        <TextBlock Text="Browse" Margin="5,0,0,0" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </ui:SettingsExpanderItem>
+                    <ui:SettingsExpanderItem>
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Voices" FontWeight="Medium" />
+                            <Grid ColumnDefinitions="*,15,100">
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding Config.Parameters.VoicesPath}" />
+                                <Button Grid.Column="2"
+                                        Command="{Binding BrowseCommand}"
+                                        CommandParameter="Voices">
+                                    <StackPanel Orientation="Horizontal">
+                                        <icons:SymbolIcon Symbol="Folder" />
+                                        <TextBlock Text="Browse" Margin="5,0,0,0" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </ui:SettingsExpanderItem>
+                    <ui:SettingsExpanderItem>
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Results" FontWeight="Medium" />
+                            <Grid ColumnDefinitions="*,15,100">
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding Config.Parameters.ResultsPath}" />
+                                <Button Grid.Column="2"
+                                        Command="{Binding BrowseCommand}"
+                                        CommandParameter="Results">
+                                    <StackPanel Orientation="Horizontal">
+                                        <icons:SymbolIcon Symbol="Folder" />
+                                        <TextBlock Text="Browse" Margin="5,0,0,0" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </ui:SettingsExpanderItem>
+                    <ui:SettingsExpanderItem>
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Characters" FontWeight="Medium" />
+                            <Grid ColumnDefinitions="*,15,100">
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding Config.Parameters.CharactersPath}" />
+                                <Button Grid.Column="2"
+                                        Command="{Binding BrowseCommand}"
+                                        CommandParameter="Characters">
+                                    <StackPanel Orientation="Horizontal">
+                                        <icons:SymbolIcon Symbol="Folder" />
+                                        <TextBlock Text="Browse" Margin="5,0,0,0" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </ui:SettingsExpanderItem>
+                    <ui:SettingsExpanderItem>
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="World Memories" FontWeight="Medium" />
+                            <Grid ColumnDefinitions="*,15,100">
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding Config.Parameters.WorldMemoriesPath}" />
+                                <Button Grid.Column="2"
+                                        Command="{Binding BrowseCommand}"
+                                        CommandParameter="WorldMemories">
+                                    <StackPanel Orientation="Horizontal">
+                                        <icons:SymbolIcon Symbol="Folder" />
+                                        <TextBlock Text="Browse" Margin="5,0,0,0" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </ui:SettingsExpanderItem>
+                    <ui:SettingsExpanderItem>
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Backgrounds" FontWeight="Medium" />
+                            <Grid ColumnDefinitions="*,15,100">
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding Config.Parameters.BackgroundsPath}" />
+                                <Button Grid.Column="2"
+                                        Command="{Binding BrowseCommand}"
+                                        CommandParameter="Backgrounds">
+                                    <StackPanel Orientation="Horizontal">
+                                        <icons:SymbolIcon Symbol="Folder" />
+                                        <TextBlock Text="Browse" Margin="5,0,0,0" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </ui:SettingsExpanderItem>
+                </ui:SettingsExpander>
+                <ui:SettingsExpander Header="Inference"
+                                     Description="Configure inference device, API, Keys, etc">
+                    <ui:SettingsExpander.IconSource>
+                        <iconsFluent:SymbolIconSource Symbol="DeveloperBoard" />
+                    </ui:SettingsExpander.IconSource>
+
+                    <ui:SettingsExpanderItem IsEnabled="False">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="API Host" FontWeight="Medium" />
+                            <TextBlock
+                                Text="API support removed temporary."
+                                TextWrapping="Wrap" FontSize="12"
+                                Foreground="LightSteelBlue" />
+                            <Grid ColumnDefinitions="95*,1*,6*">
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding Config.Parameters.ApiHost}" />
+                                <ui:NumberBox Grid.Column="2" Width="100" Text="{Binding Config.Parameters.ApiPort}" />
+                            </Grid>
+                        </StackPanel>
+                    </ui:SettingsExpanderItem>
+                    <ui:SettingsExpanderItem>
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Data Encryption Key" FontWeight="Medium" />
+                            <TextBlock
+                                Text="Leaving this empty will disable data encryption and save in it's raw form."
+                                TextWrapping="Wrap" FontSize="12"
+                                Foreground="LightSteelBlue" />
+                            <TextBox Text="{Binding Config.Parameters.DataSecretKey}" />
+                        </StackPanel>
+                    </ui:SettingsExpanderItem>
+                    <ui:SettingsExpanderItem>
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Inference Device" FontWeight="Medium" />
+                            <TextBlock
+                                Text="CUDA is recommended while using Nvidia GPUs, VULKAN is recommended for any other supported GPU manufacture, CPU is must if you don't have a supported GPU."
+                                TextWrapping="Wrap" FontSize="12"
+                                Foreground="LightSteelBlue" />
+                        </StackPanel>
+                        <ui:SettingsExpanderItem.Footer>
+                            <ComboBox
+                                ItemsSource="{Binding Config.Parameters.Device, Converter={StaticResource EnumValuesConverter}}"
+                                SelectedValue="{Binding Device}" />
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
+                </ui:SettingsExpander>
+                <ui:SettingsExpander Header="Backgrounds"
+                                     Description="Choose a background to get in mood while role-playing or just to give you EGO a look.">
+                    <ui:SettingsExpander.IconSource>
+                        <iconsFluent:SymbolIconSource Symbol="ColorBackground" />
+                    </ui:SettingsExpander.IconSource>
+
+                    <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Auto"
+                                  Padding="15">
+                        <ListBox ItemsSource="{Binding Backgrounds}" SelectedValue="{Binding CurrentBackground}">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="10" Orientation="Horizontal"></StackPanel>
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Spacing="15">
+                                        <Image
+                                            Source="{Binding Value, Converter={StaticResource ConditionMultiConverter}, ConverterParameter=Bitmap}"
+                                            Stretch="UniformToFill" MaxWidth="250"
+                                            HorizontalAlignment="Center" />
+                                        <TextBlock Text="{Binding Key}" HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </ScrollViewer>
+                </ui:SettingsExpander>
+                <StackPanel Spacing="15" HorizontalAlignment="Center" Orientation="Horizontal">
+                    <Button Command="{Binding SaveSettingsCommand}">
+                        <StackPanel Spacing="10" Orientation="Horizontal">
+                            <icons:SymbolIcon Symbol="Save" FontSize="28" />
+                            <TextBlock Text="Save" FontSize="24" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Command="{Binding ResetSettingsCommand}">
+                        <StackPanel Spacing="10" Orientation="Horizontal">
+                            <icons:SymbolIcon Symbol="ArrowReset" FontSize="28" />
+                            <TextBlock Text="Reset" FontSize="24" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- About -->
+            <StackPanel Grid.Row="1" Margin="10,20,0,50" VerticalAlignment="Bottom" HorizontalAlignment="Center">
+                <TextBlock Margin="10,35,0,0" FontSize="20" FontWeight="Medium" Text="About EGOIST"
+                           HorizontalAlignment="Center" />
+                <TextBlock Margin="10,15,0,0" Text="{Binding Config.AppVersion, Mode=OneWay}"
+                           HorizontalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" Margin="0,25,0,0" HorizontalAlignment="Center">
+                    <HyperlinkButton VerticalAlignment="Top" NavigateUri="https://github.com/LSXPrime">
+                        <StackPanel>
+                            <icons:SymbolIcon Symbol="Star" />
+                            <Label Content="Star us on github" FontWeight="Bold" />
+                        </StackPanel>
+                    </HyperlinkButton>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

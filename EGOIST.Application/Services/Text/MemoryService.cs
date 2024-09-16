@@ -1,73 +1,74 @@
 ﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using EGOIST.Application.Interfaces.Core;
 using EGOIST.Application.Interfaces.Text;
+using EGOIST.Application.Services.Management.Loaders;
+using EGOIST.Application.Utilities;
 using EGOIST.Domain.Entities;
-using EGOIST.Domain.Enums;
-using EGOIST.Domain.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace EGOIST.Application.Services.Text;
 
-public class MemoryService : ITextService
+public class MemoryService
 {
-    public ObservableCollection<TextPromptParameters> PromptTemplates { get; set; }
-    public ObservableCollection<MemorySource> MemoriesPaths { get; set; } = [];
-    public MemorySource? SelectedMemory { get; set; }
+    public ObservableCollection<MemorySource> Sessions { get; set; } = [];
 
-    private readonly TextModelCoreService? _modelCore;
+    public TextModelCoreService ModelCore { get; }
+    private readonly TextDataLoader _dataLoader;
     private readonly ILogger<MemoryService> _logger;
     private readonly IRagMemory _ragMemory;
 
-    public MemoryService(ILogger<MemoryService> logger, IPromptRepository<TextPromptParameters> promptRepository,
-        [FromKeyedServices("TextModelCoreService")]
-        IModelCoreService modelCore, IRagMemory ragMemory)
+    public MemoryService(ILogger<MemoryService> logger,
+        [FromKeyedServices("TextModelCoreScopedService")]
+        IModelCoreService modelCore, IRagMemory ragMemory, TextDataLoader dataLoader)
     {
         _logger = logger;
-        _modelCore = modelCore as TextModelCoreService;
+        ModelCore = (TextModelCoreService)modelCore;
         _ragMemory = ragMemory;
-        PromptTemplates = new ObservableCollection<TextPromptParameters>(promptRepository.GetAllTemplates(null).Result);
+        _dataLoader = dataLoader;
 
-        _modelCore!.OnSwitch += _ragMemory.InitializeAsync;
-        _modelCore!.OnUnload += _ragMemory.DisposeAsync;
+        ModelCore.OnSwitch += _ragMemory.InitializeAsync;
+        ModelCore.OnUnload += _ragMemory.DisposeAsync;
+        _ = Initialize();
     }
 
-
-    public async Task<bool> Create(Dictionary<string, object>? parameter = null)
+    private async Task Initialize()
     {
-        if (_modelCore?.SelectedGenerationModel == null)
+        Sessions = new ObservableCollection<MemorySource>(await _dataLoader.LoadAllSessions<MemorySource>("Memory"));
+    }
+
+    public async Task<bool> Create(string name, string[] paths, int chunkSize = 512, int overlap = 64, string chunkSeparator = "")
+    {
+        if (ModelCore.SelectedGenerationModel == null)
         {
             _logger.LogWarning("Text Generation Model isn't loaded yet.");
             return false;
         }
-        
-        var collectionName = parameter?["Name"].ToString() ?? "New Collection";
-        var pathName = parameter?["Path"].ToString();
-        var docName = Path.GetFileName(pathName);
-        var memorySource = MemoriesPaths.FirstOrDefault(item => item.Name == collectionName);
-        if (memorySource != null)
-            memorySource.Documents.Add(docName!);
-        else
-        {
-            memorySource = new MemorySource { Name = collectionName };
-            memorySource.Documents.Add(docName!);
-            MemoriesPaths.Add(memorySource);
-        }
+
+        var collectionName = !string.IsNullOrEmpty(name) ? name : "New Collection";
+        if (paths.Length == 0)
+            return false;
+
+        var memorySource = GetOrAddSession(collectionName);
 
         try
         {
             memorySource.IsLoaded = false;
-            await _ragMemory.SaveAsync(collectionName, pathName!, _modelCore!.CancelToken!.Token);
+            ModelCore.CancelToken ??= new CancellationTokenSource();
+            await _ragMemory.SaveAsync(collectionName, paths, new Dictionary<string, string>
+            {
+                { "ChunkSize", chunkSize.ToString(CultureInfo.InvariantCulture) },
+                { "ChunkOverlap", overlap.ToString(CultureInfo.InvariantCulture) },
+                { "ChunkSeparator", chunkSeparator }
+            }, ModelCore.CancelToken.Token);
+            memorySource.IsLoaded = true;
+            await _dataLoader.SaveSession(memorySource, "Memory", false);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error importing document");
             return false;
-        }
-        finally
-        {
-            memorySource.IsLoaded = true;
-            SelectedMemory ??= memorySource;
         }
 
         return true;
@@ -75,16 +76,19 @@ public class MemoryService : ITextService
 
     public async Task<bool> Delete(string collection)
     {
-        var existingItem = MemoriesPaths.FirstOrDefault(item => item.Name == collection);
-        if (existingItem != null)
-            MemoriesPaths.Remove(existingItem);
+        var existingItem = Sessions.FirstOrDefault(item => item.Name == collection);
+        if (existingItem == null)
+            return false;
+
+        Sessions.Remove(existingItem);
         try
         {
-            foreach (var document in existingItem?.Documents!)
+            foreach (var document in existingItem.Documents)
             {
-                await _ragMemory.RemoveAsync($"{collection}:{document}", _modelCore!.CancelToken!.Token);
+                await _ragMemory.RemoveAsync($"{collection}:{document}", ModelCore.CancelToken!.Token);
             }
-            
+
+            await _dataLoader.DeleteSession(collection);
         }
         catch (Exception ex)
         {
@@ -92,48 +96,69 @@ public class MemoryService : ITextService
             return false;
         }
 
+        _logger.LogInformation("Memory {collection} Deleted", collection);
+
         return true;
     }
 
-    public async Task<T?> Generate<T>(string userInput, TextGenerationParameters? generationParameters = null,
-        TextPromptParameters? promptParameters = null) where T : class
+    public async Task<bool> Feed(string message, string? collection = null)
     {
-        if (_modelCore!.State == GenerationState.Started)
+        if (string.IsNullOrEmpty(message))
+            return false;
+
+        return await Feed([message], collection);
+    }
+    public async Task<bool> Feed(string[] messages, string? collection = null)
+    {
+        if (messages.Length == 0)
+            return false;
+
+        var globalMemory = GetOrAddSession(collection ?? Constants.GlobalMessagesMemory);
+        globalMemory.IsLoaded = false;
+        ModelCore.CancelToken ??= new CancellationTokenSource();
+        await _ragMemory.SaveAsync(globalMemory.Name, messages, cancellationToken: ModelCore.CancelToken.Token);
+        globalMemory.IsLoaded = true;
+        return true;
+    }
+
+    public async Task<Citation[]> Generate(string userInput, MemorySource[] sessions, int chunksCount = 3,
+        double similarity = 0.5, bool isGlobalMemory = false, string? globalCollection = null)
+    {
+        if (string.IsNullOrEmpty(userInput) || (sessions.Length == 0 && !isGlobalMemory))
+            return [];
+
+        ModelCore.CancelToken = new CancellationTokenSource();
+
+        if (isGlobalMemory) sessions = [GetOrAddSession(globalCollection ?? Constants.GlobalMessagesMemory)];
+
+        var answer = await _ragMemory.GetAsync(userInput, sessions, new Dictionary<string, string>
+            {
+                { "Similarity", similarity.ToString(CultureInfo.InvariantCulture) },
+                { "ChunksCount", chunksCount.ToString() }
+            },
+            cancellationToken: ModelCore.CancelToken.Token);
+
+        return answer;
+    }
+
+    public async Task Dispose()
+    {
+        await ModelCore.CancelToken?.CancelAsync()!;
+        await ModelCore.Unload();
+
+        ModelCore.OnSwitch -= _ragMemory.InitializeAsync;
+        ModelCore.OnUnload -= _ragMemory.DisposeAsync;
+    }
+
+    private MemorySource GetOrAddSession(string sessionName)
+    {
+        var session = Sessions.FirstOrDefault(item => item.Name == sessionName);
+        if (session == null)
         {
-            await _modelCore.CancelToken!.CancelAsync();
-            return null;
+            session = new MemorySource { Name = sessionName };
+            Sessions.Add(session);
         }
 
-        if (_modelCore.SelectedGenerationModel == null)
-        {
-            _logger.LogWarning("Text Generation Model isn't loaded yet.");
-            return null;
-        }
-
-        if (SelectedMemory == null)
-        {
-            _logger.LogWarning("Memory isn't selected yet.");
-            return null;
-        }
-
-        if (string.IsNullOrEmpty(userInput) || SelectedMemory is not { IsLoaded: true } ||
-            _modelCore.SelectedGenerationModel == null)
-            return null;
-
-        _modelCore.State = GenerationState.Started;
-        
-        var userMessage = SelectedMemory.AddMessage("User", userInput);
-        var memoryMessage = SelectedMemory.AddMessage("EGOIST", "Gathering information from memories.");
-
-        _modelCore.CancelToken = new CancellationTokenSource();
-        
-        var answer = await _ragMemory.GetAsync($"{SelectedMemory.Name}:{userMessage.Message}",
-            _modelCore.CancelToken.Token);
-
-        memoryMessage.Message = answer;
-        _modelCore.State = GenerationState.Finished;
-        _modelCore.CancelToken.Dispose();
-
-        return memoryMessage as T ?? null;
+        return session;
     }
 }

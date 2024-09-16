@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Text.Json;
+using EGOIST.Application.Interfaces.Utilities;
 using EGOIST.Application.Services.Utilities;
 using EGOIST.Application.Utilities;
 using EGOIST.Domain.Entities;
@@ -30,7 +31,7 @@ public class DownloadService
         {
             Link = weight.Link,
             Name = $"{modelInfo.Name} - {weight.Weight}",
-            LocalPath = Path.Combine(AppConfig.Instance.ModelsPath, modelInfo.Type.RemoveSpaces(),
+            LocalPath = Path.Combine(AppConfig.Instance.Parameters.ModelsPath, modelInfo.Type.RemoveSpaces(),
                                      modelInfo.Name.RemoveSpaces(), $"{weight.Weight.RemoveSpaces()}.{weight.Extension.ToLower().RemoveSpaces()}"),
             TotalBytes = 0,
             DownloadedBytes = 0,

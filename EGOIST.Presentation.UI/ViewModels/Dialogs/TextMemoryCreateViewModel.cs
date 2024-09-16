@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EGOIST.Application.Interfaces.Text;
 using EGOIST.Application.Services.Text;
+using EGOIST.Domain.Entities;
 using EGOIST.Presentation.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,12 +21,11 @@ public partial class TextMemoryCreateViewModel : ViewModelBase
 
     [ObservableProperty] private string? _documentPath;
 
-    public ObservableCollection<string> MemoriesPaths { get; } = [];
+    public ObservableCollection<string> MemoriesPaths { get; }
 
-    public TextMemoryCreateViewModel([FromKeyedServices("MemoryService")] ITextService memoryService)
+    public TextMemoryCreateViewModel(MemoryService memoryService)
     {
-        if (memoryService is MemoryService memory)
-            MemoriesPaths = new ObservableCollection<string>(memory.MemoriesPaths.Select(x => x.Name));
+        MemoriesPaths = new ObservableCollection<string>(memoryService.Sessions.Select(x => x.Name));
     }
 
     [RelayCommand]

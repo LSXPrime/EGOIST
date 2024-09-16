@@ -1,0 +1,109 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:icons="using:FluentIcons.Avalonia"
+             xmlns:controls="using:EGOIST.Presentation.UI.Views.Controls"
+             xmlns:vm="using:EGOIST.Presentation.UI.ViewModels.Pages.Image"
+             xmlns:uvTools="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
+             mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+             x:DataType="vm:UpscalePageViewModel"
+             x:Class="EGOIST.Presentation.UI.Views.Pages.Image.UpscalePageView">
+
+    <Grid Margin="0" ColumnDefinitions="Auto,*,Auto">
+        <!-- Image Generation History -->
+        <controls:ImageGenerationHistoryControl
+            VerticalAlignment="Stretch"
+            Title="History"
+            History="{Binding $parent[UserControl].((vm:UpscalePageViewModel)DataContext).History, FallbackValue={x:Null}}"
+            SelectEntryCommand="{Binding $parent[UserControl].((vm:UpscalePageViewModel)DataContext).SelectEntryCommand, FallbackValue={x:Null}}"
+            DeleteEntryCommand="{Binding $parent[UserControl].((vm:UpscalePageViewModel)DataContext).DeleteEntryCommand, FallbackValue={x:Null}}" />
+
+        <!-- Image UI -->
+        <Grid Grid.Column="1" RowDefinitions="*,Auto,Auto">
+            <Grid ColumnDefinitions="*,25,*" Margin="25,25">
+                <Grid Name="SourceImageBorder" DragDrop.AllowDrop="True">
+                    <uvTools:AdvancedImageBox AutoCenter="True" AutoPan="True"
+                                              Image="{Binding SourceImage, Converter={StaticResource ConditionMultiConverter}, ConverterParameter=bitmap}" />
+                    <StackPanel VerticalAlignment="Center" Spacing="10"
+                                IsVisible="{Binding SourceImage, Converter={x:Static ObjectConverters.IsNull}, FallbackValue={x:Null}}"
+                                HorizontalAlignment="Center"
+                                Margin="30">
+                        <TextBlock
+                            Text="Drag and Drop image here or"
+                            TextWrapping="Wrap" FontSize="18"
+                            Foreground="LightSteelBlue"
+                            HorizontalAlignment="Center" />
+                        <Button Command="{Binding SelectImageCommand}" HorizontalAlignment="Center">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="5">
+                                <icons:SymbolIcon Symbol="OpenFolder" FontSize="26" />
+                                <TextBlock Text="Browse" FontSize="24" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                    <Button Command="{Binding ClearImageCommand}"
+                            IsVisible="{Binding SourceImage, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue={x:Null}}"
+                            Width="40" Height="40" Margin="10"
+                            VerticalAlignment="Top"
+                            HorizontalAlignment="Right">
+                        <icons:SymbolIcon Symbol="Dismiss" FontSize="32" />
+                    </Button>
+                </Grid>
+                <uvTools:AdvancedImageBox Grid.Column="2" AutoCenter="True" AutoPan="True"
+                                          Image="{Binding ResultImage, Converter={StaticResource ConditionMultiConverter}, ConverterParameter=bitmap}" />
+            </Grid>
+            
+            <ProgressBar Grid.Row="1" Value="{Binding Progress}" Minimum="0" Maximum="100" Margin="250,25" MinWidth="250" ShowProgressText="True"
+                         IsVisible="{Binding State, Converter={StaticResource ConditionCheckConverter}, ConverterParameter=Started|True|False}" />
+            
+            <!-- Model Selection -->
+            <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+
+                <!-- Control Net & LoRa & Vae -->
+                <Grid Grid.Column="0" HorizontalAlignment="Stretch" ColumnDefinitions="*,*">
+                    <!-- Model Selection & Unloading -->
+                    <StackPanel Grid.Column="0" Margin="10,0">
+                        <Label Content="Model" FontFamily="Cambria" FontWeight="Bold" Margin="0,0,0,5" />
+                        <ComboBox ItemsSource="{Binding Models}" SelectedItem="{Binding SelectedModel}"
+                                  DisplayMemberBinding="{Binding Name}" FontSize="24" HorizontalAlignment="Stretch" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="10,0">
+                        <Label Content="Weight" FontFamily="Cambria" FontWeight="Bold" Margin="0,0,0,5" />
+                        <ComboBox ItemsSource="{Binding SelectedModel.Weights, FallbackValue={x:Null}}"
+                                  SelectedItem="{Binding SelectedWeight}"
+                                  DisplayMemberBinding="{Binding Weight}"
+                                  FontSize="24" HorizontalAlignment="Stretch">
+                            <Interaction.Behaviors>
+                                <EventTriggerBehavior EventName="SelectionChanged">
+                                    <InvokeCommandAction Command="{Binding SwitchModelCommand}" />
+                                </EventTriggerBehavior>
+                            </Interaction.Behaviors>
+                        </ComboBox>
+                    </StackPanel>
+                </Grid>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" Margin="0,25">
+                    <icons:SymbolIcon Symbol="Circle" Width="50" Height="45" FontSize="32"
+                                      IsVisible="{Binding ModelState, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Started}"
+                                      ToolTip.Tip="{Binding SelectedModel.Name, FallbackValue='Loading Upscale Model' , StringFormat='Loading Upscale Model: {0}'}" />
+                    <Button Width="50" Height="45" Command="{Binding UnloadModelCommand}"
+                            ToolTip.Tip="{Binding SelectedModel.Name, FallbackValue='Unload Current Upscaler: Already Unloaded' , StringFormat='Unload Current Upscaler: {0}'}">
+                        <icons:SymbolIcon Symbol="ArrowReset" FontSize="24" />
+                    </Button>
+                    <Button Width="50" Height="45" Command="{Binding RefreshModelsCommand}" ToolTip.Tip="Refresh Upscale Models List">
+                        <icons:SymbolIcon Symbol="ArrowRepeatAll" FontSize="24" />
+                    </Button>
+                    
+                    <NumericUpDown Increment="1" Minimum="2" Value="{Binding UpscaleFactor}" FontSize="20" Margin="35,0,0,0" />
+                    
+                    <Button Command="{Binding GenerateCommand}" CornerRadius="8"  >
+                        <icons:SymbolIcon
+                            Symbol="{Binding State, Converter={StaticResource ConditionCheckConverter}, ConverterParameter=Started|Stop|PaintBrushSparkle}"
+                            FontSize="32" Foreground="White" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+
+</UserControl>

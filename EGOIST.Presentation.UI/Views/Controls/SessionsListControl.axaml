@@ -15,13 +15,11 @@
                     CornerRadius="16"
                     CompactPaneLength="70"
                     DisplayMode="CompactInline"
-                    OpenPaneLength="400"
+                    OpenPaneLength="420"
                     IsPaneOpen="{TemplateBinding IsOpen}"
                     PaneBackground="Transparent">
                     <SplitView.Pane>
                         <Border CornerRadius="16">
-        
-
                             <Grid ColumnDefinitions="70,*" Margin="0,20,10,0">
                                 <Button Name="PART_TogglePaneBtn"
                                         Grid.Column="0"
@@ -55,23 +53,26 @@
                                         <icons:SymbolIcon Symbol="Chat" FontSize="30" HorizontalAlignment="Left" />
                                         <Label Content="Sessions" FontSize="26" FontFamily="Cambria" FontWeight="Bold"
                                                Margin="35,5,0,0" />
-                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                            <Button Command="{TemplateBinding MainAction, Mode=TwoWay}"
-                                                    Margin="0,0,10,0">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
+                                            <Button Command="{TemplateBinding MainAction, Mode=TwoWay}">
                                                 <icons:SymbolIcon
                                                     Symbol="{TemplateBinding MainActionIcon, Mode=TwoWay}"
                                                     FontSize="26" />
                                             </Button>
-                                            <Button Command="{TemplateBinding SubAction, Mode=TwoWay}"
-                                                    IsVisible="{TemplateBinding SelectedSession, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                            <Button Command="{TemplateBinding SubAction, Mode=TwoWay}" 
+                                                    IsVisible="{Binding IsSessionSelected, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                 <icons:SymbolIcon Symbol="{TemplateBinding SubActionIcon, Mode=TwoWay}"
+                                                                  FontSize="26" />
+                                            </Button>
+                                            <Button Command="{TemplateBinding ThirdAction, Mode=TwoWay}"
+                                                    IsVisible="{Binding IsSessionSelected, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                <icons:SymbolIcon Symbol="{TemplateBinding ThirdActionIcon, Mode=TwoWay}"
                                                                   FontSize="26" />
                                             </Button>
                                         </StackPanel>
                                     </Grid>
                                     <AutoCompleteBox Grid.Row="1" Margin="10,25,10,20" Watermark="Search for a session"
                                                      ItemsSource="{TemplateBinding Sessions}"
-                                                     SelectedItem="{Binding SelectedSession}"
                                                      FilterMode="Contains">
                                         <AutoCompleteBox.InnerLeftContent>
                                             <icons:SymbolIcon Symbol="Search" FontSize="26" />
@@ -83,11 +84,8 @@
                                         </AutoCompleteBox.ItemTemplate>
                                     </AutoCompleteBox>
 
-                                    <ListBox Grid.Row="2"
+                                    <ListBox Grid.Row="2" Name="PART_SessionsList"
                                              ItemsSource="{TemplateBinding Sessions}"
-                                             SelectedValue="{TemplateBinding SelectedSession, Mode=TwoWay}"
-                                             SelectedItem="{TemplateBinding SelectedSession, Mode=TwoWay}"
-                                             SelectionMode="Single"
                                              Margin="10,25,10,100">
                                         <ListBox.ItemTemplate>
                                             <DataTemplate>

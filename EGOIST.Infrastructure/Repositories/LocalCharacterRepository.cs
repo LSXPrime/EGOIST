@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Text.Json;
 using EGOIST.Application.Services.Utilities;
+using EGOIST.Application.Utilities;
 using EGOIST.Domain.Entities;
 using EGOIST.Domain.Interfaces;
 using NetFabric.Hyperlinq;
@@ -22,7 +22,8 @@ public class LocalCharacterRepository(ILogger<LocalCharacterRepository> logger) 
             return Task.FromResult(cachedCharacters);
         }
 
-        var charactersPath = Path.Combine(AppConfig.Instance.CharactersPath, parameters?["Type"] ?? string.Empty);
+        var charactersPath =
+            Path.Combine(AppConfig.Instance.Parameters.CharactersPath, parameters?["Type"] ?? string.Empty);
         if (!Directory.Exists(charactersPath))
         {
             logger.LogWarning("Characters path {charactersPath} does not exist.", charactersPath);
@@ -44,7 +45,7 @@ public class LocalCharacterRepository(ILogger<LocalCharacterRepository> logger) 
                 return matchesType && matchesCategory;
             })
             .ToArray();
-        
+
         _charactersCache[cacheKey] = characters!;
         return Task.FromResult(characters.AsEnumerable())!;
     }
@@ -58,7 +59,7 @@ public class LocalCharacterRepository(ILogger<LocalCharacterRepository> logger) 
             return Task.FromResult(cachedCharacters);
         }
 
-        var charactersPath = AppConfig.Instance.CharactersPath;
+        var charactersPath = AppConfig.Instance.Parameters.CharactersPath;
         if (!Directory.Exists(charactersPath))
         {
             logger.LogWarning("Characters path {charactersPath} does not exist.", charactersPath);
@@ -84,7 +85,7 @@ public class LocalCharacterRepository(ILogger<LocalCharacterRepository> logger) 
 
     public Task<RoleplayCharacter?> GetCharacter(string name)
     {
-        var charactersPath = AppConfig.Instance.CharactersPath;
+        var charactersPath = AppConfig.Instance.Parameters.CharactersPath;
         if (!Directory.Exists(charactersPath))
         {
             logger.LogWarning("characters path {charactersPath} does not exist.", charactersPath);
@@ -110,13 +111,12 @@ public class LocalCharacterRepository(ILogger<LocalCharacterRepository> logger) 
         }
 
         var content = File.ReadAllText(configPath);
-        var template = JsonSerializer.Deserialize<RoleplayCharacter>(content);
-        if (template == null)
-        {
-            logger.LogWarning("Failed to deserialize character from {ConfigPath}", configPath);
-            return null;
-        }
+        
+        if (content.TryDeserialize<RoleplayCharacter>(out var template, $"Failed to deserialize character from {configPath}"))
+            return template;
+        
+        logger.LogWarning("Failed to deserialize character from {ConfigPath}", configPath);
+        return null;
 
-        return template;
     }
 }

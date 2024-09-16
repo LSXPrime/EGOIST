@@ -28,9 +28,9 @@ public class TextModelCoreService(ILogger<TextModelCoreService> logger) : Entity
 
     public LLamaWeights? Model;
     public ModelParams? ModelParameters;
-    public CancellationTokenSource? CancelToken { get; set; }
+    public CancellationTokenSource? CancelToken { get; set; } = new();
 
-    public async Task Switch(ModelInfo? model, ModelInfoWeight? weight)
+    public async Task Switch(ModelInfo? model, ModelInfoWeight? weight, Dictionary<string, object?>? parameters = null)
     {
         if (model == null || weight == null)
         {
@@ -51,25 +51,31 @@ public class TextModelCoreService(ILogger<TextModelCoreService> logger) : Entity
 
             State = GenerationState.Started;
 
-            if (!NativeLibraryConfig.LibraryHasLoaded)
-                NativeLibraryConfig.Instance.WithCuda(AppConfig.Instance.Device == Device.GPU).WithAutoFallback();
-
             var modelPath =
-                $@"{AppConfig.Instance.ModelsPath}\{SelectedGenerationModel.Type.RemoveSpaces()}\{SelectedGenerationModel.Name.RemoveSpaces()}\{SelectedGenerationWeight.Weight.RemoveSpaces()}.{SelectedGenerationWeight.Extension.ToLower().RemoveSpaces()}";
+                $@"{AppConfig.Instance.Parameters.ModelsPath}\{SelectedGenerationModel.Type.RemoveSpaces()}\{SelectedGenerationModel.Name.RemoveSpaces()}\{SelectedGenerationWeight.Weight.RemoveSpaces()}.{SelectedGenerationWeight.Extension.ToLower().RemoveSpaces()}";
+            TextModelParameters? modelParameters = null;
+            
+            if (parameters != null && parameters.TryGetValue("ModelParameters", out var modelParametersObject) && modelParametersObject is TextModelParameters textModelParameters)
+                modelParameters = textModelParameters;
+            
             ModelParameters = new ModelParams(modelPath)
             {
-                ContextSize = 4096,
-                Embeddings = Mode == GenerationMode.Embeddings,
-                GpuLayerCount = AppConfig.Instance.Device == Device.GPU
-                    ? Extensions.TextModelLayersCount(SelectedGenerationModel.Parameters,
-                        SelectedGenerationWeight.Size.BytesToGB().ToString(CultureInfo.InvariantCulture),
+                ContextSize = modelParameters is { ContextLengthAuto: true } ? null : (modelParameters is { ContextLength: > 0 } ? (uint?)modelParameters.ContextLength : 4096),
+                FlashAttention = modelParameters is { FlashAttention: true},
+                UseMemoryLock = modelParameters is { MemoryLock: true},
+                Threads = (uint?)(modelParameters is { CpuThreadsAuto: true } ? Environment.ProcessorCount
+                     : modelParameters is { CpuThreads: > 0 } ? modelParameters.CpuThreads : 0),
+                GpuLayerCount = modelParameters is { GpuSharedLayersAuto: true } ? (AppConfig.Instance.Parameters.Device != Device.Cpu
+                    ? Extensions.TextModelLayersCount(SelectedGenerationModel, SelectedGenerationWeight,
                         SystemInfoService.Instance.Info.VRAMFree)
-                    : 0
+                    : 0)
+                    : modelParameters is { GpuSharedLayers: > 0 } ? modelParameters.GpuSharedLayers : 0
             };
+            
             Model = await LLamaWeights.LoadFromFileAsync(ModelParameters);
 
             State = GenerationState.Finished;
-            if (OnSwitch != null) 
+            if (OnSwitch != null)
                 await OnSwitch.Invoke([this]);
         }
         catch (Exception ex)
@@ -85,8 +91,8 @@ public class TextModelCoreService(ILogger<TextModelCoreService> logger) : Entity
         Model = null;
         SelectedGenerationModel = null;
         State = GenerationState.None;
-        if (OnUnload != null) 
-            await OnUnload.Invoke([this])!;
+        if (OnUnload != null)
+            await OnUnload.Invoke([this]);
         GC.Collect();
     }
 

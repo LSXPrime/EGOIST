@@ -1,0 +1,100 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:icons="using:FluentIcons.Avalonia"
+             xmlns:vm="using:EGOIST.Presentation.UI.ViewModels.Pages.Management"
+             xmlns:services="clr-namespace:EGOIST.Presentation.UI.Services"
+             mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+             x:DataType="vm:CharactersPageViewModel"
+             x:Class="EGOIST.Presentation.UI.Views.Pages.Management.CharactersPageView">
+
+    <Design.DataContext>
+        <vm:CharactersPageViewModel>
+            <x:Arguments>
+                <x:Null>
+                </x:Null>
+            </x:Arguments>
+        </vm:CharactersPageViewModel>
+    </Design.DataContext>
+
+    <Grid>
+        <Grid RowDefinitions="Auto,*" Margin="15">
+            <Grid ColumnDefinitions="*, Auto">
+                <TextBlock Text="{Binding CharacterService.Characters.Count, StringFormat='Available Characters: {0}'}" FontSize="36" />
+                <Button Grid.Column="1"
+                        Command="{Binding CreateCommand}"
+                        CommandParameter="{Binding .}">
+                    <icons:SymbolIcon Symbol="Add" />
+                </Button>
+            </Grid>
+            
+            <ItemsControl Grid.Row="1" Margin="0,25" ItemsSource="{Binding CharacterService.Characters}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <!-- Character Details -->
+                        <Border CornerRadius="16" Margin="5" Width="300" Height="450">
+                            <Border.Background>
+                                <ImageBrush
+                                    Source="{Binding ., Converter={StaticResource CharacterAvatarPathConverter}}" />
+                            </Border.Background>
+                            <Button
+                                Command="{Binding $parent[UserControl].((vm:CharactersPageViewModel)DataContext).PreviewCommand, FallbackValue={x:Null}}"
+                                CommandParameter="{Binding .}">
+                                <Grid Width="300" Height="450">
+                                    <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="10">
+
+                                        <TextBlock Text="{Binding Name}" FontSize="36" HorizontalAlignment="Left" />
+                                        <ItemsControl ItemsSource="{Binding Tags}" Height="35">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border CornerRadius="8" Background="DarkRed" Margin="5,0"
+                                                            Padding="3">
+                                                        <Label Content="{Binding .}" FontWeight="Bold"
+                                                               VerticalAlignment="Center" />
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <TextBlock HorizontalAlignment="Left" Margin="10"
+                                                   TextWrapping="Wrap" Text="{Binding Summary}" />
+                                        <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,20,0,0">
+                                            <icons:SymbolIcon Symbol="Person" />
+                                            <TextBlock Text="{Binding Creator}" FontSize="16" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+
+        <ExperimentalAcrylicBorder
+            IsVisible="{Binding Source={x:Static services:NavigationService.Current}, Path=Sub, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial
+                    BackgroundSource="Digger"
+                    TintColor="Black"
+                    TintOpacity="1"
+                    MaterialOpacity="0.65" />
+            </ExperimentalAcrylicBorder.Material>
+
+            <TransitioningContentControl CornerRadius="32" Margin="55,10,30,15"
+                                         Content="{Binding Source={x:Static services:NavigationService.Current}, Path=Sub}" />
+
+        </ExperimentalAcrylicBorder>
+    </Grid>
+
+</UserControl>

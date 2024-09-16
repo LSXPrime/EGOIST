@@ -23,7 +23,7 @@ public class LocalPromptRepository<TPromptTemplate>(ILogger<LocalPromptRepositor
 
         try
         {
-            var promptsPath = Path.Combine(AppConfig.Instance.PromptsPath, parameters?["Type"] ?? string.Empty);
+            var promptsPath = Path.Combine(AppConfig.Instance.Parameters.PromptsPath, parameters?["Type"] ?? string.Empty);
             if (!Directory.Exists(promptsPath))
             {
                 logger.LogWarning("Prompts path {PromptsPath} does not exist.", promptsPath);
@@ -66,7 +66,7 @@ public class LocalPromptRepository<TPromptTemplate>(ILogger<LocalPromptRepositor
 
         try
         {
-            var promptsPath = AppConfig.Instance.PromptsPath;
+            var promptsPath = AppConfig.Instance.Parameters.PromptsPath;
             if (!Directory.Exists(promptsPath))
             {
                 logger.LogWarning("Prompts path {PromptsPath} does not exist.", promptsPath);
@@ -100,7 +100,7 @@ public class LocalPromptRepository<TPromptTemplate>(ILogger<LocalPromptRepositor
     {
         try
         {
-            var promptsPath = AppConfig.Instance.PromptsPath;
+            var promptsPath = AppConfig.Instance.Parameters.PromptsPath;
             if (!Directory.Exists(promptsPath))
             {
                 logger.LogWarning("Prompts path {PromptsPath} does not exist.", promptsPath);

@@ -1,105 +1,141 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <AnalysisLevel>none</AnalysisLevel>
-    <AssemblyName>EGOIST UI</AssemblyName>
-    <Company>Blood Moon</Company>
-    <Product>EGOIST - AI Hub</Product>
-    <AssemblyVersion>1.2.0</AssemblyVersion>
-    <FileVersion>1.2.0</FileVersion>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <AnalysisLevel>none</AnalysisLevel>
+        <AssemblyName>EGOIST UI</AssemblyName>
+        <Company>Blood Moon</Company>
+        <Product>EGOIST - AI Hub</Product>
+        <AssemblyVersion>1.2.0</AssemblyVersion>
+        <FileVersion>1.2.0</FileVersion>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
-  </ItemGroup>
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <AvaloniaResource Remove="Assets\dictionary.txt" />
-    <AvaloniaResource Remove="Assets\egoist-icon.ico" />
-  </ItemGroup>
+    <ItemGroup>
+        <AvaloniaResource Remove="Assets\dictionary.txt" />
+        <AvaloniaResource Remove="Assets\egoist-icon.ico" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="Assets\BG.png" />
-    <None Remove="Assets\dictionary.txt" />
-    <None Remove="Assets\egoist-icon.ico" />
-    <AvaloniaXaml Remove="Views\Controls\ChatListControl.axaml" />
-    <None Include="Views\Controls\ChatListControl.axaml" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="Assets\BG.png" />
+        <None Remove="Assets\dictionary.txt" />
+        <None Remove="Assets\egoist-icon.ico" />
+        <AvaloniaXaml Remove="Views\Controls\ChatListControl.axaml" />
+        <None Include="Views\Controls\ChatListControl.axaml" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Assets\dictionary.txt" />
-    <EmbeddedResource Include="Assets\egoist-icon.ico" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.1.0-beta2" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.1.0-beta2" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.1.0-beta2" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.1.0-beta2" />
-    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.1.0-beta2" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageReference Include="Notification.Avalonia" Version="2.1.0" />
+    <ItemGroup>
+        <EmbeddedResource Include="Assets\dictionary.txt" />
+        <EmbeddedResource Include="Assets\egoist-icon.ico" />
+    </ItemGroup>
 
-	<PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
-	<PackageReference Include="Serilog.Sinks.Console" Version="5.0.0" />
-	<PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
-	<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="11.1.3" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.1.3" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.1.3" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.1.3" />
+        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.1.3" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.0" />
+        <PackageReference Include="CSVFile" Version="3.2.0" />
+        <PackageReference Include="HPPH.SkiaSharp" Version="1.0.0" />
 
-	<PackageReference Include="Markdown.Avalonia" Version="11.0.3-a1" />
-	  
-	<PackageReference Include="Material.Icons.Avalonia" Version="2.1.9" />
-	<PackageReference Include="Semi.Avalonia" Version="11.1.0-beta1.1" />
-	<PackageReference Include="Irihi.Ursa" Version="0.3.0-beta20240428" />
-	<PackageReference Include="Irihi.Ursa.Themes.Semi" Version="0.3.0-beta20240428" />
-	<PackageReference Include="FluentIcons.Avalonia" Version="1.1.239" />
-    <PackageReference Include="FluentIcons.Avalonia.Fluent" Version="1.1.239" />
-    <PackageReference Include="FluentAvaloniaUI" Version="2.1.0-preview5" />
+        <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+        <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
+        <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
 
-	<PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.1.0-beta2.1" />
-  </ItemGroup>
+        <PackageReference Include="Markdown.Avalonia" Version="11.0.3-a1" />
+        <PackageReference Include="UVtools.AvaloniaControls" Version="3.0.5" />
 
-  <ItemGroup>
-    <ProjectReference Include="..\EGOIST.Application\EGOIST.Application.csproj" />
-    <ProjectReference Include="..\EGOIST.Domain\EGOIST.Domain.csproj" />
-    <ProjectReference Include="..\EGOIST.Infrastructure\EGOIST.Infrastructure.csproj" />
-  </ItemGroup>
+        <PackageReference Include="FluentIcons.Avalonia" Version="1.1.255" />
+        <PackageReference Include="FluentIcons.Avalonia.Fluent" Version="1.1.255" />
+        <PackageReference Include="FluentAvaloniaUI" Version="2.1.0" />
 
-  <ItemGroup>
-    <Compile Update="Views\Pages\TextPageView.axaml.cs">
-      <DependentUpon>TextPageView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Pages\Text\ChatPageView.axaml.cs">
-      <DependentUpon>ChatPageView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Pages\Text\CompletionPageView.axaml.cs">
-      <DependentUpon>CompletionPageView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\Pages\Text\MemoryPageView.axaml.cs">
-      <DependentUpon>MemoryPageView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\Pages\Text\RoleplayPageView.axaml.cs">
-      <DependentUpon>RoleplayPageView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\Dialogs\TextRoleplayCreateView.axaml.cs">
-      <DependentUpon>TextRoleplayCreateView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\Dialogs\TextRoleplayWorldMemoryView.axaml.cs">
-      <DependentUpon>TextRoleplayWorldMemoryView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
+        <PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.1.0.1" />
 
-  <ItemGroup>
-    <Folder Include="Services\Extensions\" />
-  </ItemGroup>
+        <PackageReference Include="VersOne.Epub" Version="3.3.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\EGOIST.Application\EGOIST.Application.csproj" />
+        <ProjectReference Include="..\EGOIST.Domain\EGOIST.Domain.csproj" />
+        <ProjectReference Include="..\EGOIST.Infrastructure\EGOIST.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="Views\Pages\TextPageView.axaml.cs">
+            <DependentUpon>TextPageView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Pages\Text\ChatPageView.axaml.cs">
+            <DependentUpon>ChatPageView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Pages\Text\CompletionPageView.axaml.cs">
+            <DependentUpon>CompletionPageView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Pages\Text\MemoryPageView.axaml.cs">
+            <DependentUpon>MemoryPageView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Pages\Text\RoleplayPageView.axaml.cs">
+            <DependentUpon>RoleplayPageView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Dialogs\TextRoleplayCreateView.axaml.cs">
+            <DependentUpon>TextRoleplayCreateView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Dialogs\TextRoleplayWorldMemoryView.axaml.cs">
+            <DependentUpon>TextRoleplayWorldMemoryView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Controls\ImageGenerationOptionsControl.axaml.cs">
+            <DependentUpon>ImageGenerationOptionsControl.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Pages\ImagePageView.axaml.cs">
+            <DependentUpon>ImagePageView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Pages\Image\ImaginePageView.axaml.cs">
+            <DependentUpon>ChatPageView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Pages\Image\TransformPageView.axaml.cs">
+            <DependentUpon>TransformPageView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Pages\SettingsPageView.axaml.cs">
+            <DependentUpon>SettingsPageView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Pages\Management\SettingsPageView.axaml.cs">
+            <DependentUpon>SettingsPageView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Pages\Management\Characters\CreatePageView.axaml.cs">
+          <DependentUpon>CreatePageView.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Controls\MessageInputOptionsControl.axaml.cs">
+          <DependentUpon>MessageInputOptionsControl.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Pages\Image\UpscalePageView.axaml.cs">
+          <DependentUpon>UpscalePageView.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Controls\ImageGenerationHistoryControl.axaml.cs">
+          <DependentUpon>ImageGenerationHistoryControl.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+    </ItemGroup>
 </Project>

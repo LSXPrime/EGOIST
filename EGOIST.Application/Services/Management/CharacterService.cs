@@ -1,57 +1,74 @@
 using System.Collections.ObjectModel;
+using System.Text.Json;
+using EGOIST.Application.Interfaces.Utilities;
 using EGOIST.Application.Services.Utilities;
+using EGOIST.Application.Utilities;
 using EGOIST.Domain.Entities;
 using EGOIST.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 
 namespace EGOIST.Application.Services.Management;
 
-public class CharacterService(
-    IFileSystemService fileSystemService,
-    IImageMetadataService imageMetadataService,
-    ILogger<CharacterService> logger,
-    ICharacterRepository characterRepository)
+public class CharacterService
 {
-    public ObservableCollection<RoleplayCharacter> Characters => new(characterRepository.GetAllCharacters(null).Result);
+    private readonly IFileSystemService _fileSystemService;
+    private readonly IImageMetadataService _imageMetadataService;
+    private readonly ILogger<CharacterService> _logger;
+    private readonly ICharacterRepository _characterRepository;
+
+    public CharacterService(IFileSystemService fileSystemService,
+        IImageMetadataService imageMetadataService,
+        ILogger<CharacterService> logger,
+        ICharacterRepository characterRepository)
+    {
+        _fileSystemService = fileSystemService;
+        _imageMetadataService = imageMetadataService;
+        _logger = logger;
+        _characterRepository = characterRepository;
+
+        _ = RefreshCharactersAsync();
+    }
+
+    public ObservableCollection<RoleplayCharacter> Characters { get; set; } = [];
 
 
     /// <summary>
     /// Creates a new character with the provided details.
     /// </summary>
     /// <param name="character">The character object to create.</param>
+    /// <param name="avatar">The avatar image data.</param>
     /// <returns>A task that completes when the character is created.</returns>
-    public async Task CreateCharacterAsync(RoleplayCharacter character)
+    public async Task CreateCharacterAsync(RoleplayCharacter character, byte[] avatar)
     {
         try
         {
-            var characterPath = Path.Combine(AppConfig.Instance.CharactersPath, character.Name);
+            var characterPath = Path.Combine(AppConfig.Instance.Parameters.CharactersPath, character.Name);
 
             // Create the character directory
-            fileSystemService.CreateDirectory(characterPath);
+            _fileSystemService.CreateDirectory(characterPath);
 
             // Handle the character avatar
-            if (!fileSystemService.FileExists(character.Avatar))
+            if (!_fileSystemService.FileExists(character.Avatar))
             {
                 character.Avatar = $"{character.Name}.webp";
             }
             else
             {
                 var avatarPath = Path.Combine(characterPath, $"{character.Name}{Path.GetExtension(character.Avatar)}");
-                fileSystemService.CopyFile(character.Avatar, avatarPath, true);
+                await _fileSystemService.WriteAllBytesAsync(avatarPath, avatar);
                 character.Avatar = Path.GetFileName(avatarPath);
             }
 
             // Serialize and save the character data to JSON
             var characterJson = JsonSerializer.Serialize(character);
             var characterJsonPath = Path.Combine(characterPath, $"{character.Name}.json");
-            await fileSystemService.WriteAllTextAsync(characterJsonPath, characterJson);
+            await _fileSystemService.WriteAllTextAsync(characterJsonPath, characterJson);
 
-            logger.LogInformation("Character {CharacterName} created successfully", character.Name);
+            _logger.LogInformation("Character {CharacterName} created successfully", character.Name);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to create character {CharacterName}", character.Name);
+            _logger.LogError(ex, "Failed to create character {CharacterName}", character.Name);
             throw;
         }
     }
@@ -64,17 +81,17 @@ public class CharacterService(
     {
         try
         {
-            var characterPath = Path.Combine(AppConfig.Instance.CharactersPath, character.Name);
+            var characterPath = Path.Combine(AppConfig.Instance.Parameters.CharactersPath, character.Name);
 
             // Delete the character directory if it exists
-            if (fileSystemService.DirectoryExists(characterPath))
+            if (_fileSystemService.DirectoryExists(characterPath))
             {
-                fileSystemService.DeleteDirectory(characterPath, true);
+                _fileSystemService.DeleteDirectory(characterPath, true);
             }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to delete character {CharacterName}", character.Name);
+            _logger.LogError(ex, "Failed to delete character {CharacterName}", character.Name);
             throw;
         }
     }
@@ -91,7 +108,7 @@ public class CharacterService(
         RoleplayCharacter? rpCharacter = null;
         if (new[] { ".json", ".txt", ".log" }.Contains(Path.GetExtension(charPath)))
         {
-            charParsed = await fileSystemService.ReadAllTextAsync(charPath);
+            charParsed = await _fileSystemService.ReadAllTextAsync(charPath);
             var character = JsonSerializer.Deserialize<RoleplayCharacter>(charParsed);
             rpCharacter = character!;
         }
@@ -99,8 +116,8 @@ public class CharacterService(
         {
             charParsed = charFormat switch
             {
-                ".webp" => await imageMetadataService.ExtractCharacterData(charPath),
-                ".png" => await imageMetadataService.ExtractCharacterData(charPath),
+                ".webp" => await _imageMetadataService.ExtractCharacterData(charPath),
+                ".png" => await _imageMetadataService.ExtractCharacterData(charPath),
                 _ => throw new NotSupportedException(
                     $"Image format '{charFormat}' not supported for metadata extraction.")
             };
@@ -112,13 +129,19 @@ public class CharacterService(
         {
             // Serialize and save the character data to JSON
             var characterJson = JsonSerializer.Serialize(rpCharacter);
-            var characterPath = Path.Combine(AppConfig.Instance.CharactersPath, rpCharacter.Name);
+            var characterPath = Path.Combine(AppConfig.Instance.Parameters.CharactersPath, rpCharacter.Name);
             var characterJsonPath = Path.Combine(characterPath, $"{rpCharacter.Name}.json");
-            await fileSystemService.WriteAllTextAsync(characterJsonPath, characterJson);
+            await _fileSystemService.WriteAllTextAsync(characterJsonPath, characterJson);
 
-            logger.LogInformation("Character {CharacterName} imported successfully", rpCharacter.Name);
+            _logger.LogInformation("Character {CharacterName} imported successfully", rpCharacter.Name);
         }
-        
+
         return rpCharacter;
+    }
+
+    public async Task RefreshCharactersAsync()
+    {
+        Characters.Clear();
+        Characters.AddRange(await _characterRepository.GetAllCharacters(null));
     }
 }

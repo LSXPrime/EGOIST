@@ -1,0 +1,94 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:EGOIST.Presentation.UI.Views.Controls"
+        xmlns:icons="clr-namespace:FluentIcons.Avalonia;assembly=FluentIcons.Avalonia"
+        xmlns:abstracts="clr-namespace:EGOIST.Domain.Abstracts;assembly=EGOIST.Domain"
+        x:DataType="controls:ImageGenerationHistoryControl">
+    <Design.PreviewWith>
+        <controls:ImageGenerationHistoryControl />
+    </Design.PreviewWith>
+
+    <Style Selector="controls|ImageGenerationHistoryControl">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <SplitView
+                    Name="SplitView"
+                    CornerRadius="16"
+                    CompactPaneLength="70"
+                    DisplayMode="CompactInline"
+                    OpenPaneLength="430"
+                    PaneBackground="Transparent"
+                    IsPaneOpen="{TemplateBinding IsOpen}">
+                    <SplitView.Pane>
+                        <Grid ColumnDefinitions="70,*" Margin="0,0,10,10">
+                            <Button Name="PART_TogglePaneBtn"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Top"
+                                    Classes="transparent"
+                                    Height="50"
+                                    Width="50"
+                                    Margin="10,0,0,0">
+                                <icons:SymbolIcon Symbol="Options" FontSize="26" />
+                            </Button>
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding Title}"
+                                       FontSize="24"
+                                       VerticalAlignment="Top"
+                                       TextAlignment="Left"
+                                       TextWrapping="Wrap"
+                                       Width="300"
+                                       Margin="0,200,0,0">
+                                <TextBlock.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform />
+                                        <SkewTransform />
+                                        <RotateTransform Angle="90" />
+                                        <TranslateTransform X="0" />
+                                    </TransformGroup>
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
+
+
+                            <Grid Grid.Column="1" RowDefinitions="Auto,Auto" Margin="16">
+                                <Grid Grid.Row="0" Margin="10,0,10,0">
+                                    <icons:SymbolIcon Symbol="Album" FontSize="30" HorizontalAlignment="Left" />
+                                    <Label Content="Album" FontSize="26" FontFamily="Cambria" FontWeight="Bold"
+                                           Margin="35,5,0,0" />
+                                </Grid>
+
+                                <ScrollViewer Grid.Row="1" Margin="10"
+                                              Height="{Binding $parent.Bounds.Height}"
+                                              VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl ItemsSource="{Binding History}"
+                                                  Margin="5,15,5,100">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="abstracts:HistoryEntryBase">
+                                                <Button Margin="0,5"
+                                                        Command="{Binding $parent[controls:ImageGenerationHistoryControl].((controls:ImageGenerationHistoryControl)DataContext).SelectEntryCommand, FallbackValue={x:Null}}"
+                                                        CommandParameter="{Binding}">
+                                                    <StackPanel Spacing="10" Orientation="Vertical">
+                                                        <Grid ColumnDefinitions="*,Auto">
+                                                            <TextBlock Text="{Binding Name}" Margin="5" />
+                                                            <Button Grid.Column="1"
+                                                                    Command="{Binding $parent[controls:ImageGenerationHistoryControl].((controls:ImageGenerationHistoryControl)DataContext).DeleteEntryCommand, FallbackValue={x:Null}}"
+                                                                    CommandParameter="{Binding}">
+                                                                <icons:SymbolIcon Symbol="Delete" />
+                                                            </Button>
+                                                        </Grid>
+                                                        <Image MaxWidth="350"
+                                                               MaxHeight="250"
+                                                               Source="{Binding Path, Converter={StaticResource ConditionMultiConverter}, ConverterParameter=Bitmap}" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Grid>
+                        </Grid>
+                    </SplitView.Pane>
+                </SplitView>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

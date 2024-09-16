@@ -10,7 +10,7 @@ public class HuggingFaceModelsRepository : IModelsRepository
 {
     private readonly HttpClient _httpClient = new();
 
-    public async Task<IEnumerable<ModelInfo>> GetAllModels(string query, int modelsCount = 10)
+    public async Task<IEnumerable<ModelInfo>> GetAllModels(string query, int modelsCount = 10, string[]? weightExtensions = null)
     {
         var response = await _httpClient.GetAsync($"https://huggingface.co/api/models?search={query}&filter=gguf&sort=downloads&limit={modelsCount}\"");
         response.EnsureSuccessStatusCode();

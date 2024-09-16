@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:icons="using:FluentIcons.Avalonia"
+             xmlns:controls="using:EGOIST.Presentation.UI.Views.Controls"
+             xmlns:vm="using:EGOIST.Presentation.UI.ViewModels.Pages.Image"
+             xmlns:uvTools="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
+             mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+             x:DataType="vm:ImaginePageViewModel"
+             x:Class="EGOIST.Presentation.UI.Views.Pages.Image.ImaginePageView">
+
+    <Grid Margin="0" ColumnDefinitions="Auto,*,Auto">
+        <!-- Image Generation History -->
+        <controls:ImageGenerationHistoryControl
+            VerticalAlignment="Stretch"
+            Title="History"
+            History="{Binding $parent[UserControl].((vm:ImaginePageViewModel)DataContext).History, FallbackValue={x:Null}}"
+            SelectEntryCommand="{Binding $parent[UserControl].((vm:ImaginePageViewModel)DataContext).SelectEntryCommand, FallbackValue={x:Null}}"
+            DeleteEntryCommand="{Binding $parent[UserControl].((vm:ImaginePageViewModel)DataContext).DeleteEntryCommand, FallbackValue={x:Null}}" />
+
+        <!-- Session Inference Options -->
+        <controls:ImageGenerationOptionsControl Grid.Column="2" Title="Inference Options"
+                                                Parameters="{Binding $parent[UserControl].((vm:ImaginePageViewModel)DataContext).GenerationParameters, FallbackValue={x:Null}}" />
+        <!-- Image UI -->
+        <Grid Grid.Column="1">
+            
+            <uvTools:AdvancedImageBox Margin="25,100" AutoCenter="True" AutoPan="True" 
+                                      Image="{Binding ResultImage, Converter={StaticResource ConditionMultiConverter}, ConverterParameter=bitmap}" />
+            <ProgressBar Value="{Binding Progress}" Minimum="0" Maximum="100" Margin="250,35" MinWidth="250"
+                         ShowProgressText="True" VerticalAlignment="Bottom"
+                         IsVisible="{Binding State, Converter={StaticResource ConditionCheckConverter}, ConverterParameter=Started|True|False}" />
+            <Button Command="{Binding GenerateCommand}" CornerRadius="8" Margin="25" Width="100" Height="50"
+                    VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                <icons:SymbolIcon
+                    Symbol="{Binding State, Converter={StaticResource ConditionCheckConverter}, ConverterParameter=Started|Stop|PaintBrushSparkle}"
+                    FontSize="32" Foreground="White" />
+            </Button>
+        </Grid>
+    </Grid>
+
+</UserControl>

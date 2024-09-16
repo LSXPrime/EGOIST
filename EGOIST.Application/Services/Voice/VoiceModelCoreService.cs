@@ -8,7 +8,7 @@ using Whisper.net;
 
 namespace EGOIST.Application.Services.Voice;
 
-public class VoiceModelCoreService(ILogger<VoiceModelCoreService> logger)  : IModelCoreService
+public class VoiceModelCoreService(ILogger<VoiceModelCoreService> logger) : IModelCoreService
 {
     public GenerationState State { get; set; } = GenerationState.None;
     public GenerationMode Mode { get; set; } = GenerationMode.Audio;
@@ -21,38 +21,45 @@ public class VoiceModelCoreService(ILogger<VoiceModelCoreService> logger)  : IMo
     public CancellationTokenSource? CancelToken { get; set; }
 
 
-    public async Task Switch(ModelInfo? model, ModelInfoWeight? weight)
+    public async Task Switch(ModelInfo? model, ModelInfoWeight? weight, Dictionary<string, object?>? parameters = null)
     {
         SelectedGenerationModel = model;
         SelectedGenerationWeight = weight;
-
-        logger.LogInformation($"Model Switching to {SelectedGenerationModel?.Name} Started");
-        if (SelectedGenerationModel?.Task == "generation")
+        if (SelectedGenerationModel == null || SelectedGenerationWeight == null)
         {
-            logger.LogError(
-                $"Model Switching to {SelectedGenerationModel.Name} Failed, Error: Voice generation removed temporarily");
+            logger.LogWarning("No selected generation model.");
+            return;
         }
-        else if (SelectedGenerationModel?.Task == "transcribe")
-        {
-            var modelPath =
-                $"{AppConfig.Instance.ModelsPath}\\{SelectedGenerationModel.Type.RemoveSpaces()}\\{SelectedGenerationModel.Name.RemoveSpaces()}\\{SelectedGenerationWeight?.Weight.RemoveSpaces()}.{SelectedGenerationWeight?.Extension.ToLower().RemoveSpaces()}";
 
-            var isGpu = AppConfig.Instance.Device == Device.GPU;
-            TranscribeModel = WhisperFactory.FromPath(modelPath, false, null, false, isGpu);
-            TranscribeProcessor = TranscribeModel.CreateBuilder().WithLanguage("auto").Build();
-            logger.LogInformation("Audio Transcribe Model loaded Successfully");
-            await OnSwitch?.Invoke([this])!;
+        logger.LogInformation($"Model Switching to {SelectedGenerationModel.Name} Started");
+
+        switch (SelectedGenerationModel.Task.ToLowerInvariant())
+        {
+            case "generation":
+                logger.LogError($"Model Switching to {SelectedGenerationModel.Name} Failed, Error: Voice generation removed temporarily");
+                return;
+            case "transcribe":
+                var modelPath = $@"{AppConfig.Instance.Parameters.ModelsPath}\{SelectedGenerationModel.Type.RemoveSpaces()}\{SelectedGenerationModel.Name.RemoveSpaces()}\{SelectedGenerationWeight.Weight.RemoveSpaces()}.{SelectedGenerationWeight.Extension.ToLower().RemoveSpaces()}";
+                var isGpu = AppConfig.Instance.Parameters.Device != Device.Cpu;
+                TranscribeModel = WhisperFactory.FromPath(modelPath, useGpu: isGpu);
+                TranscribeProcessor = TranscribeModel.CreateBuilder().WithLanguageDetection().Build();
+                logger.LogInformation("Audio Transcribe Model loaded Successfully");
+                break;
         }
+        
+        if (OnSwitch != null)
+            await OnSwitch.Invoke([this])!;
     }
 
     public async Task Unload()
     {
         TranscribeModel?.Dispose();
-        if (TranscribeProcessor != null) 
+        if (TranscribeProcessor != null)
             await TranscribeProcessor.DisposeAsync();
         SelectedGenerationModel = null;
         State = GenerationState.None;
-        await OnUnload?.Invoke([this])!;
+        if (OnUnload != null)
+            await OnUnload.Invoke([this])!;
         GC.Collect();
         logger.LogInformation("Audio Transcribe Model Unloaded");
     }

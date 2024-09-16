@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Text;
 using EGOIST.Domain.Abstracts;
 using EGOIST.Domain.Enums;
@@ -6,7 +7,7 @@ using EGOIST.Domain.Interfaces;
 
 namespace EGOIST.Domain.Entities;
 
-public class RoleplaySession() : SessionBase<RoleplayMessage>($"Roleplay {DateTime.Now}")
+public class RoleplaySession() : SessionBase<RoleplayMessage>($"Roleplay {DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo.InvariantCulture)}")
 {
     private string? _userRoleName = "User";
     private RoleplayMessage? _lastMessage;
@@ -31,6 +32,7 @@ public class RoleplaySession() : SessionBase<RoleplayMessage>($"Roleplay {DateTi
     }
 
     public ObservableCollection<RoleplayCharacter> Characters { get; init; } = [];
+    [field: NonSerialized]
     public Dictionary<RoleplayCharacter, IInference> CharacterInferences { get; set; } = new();
     public RoleplayWorld? World { get; set; }
     
@@ -40,9 +42,9 @@ public class RoleplaySession() : SessionBase<RoleplayMessage>($"Roleplay {DateTi
     private readonly RoleplayCharacter _user = new() { Name = "User" };
 
 
-    public RoleplayMessage AddMessage(RoleplayCharacter? user, string message)
+    public RoleplayMessage AddMessage(RoleplayCharacter? user, string message, Citation[]? citations = null)
     {
-        var messageInput = new RoleplayMessage { Sender = user ?? _user, Message = message };
+        var messageInput = new RoleplayMessage { Sender = user ?? _user, Message = message, Citations = citations ?? [] };
         LastMessage = messageInput;
         Messages.Add(messageInput);
 

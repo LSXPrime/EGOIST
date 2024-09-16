@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
@@ -19,13 +19,13 @@ public static class NavigationService
     public static event NavigationEventHandler? OnNavigation;
     
 
-    public static void NavigateTo<TViewModel>(Dictionary<string, object>? parameters = null, NavigationItemType type = NavigationItemType.Main) where TViewModel : ViewModelBase
+    public static async Task NavigateTo<TViewModel>(Dictionary<string, object>? parameters = null, NavigationItemType type = NavigationItemType.Main) where TViewModel : ViewModelBase
     {
         var viewModel = Design.IsDesignMode ? Activator.CreateInstance<TViewModel>() : Ioc.Default.GetService<TViewModel>();
         if (viewModel is INavigationAware navigationAware)
         {
-            navigationAware.Initialize(parameters);
-            navigationAware.OnNavigatedTo();
+            await navigationAware.Initialize(parameters);
+            await navigationAware.OnNavigatedTo();
         }
 
         if (viewModel is ViewModelBase vm)
@@ -33,14 +33,19 @@ public static class NavigationService
             {
                 case NavigationItemType.Main:
                     Current.Main = vm;
+                    Current.Sub = null;
+                    Current.Nested = null;
                     break;
                 case NavigationItemType.Sub:
                     Current.Sub = vm;
+                    Current.Nested = null;
                     break;
                 case NavigationItemType.Nested:
                     Current.Nested ??= new Stack<ViewModelBase>();
                     Current.Nested.Push(vm);
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
         else
             throw new ArgumentException($"No navigation item found for ViewModel type {typeof(TViewModel)}");
